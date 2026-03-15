@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.20.4</title>
+    <title>Amel Defteri V.20.5</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -38,7 +38,6 @@
         .backup-btn { background: rgba(255,255,255,0.1); color: #ccc; border: none; padding: 6px 12px; border-radius: 10px; font-size: 11px; cursor: pointer; flex: 1; }
         .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; }
         .ozel-card { background: var(--card); border-radius: 12px; padding: 10px 5px; border: 1px solid rgba(255,255,255,0.1); text-align: center; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between;}
-        /* GENEL RAPOR ORTALAMA */
         .monthly-report-table { width: 100% !important; margin: 0 auto; table-layout: fixed; border-collapse: separate; border-spacing: 2px; }
         .col-gun { width: 30px; text-align: center; font-size: 10px; opacity: 0.5; }
         .col-vakit { height: 20px; border-radius: 4px; cursor: pointer; }
@@ -50,7 +49,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.20.4</div>
+    <div class="main-title">Amel Defteri V.20.5</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -106,42 +105,32 @@
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
         const globalListe = getGlobalOzeller();
-        const aktifListe = globalListe.filter(g => !g.arsiv);
         
         if (kaydedilmis) {
             gunlukVeriler = kaydedilmis;
-            const aktifIdler = aktifListe.map(a => a.id);
-            const aktifIsimler = aktifListe.map(a => a.ad);
-
-            // KRİTİK: Şu an aktif olanları hazırla
-            gunlukVeriler.ozeller = aktifListe.map(g => {
-                const eski = (kaydedilmis.ozeller || []).find(o => o.id === g.id || o.ad === g.ad);
-                return { ...g, durum: eski ? (eski.durum || 0) : 0 };
+            // Mevcut verideki tüm amelleri (arşivde olsa bile) göster
+            const kaydedilmisIdler = (kaydedilmis.ozeller || []).map(o => o.id);
+            
+            // Global listeden olup şu an bu günde olmayan aktifleri ekle
+            globalListe.filter(g => !g.arsiv && !kaydedilmisIdler.includes(g.id)).forEach(g => {
+                gunlukVeriler.ozeller.push({ ...g, durum: 0 });
             });
-
-            // KRİTİK: O günün verisi içinde olup şu an arşivde olanları kurtar (Silinmeyi önler)
-            const arsivdekiler = globalListe.filter(g => g.arsiv);
-            const kurtarilanlar = (kaydedilmis.ozeller || []).filter(o => 
-                !aktifIdler.includes(o.id) && !aktifIsimler.includes(o.ad) && 
-                (arsivdekiler.some(a => a.id === o.id || a.ad === o.ad))
-            );
-            gunlukVeriler.eskiOzeller = kurtarilanlar; 
+            
+            // ÖNEMLİ: gunlukVeriler.ozeller içinde zaten o güne ait tüm veri var.
+            // Sadece render kısmında arşivlenmiş VE boş olanları filtreleyeceğiz.
         } else {
             gunlukVeriler = { 
                 vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
-                ozeller: aktifListe.map(g => ({ ...g, durum: 0 })),
-                eskiOzeller: []
+                ozeller: globalListe.filter(g => !g.arsiv).map(g => ({ ...g, durum: 0 }))
             };
         }
         render();
     }
 
     function render() {
-        const kaydedilecek = {
-            vakitler: gunlukVeriler.vakitler,
-            ozeller: [...(gunlukVeriler.ozeller || []), ...(gunlukVeriler.eskiOzeller || [])]
-        };
-        localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(kaydedilecek));
+        // Kaydederken her şeyi olduğu gibi koru
+        localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
+
         document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
         document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : "";
         
@@ -157,9 +146,24 @@
 
         const oDiv = document.getElementById('ozelList');
         oDiv.innerHTML = "";
+        const globalListe = getGlobalOzeller();
+        
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
+            const globalAmel = globalListe.find(g => g.id === o.id);
+            const isArsiv = globalAmel ? globalAmel.arsiv : false;
+
+            // KURAL: Eğer arşivlenmişse VE o güne ait verisi boşsa (0) gösterme.
+            // Eğer verisi varsa (arşivde olsa bile) geçmiş gün hatırına göster.
+            if (isArsiv && (o.durum == 0 || o.durum == "")) return;
+
             let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum}" style="width:100%; background:rgba(255,255,255,0.1); color:white; border:none; text-align:center; padding:5px; border-radius:5px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-            oDiv.innerHTML += `<div class="ozel-card"><b style="font-size:11px; cursor:pointer;" onclick="window.showStats('${o.ad.replace(/'/g,"\\'")}', 'ozel', ${oIdx}, 0, '${o.id}')">${o.ad}</b>${ctrl}<small onclick="window.silSecenekleri('${o.id}')" style="opacity:0.3; font-size:9px; cursor:pointer;">Arşiv</small></div>`;
+            let arsivEtiket = isArsiv ? `<span style="color:var(--orange); font-size:8px;"> [ARŞİV]</span>` : '';
+            
+            oDiv.innerHTML += `<div class="ozel-card">
+                <b style="font-size:11px; cursor:pointer;" onclick="window.showStats('${o.ad.replace(/'/g,"\\'")}', 'ozel', 0, 0, '${o.id}')">${o.ad}${arsivEtiket}</b>
+                ${ctrl}
+                <small onclick="window.silSecenekleri('${o.id}')" style="opacity:0.3; font-size:9px; cursor:pointer;">${isArsiv ? '' : 'Arşiv'}</small>
+            </div>`;
         });
     }
 
@@ -168,16 +172,9 @@
         const grid = document.getElementById('calGrid');
         document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff; margin:0;">Rehber</h3>`;
         grid.innerHTML = `<div style="padding:10px; font-size:12px; line-height:1.6; max-height:60vh; overflow-y:auto;">
-            <p><b>Farz Namazlar:</b><br>
-            🟢 Koyu Yeşil: Kılındı<br>
-            🟢 Açık Yeşil: Cemaatle Kılındı<br>
-            🟠 Turuncu: Kaza Edildi<br>
-            🔴 Kırmızı: Kazaya Kaldı</p>
-            <p><b>Sünnet / Tesbihat / Özel:</b><br>
-            🟢 Koyu Yeşil: Yapıldı / Tamam<br>
-            🔴 Kırmızı: Yapılmadı / Eksik<br>
-            ⚪ Boş: Veri girilmedi</p>
-            <p><b>İstatistikler:</b> Vakitlerin altındaki 'Farz/Sünnet/Tesbihat' yazılarına tıklayarak aylık takvimi görebilirsiniz.</p>
+            <p><b>Farz Namazlar:</b><br>🟢 Koyu Yeşil: Kılındı | 🟢 Açık Yeşil: Cemaat | 🟠 Turuncu: Kaza | 🔴 Kırmızı: Kazaya Kaldı</p>
+            <p><b>Sünnet / Tesbihat / Özel:</b><br>🟢 Koyu Yeşil: Yapıldı | 🔴 Kırmızı: Yapılmadı | ⚪ Boş: Veri girilmedi</p>
+            <p><b>Arşiv:</b> Arşivlenen ameller bugünden kalkar ancak veri girilmiş geçmiş günlerde görünmeye devam eder.</p>
         </div>`;
         modal.style.display = 'block';
     }
@@ -195,8 +192,8 @@
             if (v) {
                 if (tip === 'vakit') cls = "s" + (v.vakitler[vIdx].durumlar[bIdx] || 0);
                 else { 
-                    let o = (v.ozeller || []).find(x => x.ad === ad || x.id === id); 
-                    if (o && o.durum > 0) { cls = o.tip === 'sayi' ? 's2' : 's' + o.durum; if(o.tip === 'sayi') val = `<b>${o.durum}</b>`; } 
+                    let o = (v.ozeller || []).find(x => x.id === id || x.ad === ad); 
+                    if (o && (o.durum > 0 || o.durum !== "")) { cls = o.tip === 'sayi' ? 's2' : 's' + o.durum; if(o.tip === 'sayi') val = `<b>${o.durum}</b>`; } 
                 }
             }
             gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})">${lab}${val}</div>`;
@@ -245,7 +242,7 @@
                 if (v.ozeller) {
                     v.ozeller.forEach(vo => {
                         const globalListe = getGlobalOzeller();
-                        const arsivdenBul = globalListe.find(g => (g.ad === vo.ad || g.id === vo.id) && g.arsiv);
+                        const arsivdenBul = globalListe.find(g => g.id === vo.id && g.arsiv);
                         if (arsivdenBul) {
                             if (!arsivAmeller[vo.ad]) arsivAmeller[vo.ad] = { toplam: 0, tip: vo.tip };
                             if (vo.tip === 'sayi') arsivAmeller[vo.ad].toplam += parseFloat(vo.durum || 0);
