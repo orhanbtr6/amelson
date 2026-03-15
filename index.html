@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.21.0</title>
+    <title>Amel Defteri V.21.1</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -20,9 +20,9 @@
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; }
         .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
         
-        /* ANA EKRAN VAKİT KUTULARI DARALTMA */
-        .habit-card { background: var(--card); border-radius: 12px; padding: 5px 12px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.08); }
-        .vakit-ad { font-weight: bold; margin-bottom: 3px; display: block; color: #7fbbff; font-size: 0.8rem; }
+        /* ANA EKRAN VAKİT KUTULARI EKSTRA DARALTMA */
+        .habit-card { background: var(--card); border-radius: 12px; padding: 3px 12px 5px 12px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.08); }
+        .vakit-ad { font-weight: bold; margin-bottom: 2px; display: block; color: #7fbbff; font-size: 0.75rem; }
         .circles-row { display: flex; gap: 10px; justify-content: flex-start; }
         .circle { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; flex-shrink: 0; }
         
@@ -39,10 +39,11 @@
         .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 5px; }
         .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 4px; border: 1px solid rgba(255,255,255,0.1); text-align: center; min-height: 85px; display: flex; flex-direction: column; justify-content: space-between;}
         
-        /* GENEL RAPOR SATIR ARALIĞI (1 MM ARTIŞ) */
-        .monthly-report-table { width: 100% !important; margin: 0 auto; table-layout: fixed; border-collapse: separate; border-spacing: 1px 1px; }
-        .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; padding: 0; line-height: 14px; }
-        .col-vakit { height: 14px; border-radius: 2px; cursor: pointer; }
+        /* GENEL RAPOR SATIRLARI DARALTMA (ARALIK KORUNDU) */
+        .monthly-report-table { width: 100% !important; margin: 0 auto; table-layout: fixed; border-collapse: separate; border-spacing: 1px 1.5px; }
+        .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; padding: 0; line-height: 11px; }
+        .col-vakit { height: 11px; border-radius: 2px; cursor: pointer; }
+        
         .report-selector { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
         .sel-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #ccc; padding: 5px 10px; border-radius: 8px; font-size: 10px; cursor: pointer; }
         .sel-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
@@ -55,7 +56,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.21.0</div>
+    <div class="main-title">Amel Defteri V.21.1</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
