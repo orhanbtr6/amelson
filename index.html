@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.19.1</title>
+    <title>Amel Defteri V.19.3</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -24,10 +24,7 @@
         .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 10px; }
         .date-nav { display: flex; align-items: center; gap: 8px; }
         
-        /* Tarih Seçici Stil */
-        .date-display-box { text-align: center; cursor: pointer; padding: 5px 10px; border-radius: 10px; transition: background 0.3s; }
-        .date-display-box:active { background: rgba(255,255,255,0.1); }
-
+        .date-display-box { text-align: center; cursor: pointer; padding: 5px 10px; border-radius: 10px; }
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; }
         .habit-card { background: var(--card); border-radius: 15px; padding: 12px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); }
         .vakit-ad { font-weight: bold; margin-bottom: 8px; display: block; color: #7fbbff; font-size: 0.9rem; }
@@ -40,15 +37,28 @@
         .s3 { background: var(--red); } 
         .s4 { background: var(--orange); }
 
-        /* Modal ve Form Elemanları */
+        .monthly-report-table { margin: 0 auto; border-collapse: separate; border-spacing: 2px; font-size: 9px; color: #fff; width: 100% !important; max-width: 400px; table-layout: fixed; }
+        .monthly-report-table td { border: none; text-align: center; padding: 0; margin: 0; cursor: pointer;}
+        .col-gun { width: 35px; text-align: right !important; padding-right: 5px !important; opacity: 0.5; font-size: 9px; } 
+        .col-vakit { height: 16px; border-radius: 3px; }
+
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; overflow-y: auto; padding-top: 20px; }
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 95%; max-width: 380px; border-radius: 15px; border: 1px solid var(--blue); box-sizing: border-box; }
-        
-        input[type="date"] { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; font-size: 16px; margin: 10px 0; outline: none; }
-        
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
+        .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; position: relative; }
+        .cal-box b { font-size: 11px; color: #000; }
+        .cal-box small { font-size: 7px; opacity: 0.5; position: absolute; top: 2px; left: 2px; color: #fff; }
+
+        /* Yeni Seçim Alanı Stili */
+        .report-selector { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
+        .sel-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #ccc; padding: 5px 10px; border-radius: 8px; font-size: 10px; cursor: pointer; }
+        .sel-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+        .yearly-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
         .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #051a26; padding: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
         .footer-row { display: flex; gap: 8px; width: 100%; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
+        input[type="date"] { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; font-size: 16px; margin: 10px 0; outline: none; }
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
         .backup-btn { background: rgba(255,255,255,0.1); color: #ccc; border: none; padding: 6px 12px; border-radius: 10px; font-size: 11px; cursor: pointer; flex: 1; }
         
@@ -59,7 +69,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.19.1</div>
+    <div class="main-title">Amel Defteri V.19.3</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -77,17 +87,6 @@
 
     <div id="vakitList"></div>
     <div id="ozelList" class="ozel-grid"></div>
-</div>
-
-<div id="dateModal" class="modal">
-    <div class="modal-content">
-        <h3 style="text-align:center; color:#7fbbff; margin-top:0;">Tarihe Git</h3>
-        <input type="date" id="jumpDateInput">
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button class="add-btn" style="flex:1; background:var(--blue);" onclick="window.tariheGit()">GİT</button>
-            <button class="add-btn" style="flex:1; background:var(--red);" onclick="window.modalKapat('dateModal')">İPTAL</button>
-        </div>
-    </div>
 </div>
 
 <div id="statModal" class="modal">
@@ -116,6 +115,7 @@
     let seciliTarih = new Date();
     let raporTarih = new Date();
     let gunlukVeriler = {};
+    let genRaporTipIdx = 0; // 0:Farz, 1:Sünnet, 2:Tesbihat
 
     function getLocalKey(t) { return `amel_${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
     function getGlobalOzeller() { return JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; }
@@ -159,28 +159,56 @@
         });
     }
 
-    // YENİ: Tarih Seçici Modalı Aç
     window.tarihSeciciAc = () => {
-        const modal = document.getElementById('dateModal');
-        const input = document.getElementById('jumpDateInput');
-        // Mevcut tarihi inputa ISO formatında (yyyy-mm-dd) set et
-        input.value = seciliTarih.toISOString().split('T')[0];
+        const modal = document.getElementById('statModal');
+        const grid = document.getElementById('calGrid');
+        const isoDate = seciliTarih.toISOString().split('T')[0];
+        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff; margin:0;">Tarihe Git</h3>`;
+        grid.innerHTML = `<input type="date" id="jumpDateInput" value="${isoDate}"><button class="add-btn" style="width:100%; background:var(--blue); margin-top:10px;" onclick="window.tariheGit()">GİT</button>`;
         modal.style.display = 'block';
     };
 
-    // YENİ: Seçilen Tarihe Git
     window.tariheGit = () => {
         const input = document.getElementById('jumpDateInput');
-        if (input.value) {
-            seciliTarih = new Date(input.value);
-            window.modalKapat('dateModal');
-            veriYukle();
-        }
+        if (input.value) { seciliTarih = new Date(input.value); closeModal(); veriYukle(); }
     };
 
-    window.modalKapat = (id) => { document.getElementById(id).style.display = 'none'; };
+    window.showGeneralReport = () => {
+        const modal = document.getElementById('statModal');
+        const grid = document.getElementById('calGrid');
+        
+        let selectors = `<div class="report-selector">`;
+        basliklar.forEach((b, i) => {
+            selectors += `<button class="sel-btn ${genRaporTipIdx === i ? 'active' : ''}" onclick="window.setGenRaporTip(${i})">${b}</button>`;
+        });
+        selectors += `</div>`;
 
-    // Mevcut İstatistik ve Diğer Fonksiyonlar (Aynı Kaldı)
+        document.getElementById('statTitle').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button>
+                <span>${raporTarih.toLocaleDateString('tr',{month:'long'})}</span>
+                <button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button>
+            </div>
+            ${selectors}`;
+
+        let th = `<table class="monthly-report-table"><tbody>`;
+        let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+        for (let d = 1; d <= son; d++) {
+            let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
+            let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
+            th += `<tr><td class="col-gun">${d}</td>`;
+            for (let i = 0; i < 5; i++) {
+                let dur = (v && v.vakitler[i]) ? (v.vakitler[i].durumlar[genRaporTipIdx] || 0) : 0;
+                th += `<td class="col-vakit s${dur}" onclick="window.gitTarih(${d})"></td>`;
+            }
+            th += `</tr>`;
+        }
+        grid.innerHTML = th + `</tbody></table>`;
+        modal.style.display = 'block';
+    };
+
+    window.setGenRaporTip = (idx) => { genRaporTipIdx = idx; window.showGeneralReport(); };
+
     window.showStats = (ad, tip, vIdx, bIdx = 0, id = '') => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
@@ -225,71 +253,34 @@
         modal.style.display = 'block';
     };
 
-    window.showGeneralReport = () => {
-        const modal = document.getElementById('statModal');
-        const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${raporTarih.toLocaleDateString('tr',{month:'long'})}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
-        let th = `<table class="monthly-report-table"><tbody>`;
-        let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        for (let d = 1; d <= son; d++) {
-            let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
-            let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
-            th += `<tr><td class="col-gun">${d}</td>`;
-            for (let i = 0; i < 5; i++) th += `<td class="col-vakit s${(v && v.vakitler[i]) ? (v.vakitler[i].durumlar[0] || 0) : 0}" onclick="window.gitTarih(${d})"></td>`;
-            th += `</tr>`;
-        }
-        grid.innerHTML = th + `</tbody></table>`;
-        modal.style.display = 'block';
-    };
-
     window.ayDegis = (n, ad, t, vi, bi, id) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showStats(ad, t, vi, bi, id); };
     window.yilDegis = (n) => { raporTarih.setFullYear(raporTarih.getFullYear()+n); window.showYearlyReport(); };
     window.ayRaporuDegis = (n) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showGeneralReport(); };
     window.gitTarih = (d) => { seciliTarih = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d); closeModal(); veriYukle(); };
     window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; raporTarih = new Date(); };
     window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); veriYukle(); };
-    
     window.degis = (i, s, t) => {
         if (t === 'ozel_renk') { let d = gunlukVeriler.ozeller[i].durum; gunlukVeriler.ozeller[i].durum = (d == 1) ? 3 : (d == 3) ? 0 : 1; }
         else { let d = gunlukVeriler.vakitler[i].durumlar[s]; if (s === 0) gunlukVeriler.vakitler[i].durumlar[s] = (d + 1) % 5; else gunlukVeriler.vakitler[i].durumlar[s] = (d == 1) ? 3 : (d == 3) ? 0 : 1; }
         render();
     };
-
     window.yeniEkle = () => { 
         const ad = document.getElementById('habInp').value; if(!ad) return; 
         let g = getGlobalOzeller(); g.push({ id: 'id' + Date.now(), ad, tip: confirm("Sayısal veri mi?") ? 'sayi' : 'renk', arsiv: false });
         saveGlobalOzeller(g); document.getElementById('habInp').value = ""; veriYukle(); 
     };
-
     window.silSecenekleri = (id) => { if(confirm("Arşivlensin mi?")) { let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) g[idx].arsiv = true; saveGlobalOzeller(g); veriYukle(); } };
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v; render(); };
-
     window.exportData = () => {
-        let all = {};
-        for(let i=0; i<localStorage.length; i++){
-            let key = localStorage.key(i);
-            if(key.startsWith('amel_')) all[key] = localStorage.getItem(key);
-        }
+        let all = {}; for(let i=0; i<localStorage.length; i++){ let key = localStorage.key(i); if(key.startsWith('amel_')) all[key] = localStorage.getItem(key); }
         let blob = new Blob([JSON.stringify(all)], {type: "application/json"});
-        let a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `amel_yedek_${new Date().toLocaleDateString()}.json`;
-        a.click();
+        let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `amel_yedek_${new Date().toLocaleDateString()}.json`; a.click();
     };
-
     window.importData = () => { document.getElementById('fileInp').click(); };
     window.processFile = (inp) => {
-        let fr = new FileReader();
-        fr.onload = () => {
-            let data = JSON.parse(fr.result);
-            if(confirm("Tüm veriler üzerine yazılsın mı?")) {
-                Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
-                location.reload();
-            }
-        };
+        let fr = new FileReader(); fr.onload = () => { let data = JSON.parse(fr.result); if(confirm("Tüm veriler üzerine yazılsın mı?")) { Object.keys(data).forEach(k => localStorage.setItem(k, data[k])); location.reload(); } };
         fr.readAsText(inp.files[0]);
     };
-
     veriYukle();
 </script>
 </body>
