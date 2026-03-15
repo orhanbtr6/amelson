@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.20.2</title>
+    <title>Amel Defteri V.20.3</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -49,7 +49,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.20.2</div>
+    <div class="main-title">Amel Defteri V.20.3</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -110,12 +110,10 @@
             gunlukVeriler = kaydedilmis;
             const aktifIdler = aktifListe.map(a => a.id);
             const aktifIsimler = aktifListe.map(a => a.ad);
-
             gunlukVeriler.ozeller = aktifListe.map(g => {
                 const eski = (kaydedilmis.ozeller || []).find(o => o.id === g.id || o.ad === g.ad);
                 return { ...g, durum: eski ? (eski.durum || 0) : 0 };
             });
-
             const digerleri = (kaydedilmis.ozeller || []).filter(o => !aktifIdler.includes(o.id) && !aktifIsimler.includes(o.ad));
             gunlukVeriler.eskiOzeller = digerleri; 
         } else {
@@ -134,7 +132,6 @@
             ozeller: [...(gunlukVeriler.ozeller || []), ...(gunlukVeriler.eskiOzeller || [])]
         };
         localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(kaydedilecek));
-
         document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
         document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : "";
         
@@ -156,6 +153,25 @@
         });
     }
 
+    window.showHelp = () => {
+        const modal = document.getElementById('statModal');
+        const grid = document.getElementById('calGrid');
+        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff; margin:0;">Rehber</h3>`;
+        grid.innerHTML = `<div style="padding:10px; font-size:12px; line-height:1.6; max-height:60vh; overflow-y:auto;">
+            <p><b>Farz Namazlar:</b><br>
+            🟢 Koyu Yeşil: Kılındı<br>
+            🟢 Açık Yeşil: Cemaatle Kılındı<br>
+            🟠 Turuncu: Kaza Edildi<br>
+            🔴 Kırmızı: Kazaya Kaldı</p>
+            <p><b>Sünnet / Tesbihat / Özel:</b><br>
+            🟢 Koyu Yeşil: Yapıldı / Tamam<br>
+            🔴 Kırmızı: Yapılmadı / Eksik<br>
+            ⚪ Boş: Veri girilmedi</p>
+            <p><b>İstatistikler:</b> Vakitlerin altındaki 'Farz/Sünnet' yazılarına veya özel amellerin isimlerine tıklayarak takvimi açabilirsiniz.</p>
+        </div>`;
+        modal.style.display = 'block';
+    }
+
     window.showStats = (ad, tip, vIdx, bIdx = 0, id = '') => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
@@ -170,10 +186,7 @@
                 if (tip === 'vakit') cls = "s" + (v.vakitler[vIdx].durumlar[bIdx] || 0);
                 else { 
                     let o = (v.ozeller || []).find(x => x.ad === ad || x.id === id); 
-                    if (o && o.durum > 0) { 
-                        cls = o.tip === 'sayi' ? 's2' : 's' + o.durum; 
-                        if(o.tip === 'sayi') val = `<b>${o.durum}</b>`; 
-                    } 
+                    if (o && o.durum > 0) { cls = o.tip === 'sayi' ? 's2' : 's' + o.durum; if(o.tip === 'sayi') val = `<b>${o.durum}</b>`; } 
                 }
             }
             gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})">${lab}${val}</div>`;
@@ -188,7 +201,6 @@
         let selectors = `<div class="report-selector">`;
         basliklar.forEach((b, i) => { selectors += `<button class="sel-btn ${genRaporTipIdx === i ? 'active' : ''}" onclick="window.setGenRaporTip(${i})">${b}</button>`; });
         selectors += `</div>`;
-        // YIL BİLGİSİ EKLENDİ
         const baslikTarih = raporTarih.toLocaleDateString('tr',{month:'long', year:'numeric'});
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${baslikTarih}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>${selectors}`;
         let th = `<table class="monthly-report-table"><tbody>`;
@@ -219,7 +231,7 @@
             for (let d = 1; d <= son; d++) {
                 let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d))));
                 if (!v) continue;
-                v.vakitler.forEach((vk) => { if (vk.durumlar[0] === 4 || vk.durumlar[0] === 3) { if(vk.durumlar[0] === 3) kazaSayilari[vk.ad]++; } });
+                v.vakitler.forEach((vk) => { if(vk.durumlar[0] === 3) kazaSayilari[vk.ad]++; });
                 if (v.ozeller) {
                     v.ozeller.forEach(vo => {
                         const globalListe = getGlobalOzeller();
@@ -254,14 +266,6 @@
         }
         render();
     };
-
-    window.showHelp = () => {
-        const modal = document.getElementById('statModal');
-        const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff; margin:0;">Bilgi</h3>`;
-        grid.innerHTML = `<div style="padding:10px; font-size:12px; line-height:1.6;">Vakitlerin altındaki 'Farz/Sünnet/Tesbihat' yazılarına veya özel amellerin isimlerine tıklayarak o amelin aylık detaylı takvimine ulaşabilirsiniz.</div>`;
-        modal.style.display = 'block';
-    }
 
     window.tarihSeciciAc = () => {
         const modal = document.getElementById('statModal');
