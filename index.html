@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.21.6</title>
+    <title>Amel Defteri V.21.7</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -22,11 +22,10 @@
         
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; }
         
-        /* Dinamik Renklenen Kutucuklar */
         .vakit-isim-box { padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 100px; text-align: center; transition: background 0.3s ease; }
         .box-default { background: rgba(127, 187, 255, 0.15); }
-        .box-success { background: rgba(144, 238, 144, 0.25); border-color: rgba(144, 238, 144, 0.4); } /* Soft Yeşil */
-        .box-danger { background: rgba(231, 76, 60, 0.25); border-color: rgba(231, 76, 60, 0.4); }  /* Soft Kırmızı */
+        .box-success { background: rgba(144, 238, 144, 0.25); border-color: rgba(144, 238, 144, 0.4); }
+        .box-danger { background: rgba(231, 76, 60, 0.25); border-color: rgba(231, 76, 60, 0.4); }
         
         .vakit-ad { font-weight: bold; color: #fff; font-size: 0.75rem; }
         .circles-row { display: flex; gap: 15px; margin-left: 20px; align-items: center; }
@@ -52,6 +51,9 @@
         .monthly-report-table { width: 100% !important; margin: 0 auto; table-layout: fixed; border-collapse: separate; border-spacing: 1px 1.5px; }
         .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; padding: 0; }
         .col-vakit { height: 11px; border-radius: 2px; cursor: pointer; }
+        .report-selector { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
+        .sel-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #ccc; padding: 5px 10px; border-radius: 8px; font-size: 10px; cursor: pointer; }
+        .sel-btn.active { background: var(--blue); color: white; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; position: relative; }
         .cal-box b { font-size: 11px; color: #000; }
@@ -61,7 +63,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.21.6</div>
+    <div class="main-title">Amel Defteri V.21.7</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -143,16 +145,10 @@
         const vDiv = document.getElementById('vakitList');
         vDiv.innerHTML = '';
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
-            // Renk Mantığı
             let boxClass = "box-default";
-            const farz = v.durumlar[0];
-            const sunnet = v.durumlar[1];
-            const tesbih = v.durumlar[2];
-
-            if (farz === 3) boxClass = "box-danger"; // Farz kırmızı ise kutu kırmızı
-            else if ((farz === 1 || farz === 2 || farz === 4) && (sunnet === 1 || sunnet === 2) && (tesbih === 1 || tesbih === 2)) {
-                boxClass = "box-success"; // Hepsi yapıldıysa yeşil
-            }
+            const farz = v.durumlar[0], sunnet = v.durumlar[1], tesbih = v.durumlar[2];
+            if (farz === 3) boxClass = "box-danger";
+            else if ((farz === 1 || farz === 2 || farz === 4) && (sunnet === 1 || sunnet === 2) && (tesbih === 1 || tesbih === 2)) boxClass = "box-success";
 
             let row = `<div class="habit-card">
                 <div class="vakit-isim-box ${boxClass}"><span class="vakit-ad">${v.ad}</span></div>
@@ -174,8 +170,57 @@
         });
     }
 
-    window.tarihSec = (val) => { if(val) { seciliTarih = new Date(val); veriYukle(); } };
+    // --- ESKİ DETAYLI BİLGİ/REHBER BÖLÜMÜ ---
+    window.showHelp = () => {
+        const modal = document.getElementById('statModal');
+        const grid = document.getElementById('calGrid');
+        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff; margin:0; padding-right:20px;">Rehber</h3>`;
+        grid.innerHTML = `<div style="padding:10px; font-size:12px; line-height:1.6; max-height:60vh; overflow-y:auto;">
+            <p><b>NAMAZ İSİMLERİ:</b><br>
+            <span style="color:#90ee90">■</span> Hepsi yeşilse kutucuk <b>Soft Yeşil</b> olur.<br>
+            <span style="color:#e74c3c">■</span> Farz kırmızıysa kutucuk <b>Soft Kırmızı</b> olur.</p>
+            
+            <p><b>FARZ NAMAZLAR:</b><br>
+            <span class="circle s1" style="width:12px; height:12px; display:inline-block;"></span> <b>Koyu Yeşil:</b> Vaktinde kılındı.<br>
+            <span class="circle s2" style="width:12px; height:12px; display:inline-block;"></span> <b>Açık Yeşil:</b> Cemaatle kılındı.<br>
+            <span class="circle s4" style="width:12px; height:12px; display:inline-block;"></span> <b>Turuncu:</b> Kaza edildi.<br>
+            <span class="circle s3" style="width:12px; height:12px; display:inline-block;"></span> <b>Kırmızı:</b> Kazaya kaldı.</p>
+            
+            <p><b>SÜNNET VE TESBİHAT:</b><br>
+            <span class="circle s1" style="width:12px; height:12px; display:inline-block;"></span> <b>Koyu Yeşil:</b> Yapıldı / Kılındı.<br>
+            <span class="circle s2" style="width:12px; height:12px; display:inline-block;"></span> <b>Açık Yeşil:</b> Geniş/Uzun yapıldı.<br>
+            <span class="circle s3" style="width:12px; height:12px; display:inline-block;"></span> <b>Kırmızı:</b> Yapılmadı.</p>
 
+            <p><b>DİĞER:</b><br>İsimlere tıklayarak o amelin geçmiş istatistiklerini görebilirsiniz. Arşivlenen ameller yıllık özet bölümünde toplam puan/gün olarak görünmeye devam eder.</p>
+        </div>`;
+        modal.style.display = 'block';
+    };
+
+    // --- ESKİ DETAYLI GENEL/AYLIK RAPOR ---
+    window.showGeneralReport = () => {
+        const modal = document.getElementById('statModal');
+        const grid = document.getElementById('calGrid');
+        let selectors = `<div class="report-selector">`;
+        ["Farz", "Sünnet", "Tesbihat"].forEach((b, i) => { selectors += `<button class="sel-btn ${genRaporTipIdx === i ? 'active' : ''}" onclick="window.setGenRaporTip(${i})">${b}</button>`; });
+        selectors += `</div>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>Aylık Rapor</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>${selectors}`;
+        let th = `<table class="monthly-report-table"><thead><tr><th class="col-gun"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
+        let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+        for (let d = 1; d <= son; d++) {
+            let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
+            let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
+            th += `<tr><td class="col-gun">${d}</td>`;
+            for (let i = 0; i < 5; i++) {
+                let dur = (v && v.vakitler[i]) ? (v.vakitler[i].durumlar[genRaporTipIdx] || 0) : 0;
+                th += `<td class="col-vakit s${dur}" onclick="window.gitTarih(${d})"></td>`;
+            }
+            th += `</tr>`;
+        }
+        grid.innerHTML = th + `</tbody></table>`;
+        modal.style.display = 'block';
+    };
+
+    window.tarihSec = (val) => { if(val) { seciliTarih = new Date(val); veriYukle(); } };
     window.degis = (i, s, t) => {
         if (t === 'ozel_renk') gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum + 1) % 5;
         else {
@@ -186,20 +231,6 @@
             gunlukVeriler.vakitler[i].durumlar[s] = d;
         }
         render();
-    };
-
-    window.showHelp = () => {
-        const modal = document.getElementById('statModal');
-        const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff; margin:0; padding-right:20px;">Rehber</h3>`;
-        grid.innerHTML = `<div style="padding:10px; font-size:12px; line-height:1.6; max-height:60vh; overflow-y:auto;">
-            <p><b>NAMAZ İSİMLERİ:</b><br>
-            <span style="color:#90ee90">■</span> Hepsi yeşilse kutucuk <b>Soft Yeşil</b> olur.<br>
-            <span style="color:#e74c3c">■</span> Farz kırmızıysa kutucuk <b>Soft Kırmızı</b> olur.</p>
-            <p><b>FARZ NAMAZLAR:</b><br>
-            <span class="circle s1" style="width:12px; height:12px; display:inline-block;"></span> <b>Koyu Yeşil:</b> Vaktinde / <span class="circle s2" style="width:12px; height:12px; display:inline-block;"></span> <b>Açık Yeşil:</b> Cemaat / <span class="circle s4" style="width:12px; height:12px; display:inline-block;"></span> <b>Turuncu:</b> Kaza / <span class="circle s3" style="width:12px; height:12px; display:inline-block;"></span> <b>Kırmızı:</b> Kazaya Kaldı.</p>
-        </div>`;
-        modal.style.display = 'block';
     };
 
     window.showYearlyReport = () => {
@@ -255,29 +286,6 @@
             gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})">${lab}${val}</div>`;
         }
         grid.innerHTML = gridHtml + `</div>`;
-        modal.style.display = 'block';
-    };
-
-    window.showGeneralReport = () => {
-        const modal = document.getElementById('statModal');
-        const grid = document.getElementById('calGrid');
-        let selectors = `<div class="report-selector">`;
-        ["Farz", "Sünnet", "Tesbihat"].forEach((b, i) => { selectors += `<button class="sel-btn ${genRaporTipIdx === i ? 'active' : ''}" onclick="window.setGenRaporTip(${i})">${b}</button>`; });
-        selectors += `</div>`;
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>Aylık Rapor</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>${selectors}`;
-        let th = `<table class="monthly-report-table"><thead><tr><th class="col-gun"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
-        let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        for (let d = 1; d <= son; d++) {
-            let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
-            let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
-            th += `<tr><td class="col-gun">${d}</td>`;
-            for (let i = 0; i < 5; i++) {
-                let dur = (v && v.vakitler[i]) ? (v.vakitler[i].durumlar[genRaporTipIdx] || 0) : 0;
-                th += `<td class="col-vakit s${dur}" onclick="window.gitTarih(${d})"></td>`;
-            }
-            th += `</tr>`;
-        }
-        grid.innerHTML = th + `</tbody></table>`;
         modal.style.display = 'block';
     };
 
