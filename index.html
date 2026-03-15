@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.21.2</title>
+    <title>Amel Defteri V.21.3</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -20,10 +20,31 @@
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; }
         .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
         
-        .habit-card { background: var(--card); border-radius: 12px; padding: 3px 12px 5px 12px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.08); }
-        .vakit-ad { font-weight: bold; margin-bottom: 2px; display: block; color: #7fbbff; font-size: 0.75rem; }
-        .circles-row { display: flex; gap: 10px; justify-content: flex-start; }
-        .circle { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; flex-shrink: 0; }
+        /* YENİ YATAY YERLEŞİM */
+        .habit-card { 
+            background: var(--card); 
+            border-radius: 12px; 
+            padding: 8px 12px; 
+            margin-bottom: 4px; 
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .vakit-ad { 
+            font-weight: bold; 
+            color: #7fbbff; 
+            font-size: 0.85rem; 
+            flex: 1; /* İsmi sola yaslar, alanı doldurur */
+            text-align: left;
+        }
+        .circles-row { 
+            display: flex; 
+            gap: 12px; 
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; flex-shrink: 0; }
         .help-circle { width: 18px; height: 18px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 8px; border: 1px solid rgba(255,255,255,0.3); }
         
         .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
@@ -55,7 +76,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.21.2</div>
+    <div class="main-title">Amel Defteri V.21.3</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -97,8 +118,8 @@
 </div>
 
 <script>
-    const vakitler = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
-    const basliklar = ["Farz", "Sünnet", "Tesbihat"];
+    const vakitler = ["Sabah Namazı", "Öğle Namazı", "İkindi Namazı", "Akşam Namazı", "Yatsı Namazı"];
+    const basliklar = ["F", "S", "T"]; // Baş harflerle alan kazandık
     let seciliTarih = new Date();
     let raporTarih = new Date();
     let gunlukVeriler = {};
@@ -114,6 +135,8 @@
         const globalListe = getGlobalOzeller();
         if (kaydedilmis) {
             gunlukVeriler = kaydedilmis;
+            // Vakit isimlerini güncellemek gerekirse (eski verilerde 'Sabah' kalmış olabilir)
+            gunlukVeriler.vakitler.forEach((v, i) => v.ad = vakitler[i]);
             const kaydedilmisIdler = (kaydedilmis.ozeller || []).map(o => o.id);
             globalListe.filter(g => !g.arsiv && !kaydedilmisIdler.includes(g.id)).forEach(g => {
                 gunlukVeriler.ozeller.push({ ...g, durum: 0 });
@@ -139,7 +162,9 @@
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
             let row = `<div class="habit-card"><span class="vakit-ad">${v.ad}</span><div class="circles-row">`;
             basliklar.forEach((b, bIdx) => {
-                row += `<div style="text-align:center"><div class="circle s${v.durumlar[bIdx]}" onclick="window.degis(${vIdx}, ${bIdx}, 'vakit')"></div><span style="font-size:9px; opacity:0.7; cursor:pointer;" onclick="window.showStats('${v.ad} ${b}', 'vakit', ${vIdx}, ${bIdx})">${b}</span></div>`;
+                // b: Farz, Sünnet, Tesbihat başlıklarını temsil eder
+                let tamAd = b === "F" ? "Farz" : (b === "S" ? "Sünnet" : "Tesbihat");
+                row += `<div style="text-align:center"><div class="circle s${v.durumlar[bIdx]}" onclick="window.degis(${vIdx}, ${bIdx}, 'vakit')"></div><span style="font-size:9px; opacity:0.7; cursor:pointer;" onclick="window.showStats('${v.ad} ${tamAd}', 'vakit', ${vIdx}, ${bIdx})">${b}</span></div>`;
             });
             vDiv.innerHTML += row + `</div></div>`;
         });
@@ -163,9 +188,9 @@
         const grid = document.getElementById('calGrid');
         document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff; margin:0; padding-right:20px;">Rehber</h3>`;
         grid.innerHTML = `<div style="padding:10px; font-size:12px; line-height:1.6; max-height:60vh; overflow-y:auto;">
-            <p><b>Farz Namazlar:</b><br><span class="help-circle s1"></span> Koyu Yeşil: Kılındı<br><span class="help-circle s2"></span> Açık Yeşil: Cemaatle Kılındı<br><span class="help-circle s4"></span> Turuncu: Kaza Edildi<br><span class="help-circle s3"></span> Kırmızı: Kazaya Kaldı</p>
-            <p><b>Sünnet:</b><br><span class="help-circle s1"></span> Koyu Yeşil: Yapıldı<br><span class="help-circle s3"></span> Kırmızı: Yapılmadı</p>
-            <p><b>Tesbihat / Özel:</b><br><span class="help-circle s1"></span> Koyu Yeşil: Yapıldı<br><span class="help-circle s2"></span> Açık Yeşil: Geniş Tesbihat<br><span class="help-circle s3"></span> Kırmızı: Yapılmadı<br><span class="help-circle s0"></span> Boş: Veri girilmedi</p>
+            <p><b>F - Farz Namazlar:</b><br><span class="help-circle s1"></span> Koyu Yeşil: Kılındı<br><span class="help-circle s2"></span> Açık Yeşil: Cemaatle Kılındı<br><span class="help-circle s4"></span> Turuncu: Kaza Edildi<br><span class="help-circle s3"></span> Kırmızı: Kazaya Kaldı</p>
+            <p><b>S - Sünnet:</b><br><span class="help-circle s1"></span> Koyu Yeşil: Yapıldı<br><span class="help-circle s3"></span> Kırmızı: Yapılmadı</p>
+            <p><b>T - Tesbihat / Özel:</b><br><span class="help-circle s1"></span> Koyu Yeşil: Yapıldı<br><span class="help-circle s2"></span> Açık Yeşil: Geniş Tesbihat<br><span class="help-circle s3"></span> Kırmızı: Yapılmadı<br><span class="help-circle s0"></span> Boş: Veri girilmedi</p>
         </div>`;
         modal.style.display = 'block';
     }
@@ -194,7 +219,7 @@
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         let selectors = `<div class="report-selector">`;
-        basliklar.forEach((b, i) => { selectors += `<button class="sel-btn ${genRaporTipIdx === i ? 'active' : ''}" onclick="window.setGenRaporTip(${i})">${b}</button>`; });
+        ["Farz", "Sünnet", "Tesbihat"].forEach((b, i) => { selectors += `<button class="sel-btn ${genRaporTipIdx === i ? 'active' : ''}" onclick="window.setGenRaporTip(${i})">${b}</button>`; });
         selectors += `</div>`;
         const baslikTarih = raporTarih.toLocaleDateString('tr',{month:'long', year:'numeric'});
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${baslikTarih}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>${selectors}`;
@@ -219,7 +244,7 @@
         const grid = document.getElementById('calGrid');
         const yil = raporTarih.getFullYear();
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b>${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
-        let kazaSayilari = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
+        let kazaSayilari = { "Sabah Namazı": 0, "Öğle Namazı": 0, "İkindi Namazı": 0, "Akşam Namazı": 0, "Yatsı Namazı": 0 };
         let arsivAmeller = {};
         for (let m = 0; m < 12; m++) {
             let son = new Date(yil, m + 1, 0).getDate();
