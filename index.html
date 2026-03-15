@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.21.7</title>
+    <title>Amel Defteri V.21.8</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -63,7 +63,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.21.7</div>
+    <div class="main-title">Amel Defteri V.21.8</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -170,7 +170,6 @@
         });
     }
 
-    // --- ESKİ DETAYLI BİLGİ/REHBER BÖLÜMÜ ---
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
@@ -179,31 +178,28 @@
             <p><b>NAMAZ İSİMLERİ:</b><br>
             <span style="color:#90ee90">■</span> Hepsi yeşilse kutucuk <b>Soft Yeşil</b> olur.<br>
             <span style="color:#e74c3c">■</span> Farz kırmızıysa kutucuk <b>Soft Kırmızı</b> olur.</p>
-            
             <p><b>FARZ NAMAZLAR:</b><br>
             <span class="circle s1" style="width:12px; height:12px; display:inline-block;"></span> <b>Koyu Yeşil:</b> Vaktinde kılındı.<br>
             <span class="circle s2" style="width:12px; height:12px; display:inline-block;"></span> <b>Açık Yeşil:</b> Cemaatle kılındı.<br>
             <span class="circle s4" style="width:12px; height:12px; display:inline-block;"></span> <b>Turuncu:</b> Kaza edildi.<br>
             <span class="circle s3" style="width:12px; height:12px; display:inline-block;"></span> <b>Kırmızı:</b> Kazaya kaldı.</p>
-            
             <p><b>SÜNNET VE TESBİHAT:</b><br>
             <span class="circle s1" style="width:12px; height:12px; display:inline-block;"></span> <b>Koyu Yeşil:</b> Yapıldı / Kılındı.<br>
             <span class="circle s2" style="width:12px; height:12px; display:inline-block;"></span> <b>Açık Yeşil:</b> Geniş/Uzun yapıldı.<br>
             <span class="circle s3" style="width:12px; height:12px; display:inline-block;"></span> <b>Kırmızı:</b> Yapılmadı.</p>
-
-            <p><b>DİĞER:</b><br>İsimlere tıklayarak o amelin geçmiş istatistiklerini görebilirsiniz. Arşivlenen ameller yıllık özet bölümünde toplam puan/gün olarak görünmeye devam eder.</p>
+            <p><b>DİĞER:</b><br>İsimlere tıklayarak o amelin geçmiş istatistiklerini görebilirsiniz.</p>
         </div>`;
         modal.style.display = 'block';
     };
 
-    // --- ESKİ DETAYLI GENEL/AYLIK RAPOR ---
     window.showGeneralReport = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
+        const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         let selectors = `<div class="report-selector">`;
         ["Farz", "Sünnet", "Tesbihat"].forEach((b, i) => { selectors += `<button class="sel-btn ${genRaporTipIdx === i ? 'active' : ''}" onclick="window.setGenRaporTip(${i})">${b}</button>`; });
         selectors += `</div>`;
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>Aylık Rapor</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>${selectors}`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span style="font-size:14px;">Aylık Rapor (${ayYilStr})</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>${selectors}`;
         let th = `<table class="monthly-report-table"><thead><tr><th class="col-gun"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
@@ -217,6 +213,34 @@
             th += `</tr>`;
         }
         grid.innerHTML = th + `</tbody></table>`;
+        modal.style.display = 'block';
+    };
+
+    window.showStats = (ad, tip, vIdx, bIdx = 0, id = '') => {
+        const modal = document.getElementById('statModal');
+        const grid = document.getElementById('calGrid');
+        const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; margin-bottom:10px; padding-right:25px;">
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                <button class="nav-btn" onclick="window.ayDegis(-1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❮</button>
+                <span>${ad}</span>
+                <button class="nav-btn" onclick="window.ayDegis(1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❯</button>
+            </div>
+            <div style="font-size:12px; color:var(--blue); margin-top:5px; font-weight:bold;">${ayYilStr}</div>
+        </div>`;
+        let gridHtml = `<div class="calendar-grid">`;
+        let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+        for (let d = 1; d <= son; d++) {
+            let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
+            let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
+            let val = "", cls = "s0", lab = `<small>${d}</small>`;
+            if (v) {
+                if (tip === 'vakit') cls = "s" + (v.vakitler[vIdx].durumlar[bIdx] || 0);
+                else { let o = (v.ozeller || []).find(x => x.id === id || x.ad === ad); if (o && (o.durum > 0 || o.durum !== "")) { cls = o.tip === 'sayi' ? 's2' : 's' + o.durum; if(o.tip === 'sayi') val = `<b>${o.durum}</b>`; } }
+            }
+            gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})">${lab}${val}</div>`;
+        }
+        grid.innerHTML = gridHtml + `</div>`;
         modal.style.display = 'block';
     };
 
@@ -266,26 +290,6 @@
         if (keys.length === 0) h += `<tr><td colspan="2" style="text-align:center; opacity:0.5; padding:10px;">Veri yok.</td></tr>`;
         else keys.sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right; font-weight:bold;">${arsivAmeller[k].toplam}${arsivAmeller[k].tip === 'sayi' ? '' : ' Gün'}</td></tr>`; });
         grid.innerHTML = h + `</tbody></table></div>`;
-        modal.style.display = 'block';
-    };
-
-    window.showStats = (ad, tip, vIdx, bIdx = 0, id = '') => {
-        const modal = document.getElementById('statModal');
-        const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span>${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div>`;
-        let gridHtml = `<div class="calendar-grid">`;
-        let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        for (let d = 1; d <= son; d++) {
-            let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
-            let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
-            let val = "", cls = "s0", lab = `<small>${d}</small>`;
-            if (v) {
-                if (tip === 'vakit') cls = "s" + (v.vakitler[vIdx].durumlar[bIdx] || 0);
-                else { let o = (v.ozeller || []).find(x => x.id === id || x.ad === ad); if (o && (o.durum > 0 || o.durum !== "")) { cls = o.tip === 'sayi' ? 's2' : 's' + o.durum; if(o.tip === 'sayi') val = `<b>${o.durum}</b>`; } }
-            }
-            gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})">${lab}${val}</div>`;
-        }
-        grid.innerHTML = gridHtml + `</div>`;
         modal.style.display = 'block';
     };
 
