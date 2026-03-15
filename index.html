@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.20.9</title>
+    <title>Amel Defteri V.21.0</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -14,45 +14,48 @@
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .main-title { text-align: center; font-size: 18px; font-weight: bold; color: #7fbbff; margin-bottom: 10px; text-transform: uppercase; }
         .container { width: 100%; max-width: 500px; margin: auto; padding-bottom: 150px; }
-        .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 10px; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 8px; }
         .date-nav { display: flex; align-items: center; gap: 8px; }
         .date-display-box { text-align: center; cursor: pointer; padding: 5px 10px; border-radius: 10px; }
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; }
         .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        .habit-card { background: var(--card); border-radius: 15px; padding: 8px 12px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.1); }
-        .vakit-ad { font-weight: bold; margin-bottom: 5px; display: block; color: #7fbbff; font-size: 0.85rem; }
+        
+        /* ANA EKRAN VAKİT KUTULARI DARALTMA */
+        .habit-card { background: var(--card); border-radius: 12px; padding: 5px 12px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.08); }
+        .vakit-ad { font-weight: bold; margin-bottom: 3px; display: block; color: #7fbbff; font-size: 0.8rem; }
         .circles-row { display: flex; gap: 10px; justify-content: flex-start; }
-        .circle { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; flex-shrink: 0; }
+        .circle { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; flex-shrink: 0; }
+        
         .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; overflow-y: auto; padding-top: 20px; }
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 95%; max-width: 380px; border-radius: 15px; border: 1px solid var(--blue); box-sizing: border-box; position: relative; }
         .close-x { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 10; }
+        
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #051a26; padding: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
+        .footer-row { display: flex; gap: 8px; width: 100%; }
+        input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
+        .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .backup-btn { background: rgba(255,255,255,0.1); color: #ccc; border: none; padding: 6px 12px; border-radius: 10px; font-size: 11px; cursor: pointer; flex: 1; }
+        .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 5px; }
+        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 4px; border: 1px solid rgba(255,255,255,0.1); text-align: center; min-height: 85px; display: flex; flex-direction: column; justify-content: space-between;}
+        
+        /* GENEL RAPOR SATIR ARALIĞI (1 MM ARTIŞ) */
+        .monthly-report-table { width: 100% !important; margin: 0 auto; table-layout: fixed; border-collapse: separate; border-spacing: 1px 1px; }
+        .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; padding: 0; line-height: 14px; }
+        .col-vakit { height: 14px; border-radius: 2px; cursor: pointer; }
+        .report-selector { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
+        .sel-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #ccc; padding: 5px 10px; border-radius: 8px; font-size: 10px; cursor: pointer; }
+        .sel-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; position: relative; }
         .cal-box b { font-size: 11px; color: #000; }
         .cal-box small { font-size: 7px; opacity: 0.5; position: absolute; top: 2px; left: 2px; color: #fff; }
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #051a26; padding: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
-        .footer-row { display: flex; gap: 8px; width: 100%; }
-        input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
-        input[type="date"] { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; font-size: 16px; margin: 10px 0; outline: none; }
-        .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-        .backup-btn { background: rgba(255,255,255,0.1); color: #ccc; border: none; padding: 6px 12px; border-radius: 10px; font-size: 11px; cursor: pointer; flex: 1; }
-        .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; }
-        .ozel-card { background: var(--card); border-radius: 12px; padding: 10px 5px; border: 1px solid rgba(255,255,255,0.1); text-align: center; min-height: 90px; display: flex; flex-direction: column; justify-content: space-between;}
-        
-        /* GENEL RAPOR MAKSİMUM DARALTMA */
-        .monthly-report-table { width: 100% !important; margin: 0 auto; table-layout: fixed; border-collapse: separate; border-spacing: 1px 0px; }
-        .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; padding: 0; line-height: 11px; }
-        .col-vakit { height: 11px; border-radius: 2px; cursor: pointer; }
-        .report-selector { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
-        .sel-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #ccc; padding: 5px 10px; border-radius: 8px; font-size: 10px; cursor: pointer; }
-        .sel-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.20.9</div>
+    <div class="main-title">Amel Defteri V.21.0</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
