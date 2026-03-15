@@ -5,17 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.19.7</title>
+    <title>Amel Defteri V.19.8</title>
     
     <link rel="manifest" href="manifest.json">
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js');
-            });
-        }
-    </script>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
@@ -64,7 +57,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.19.7</div>
+    <div class="main-title">Amel Defteri V.19.8</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -206,38 +199,59 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b>${yil} ÖZET RAPORU</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button>
             </div>`;
-        let kazaSayıları = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
+        
+        let kazaSayilari = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
         let arsivAmeller = {};
+
         for (let m = 0; m < 12; m++) {
             let son = new Date(yil, m + 1, 0).getDate();
             for (let d = 1; d <= son; d++) {
-                let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d))));
+                let key = getLocalKey(new Date(yil, m, d));
+                let v = JSON.parse(localStorage.getItem(key));
                 if (!v) continue;
-                v.vakitler.forEach((vk) => { if (vk.durumlar[0] === 3) kazaSayıları[vk.ad]++; });
+
+                // 1. Kazaya Kalan Farzlar
+                v.vakitler.forEach((vk) => {
+                    if (vk.durumlar[0] === 3) kazaSayilari[vk.ad]++;
+                });
+
+                // 2. Arşivlenmiş Özel Amellerin Hesaplanması
                 if (v.ozeller) {
                     v.ozeller.forEach(vo => {
                         const globalListe = getGlobalOzeller();
-                        const isArsiv = globalListe.find(g => g.id === vo.id && g.arsiv);
-                        if (isArsiv) {
-                            if (!arsivAmeller[vo.ad]) arsivAmeller[vo.ad] = { t: 0, tip: vo.tip };
-                            arsivAmeller[vo.ad].t += (vo.tip === 'sayi' ? parseFloat(vo.durum || 0) : (vo.durum > 0 ? 1 : 0));
+                        const gItem = globalListe.find(g => g.id === vo.id);
+                        if (gItem && gItem.arsiv) {
+                            if (!arsivAmeller[vo.ad]) arsivAmeller[vo.ad] = { toplam: 0, tip: vo.tip };
+                            if (vo.tip === 'sayi') {
+                                arsivAmeller[vo.ad].toplam += parseFloat(vo.durum || 0);
+                            } else {
+                                if (vo.durum > 0) arsivAmeller[vo.ad].toplam += 1;
+                            }
                         }
                     });
                 }
             }
         }
+
         let h = `<div style="max-height:65vh; overflow-y:auto; padding:5px;">
             <table style="width:100%; border-collapse: collapse; font-size:12px; margin-bottom:15px;">
                 <thead><tr style="background:rgba(255,255,255,0.1); color:var(--red);"><th style="padding:8px; text-align:left; border-bottom:2px solid var(--red);">KAZA NAMAZLARI</th><th style="padding:8px; text-align:right; border-bottom:2px solid var(--red);">TOPLAM</th></tr></thead>
                 <tbody>`;
-        Object.keys(kazaSayıları).forEach(v => { h += `<tr><td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.05);">${v}</td><td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); text-align:right; font-weight:bold;">${kazaSayıları[v]}</td></tr>`; });
+        Object.keys(kazaSayilari).forEach(v => {
+            h += `<tr><td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.05);">${v}</td><td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); text-align:right; font-weight:bold;">${kazaSayilari[v]}</td></tr>`;
+        });
         h += `</tbody></table>
             <table style="width:100%; border-collapse: collapse; font-size:12px;">
-                <thead><tr style="background:rgba(255,255,255,0.1); color:var(--blue);"><th style="padding:8px; text-align:left; border-bottom:2px solid var(--blue);">ARŞİVLENEN AMELLEER</th><th style="padding:8px; text-align:right; border-bottom:2px solid var(--blue);">TOPLAM</th></tr></thead>
+                <thead><tr style="background:rgba(255,255,255,0.1); color:var(--blue);"><th style="padding:8px; text-align:left; border-bottom:2px solid var(--blue);">ARŞİVLENEN AMELLEER</th><th style="padding:8px; text-align:right; border-bottom:2px solid var(--blue);">SONUÇ</th></tr></thead>
                 <tbody>`;
         const arsivKeys = Object.keys(arsivAmeller);
-        if (arsivKeys.length === 0) h += `<tr><td colspan="2" style="padding:20px; text-align:center; opacity:0.5;">Arşivlenmiş amel bulunamadı.</td></tr>`;
-        else arsivKeys.sort().forEach(k => { h += `<tr><td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.05);">${k}</td><td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); text-align:right; font-weight:bold;">${arsivAmeller[k].t} ${arsivAmeller[k].tip === 'sayi' ? '' : 'Gün'}</td></tr>`; });
+        if (arsivKeys.length === 0) h += `<tr><td colspan="2" style="padding:20px; text-align:center; opacity:0.5;">Arşivlenmiş veri bulunamadı.</td></tr>`;
+        else {
+            arsivKeys.sort().forEach(k => {
+                let birim = arsivAmeller[k].tip === 'sayi' ? "" : " Gün";
+                h += `<tr><td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.05);">${k}</td><td style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); text-align:right; font-weight:bold;">${arsivAmeller[k].toplam}${birim}</td></tr>`;
+            });
+        }
         h += `</tbody></table></div>`;
         grid.innerHTML = h; modal.style.display = 'block';
     };
