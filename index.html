@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.20.3</title>
+    <title>Amel Defteri V.20.4</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -38,9 +38,10 @@
         .backup-btn { background: rgba(255,255,255,0.1); color: #ccc; border: none; padding: 6px 12px; border-radius: 10px; font-size: 11px; cursor: pointer; flex: 1; }
         .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; }
         .ozel-card { background: var(--card); border-radius: 12px; padding: 10px 5px; border: 1px solid rgba(255,255,255,0.1); text-align: center; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between;}
-        .monthly-report-table { width: 100% !important; table-layout: fixed; border-collapse: separate; border-spacing: 2px; }
-        .col-gun { width: 30px; text-align: right; font-size: 10px; opacity: 0.5; }
-        .col-vakit { height: 18px; border-radius: 3px; cursor: pointer; }
+        /* GENEL RAPOR ORTALAMA */
+        .monthly-report-table { width: 100% !important; margin: 0 auto; table-layout: fixed; border-collapse: separate; border-spacing: 2px; }
+        .col-gun { width: 30px; text-align: center; font-size: 10px; opacity: 0.5; }
+        .col-vakit { height: 20px; border-radius: 4px; cursor: pointer; }
         .report-selector { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
         .sel-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #ccc; padding: 5px 10px; border-radius: 8px; font-size: 10px; cursor: pointer; }
         .sel-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
@@ -49,7 +50,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.20.3</div>
+    <div class="main-title">Amel Defteri V.20.4</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -104,18 +105,27 @@
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
-        const aktifListe = getGlobalOzeller().filter(g => !g.arsiv);
+        const globalListe = getGlobalOzeller();
+        const aktifListe = globalListe.filter(g => !g.arsiv);
         
         if (kaydedilmis) {
             gunlukVeriler = kaydedilmis;
             const aktifIdler = aktifListe.map(a => a.id);
             const aktifIsimler = aktifListe.map(a => a.ad);
+
+            // KRİTİK: Şu an aktif olanları hazırla
             gunlukVeriler.ozeller = aktifListe.map(g => {
                 const eski = (kaydedilmis.ozeller || []).find(o => o.id === g.id || o.ad === g.ad);
                 return { ...g, durum: eski ? (eski.durum || 0) : 0 };
             });
-            const digerleri = (kaydedilmis.ozeller || []).filter(o => !aktifIdler.includes(o.id) && !aktifIsimler.includes(o.ad));
-            gunlukVeriler.eskiOzeller = digerleri; 
+
+            // KRİTİK: O günün verisi içinde olup şu an arşivde olanları kurtar (Silinmeyi önler)
+            const arsivdekiler = globalListe.filter(g => g.arsiv);
+            const kurtarilanlar = (kaydedilmis.ozeller || []).filter(o => 
+                !aktifIdler.includes(o.id) && !aktifIsimler.includes(o.ad) && 
+                (arsivdekiler.some(a => a.id === o.id || a.ad === o.ad))
+            );
+            gunlukVeriler.eskiOzeller = kurtarilanlar; 
         } else {
             gunlukVeriler = { 
                 vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
@@ -167,7 +177,7 @@
             🟢 Koyu Yeşil: Yapıldı / Tamam<br>
             🔴 Kırmızı: Yapılmadı / Eksik<br>
             ⚪ Boş: Veri girilmedi</p>
-            <p><b>İstatistikler:</b> Vakitlerin altındaki 'Farz/Sünnet' yazılarına veya özel amellerin isimlerine tıklayarak takvimi açabilirsiniz.</p>
+            <p><b>İstatistikler:</b> Vakitlerin altındaki 'Farz/Sünnet/Tesbihat' yazılarına tıklayarak aylık takvimi görebilirsiniz.</p>
         </div>`;
         modal.style.display = 'block';
     }
@@ -235,8 +245,8 @@
                 if (v.ozeller) {
                     v.ozeller.forEach(vo => {
                         const globalListe = getGlobalOzeller();
-                        const isArsiv = globalListe.some(g => g.ad === vo.ad && g.arsiv);
-                        if (isArsiv) {
+                        const arsivdenBul = globalListe.find(g => (g.ad === vo.ad || g.id === vo.id) && g.arsiv);
+                        if (arsivdenBul) {
                             if (!arsivAmeller[vo.ad]) arsivAmeller[vo.ad] = { toplam: 0, tip: vo.tip };
                             if (vo.tip === 'sayi') arsivAmeller[vo.ad].toplam += parseFloat(vo.durum || 0);
                             else if (vo.durum > 0) arsivAmeller[vo.ad].toplam += 1;
