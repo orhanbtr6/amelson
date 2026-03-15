@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.20.7</title>
+    <title>Amel Defteri V.20.8</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -19,14 +19,15 @@
         .date-display-box { text-align: center; cursor: pointer; padding: 5px 10px; border-radius: 10px; }
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; }
         .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        .habit-card { background: var(--card); border-radius: 15px; padding: 12px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); }
-        .vakit-ad { font-weight: bold; margin-bottom: 8px; display: block; color: #7fbbff; font-size: 0.9rem; }
+        /* ANA EKRAN DARALTMA */
+        .habit-card { background: var(--card); border-radius: 15px; padding: 8px 12px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.1); }
+        .vakit-ad { font-weight: bold; margin-bottom: 5px; display: block; color: #7fbbff; font-size: 0.85rem; }
         .circles-row { display: flex; gap: 10px; justify-content: flex-start; }
-        .circle { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; flex-shrink: 0; }
+        .circle { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; flex-shrink: 0; }
         .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; overflow-y: auto; padding-top: 20px; }
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 95%; max-width: 380px; border-radius: 15px; border: 1px solid var(--blue); box-sizing: border-box; position: relative; }
-        .close-x { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .close-x { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 10; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; position: relative; }
         .cal-box b { font-size: 11px; color: #000; }
@@ -38,8 +39,7 @@
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
         .backup-btn { background: rgba(255,255,255,0.1); color: #ccc; border: none; padding: 6px 12px; border-radius: 10px; font-size: 11px; cursor: pointer; flex: 1; }
         .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; }
-        .ozel-card { background: var(--card); border-radius: 12px; padding: 10px 5px; border: 1px solid rgba(255,255,255,0.1); text-align: center; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between;}
-        /* GENEL RAPOR SATIR DARALTMA */
+        .ozel-card { background: var(--card); border-radius: 12px; padding: 10px 5px; border: 1px solid rgba(255,255,255,0.1); text-align: center; min-height: 90px; display: flex; flex-direction: column; justify-content: space-between;}
         .monthly-report-table { width: 100% !important; margin: 0 auto; table-layout: fixed; border-collapse: separate; border-spacing: 2px 1px; }
         .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; padding: 0; }
         .col-vakit { height: 14px; border-radius: 3px; cursor: pointer; }
@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.20.7</div>
+    <div class="main-title">Amel Defteri V.20.8</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -108,7 +108,6 @@
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
         const globalListe = getGlobalOzeller();
-        
         if (kaydedilmis) {
             gunlukVeriler = kaydedilmis;
             const kaydedilmisIdler = (kaydedilmis.ozeller || []).map(o => o.id);
@@ -126,8 +125,12 @@
 
     function render() {
         localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
-        document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
-        document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : "";
+        
+        // GÜN İSİMLERİ EKLEME
+        const gunIsmi = seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' });
+        document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+        const isTodayText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : gunIsmi.toUpperCase();
+        document.getElementById('isToday').innerText = isTodayText;
         
         const vDiv = document.getElementById('vakitList');
         vDiv.innerHTML = '';
@@ -143,7 +146,6 @@
         oDiv.innerHTML = "";
         const globalListe = getGlobalOzeller();
         const isToday = (getLocalKey(new Date()) === getLocalKey(seciliTarih));
-        
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             const globalAmel = globalListe.find(g => g.id === o.id);
             const isArsiv = globalAmel ? globalAmel.arsiv : false;
@@ -160,8 +162,8 @@
         document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff; margin:0; padding-right:20px;">Rehber</h3>`;
         grid.innerHTML = `<div style="padding:10px; font-size:12px; line-height:1.6; max-height:60vh; overflow-y:auto;">
             <p><b>Farz Namazlar:</b><br>🟢 Koyu Yeşil: Kılındı<br>🟢 Açık Yeşil: Cemaatle Kılındı<br>🟠 Turuncu: Kaza Edildi<br>🔴 Kırmızı: Kazaya Kaldı</p>
-            <p><b>Sünnet / Tesbihat / Özel:</b><br>🟢 Koyu Yeşil: Yapıldı / Tamam<br>🔴 Kırmızı: Yapılmadı / Eksik<br>⚪ Boş: Veri girilmedi</p>
-            <p><b>İstatistikler:</b> Vakitlerin altındaki 'Farz/Sünnet/Tesbihat' yazılarına veya özel amellerin isimlerine tıklayarak takvimi açabilirsiniz.</p>
+            <p><b>Sünnet:</b><br>🟢 Koyu Yeşil: Yapıldı<br>🔴 Kırmızı: Yapılmadı</p>
+            <p><b>Tesbihat / Özel:</b><br>🟢 Koyu Yeşil: Yapıldı<br>🟢 Açık Yeşil: Geniş Tesbihat<br>🔴 Kırmızı: Yapılmadı<br>⚪ Boş: Veri girilmedi</p>
         </div>`;
         modal.style.display = 'block';
     }
@@ -194,7 +196,9 @@
         selectors += `</div>`;
         const baslikTarih = raporTarih.toLocaleDateString('tr',{month:'long', year:'numeric'});
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${baslikTarih}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>${selectors}`;
-        let th = `<table class="monthly-report-table"><tbody>`;
+        
+        // SÜTUN BAŞLIKLARI EKLEME (S Ö İ A Y)
+        let th = `<table class="monthly-report-table"><thead><tr><th class="col-gun"></th><th style="font-size:10px; color:var(--blue);">S</th><th style="font-size:10px; color:var(--blue);">Ö</th><th style="font-size:10px; color:var(--blue);">İ</th><th style="font-size:10px; color:var(--blue);">A</th><th style="font-size:10px; color:var(--blue);">Y</th></tr></thead><tbody>`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
             let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
