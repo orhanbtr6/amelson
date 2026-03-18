@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.21.9</title>
+    <title>Amel Defteri V.21.10</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -18,7 +18,6 @@
         
         .date-nav { display: flex; align-items: center; gap: 5px; }
         .date-display-box { text-align: center; cursor: pointer; padding: 5px 15px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 100px; }
-        /* Takvim inputunu kutuya tam yayma ve butonlardan ayırma */
         #hiddenDate { position: absolute; opacity: 0; left: 0; top: 0; width: 100%; height: 100%; cursor: pointer; border: none; }
         
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; z-index: 5; }
@@ -53,9 +52,12 @@
         .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 4px; border: 1px solid rgba(255,255,255,0.1); text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
         .sayi-input { width: 90%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 6px 0; border-radius: 8px; margin: 5px auto; outline: none; }
         
-        .monthly-report-table { width: 100%; border-collapse: separate; border-spacing: 1px; }
-        .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; }
-        .col-vakit { height: 12px; border-radius: 2px; }
+        .monthly-report-table { width: 100% !important; margin: 0 auto; table-layout: fixed; border-collapse: separate; border-spacing: 1px 1.5px; }
+        .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; padding: 0; }
+        .col-vakit { height: 11px; border-radius: 2px; cursor: pointer; }
+        .report-selector { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
+        .sel-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #ccc; padding: 5px 10px; border-radius: 8px; font-size: 10px; cursor: pointer; }
+        .sel-btn.active { background: var(--blue); color: white; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; position: relative; }
         .cal-box b { font-size: 10px; color: #fff; }
@@ -65,7 +67,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.21.9</div>
+    <div class="main-title">Amel Defteri V.21.10</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -102,7 +104,7 @@
         <button class="menu-item" onclick="exportData()">💾 Verileri Yedekle (.json)</button>
         <button class="menu-item" onclick="importData()">📂 Yedekten Geri Yükle</button>
         <button id="pwaBtn" class="menu-item" style="display:none;" onclick="installPWA()">📲 Uygulama Olarak Yükle</button>
-        <div style="font-size:10px; opacity:0.5; text-align:center; margin-top:20px;">Versiyon 21.9 - 2026</div>
+        <div style="font-size:10px; opacity:0.5; text-align:center; margin-top:20px;">Versiyon 21.10 - 2026</div>
     </div>
 </div>
 
@@ -178,35 +180,14 @@
         });
     }
 
-    // PWA Kurulum Yönetimi
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const pwaBtn = document.getElementById('pwaBtn');
-        if(pwaBtn) pwaBtn.style.display = 'block';
-    });
-
-    window.installPWA = () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') { document.getElementById('pwaBtn').style.display = 'none'; }
-            deferredPrompt = null;
-        });
-    };
-
-    window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
-    window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
-    window.tarihSec = (val) => { if(val) { seciliTarih = new Date(val); veriYukle(); } };
-    window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); veriYukle(); };
-
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff; margin:0;">Rehber</h3>`;
+        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff; margin:0; padding-right:20px;">Rehber</h3>`;
         grid.innerHTML = `<div style="padding:10px; font-size:12px; line-height:1.6; max-height:60vh; overflow-y:auto;">
-            <p><b>NAMAZ KUTUCUKLARI:</b><br><span style="color:#90ee90">■</span> Hepsi yeşilse <b>Soft Yeşil</b>.<br><span style="color:#e74c3c">■</span> Farz kırmızıysa <b>Soft Kırmızı</b>.</p>
-            <p><b>FARZLAR:</b> <span class="circle s1" style="width:12px; height:12px; display:inline-block;"></span> Vakit / <span class="circle s2" style="width:12px; height:12px; display:inline-block;"></span> Cemaat / <span class="circle s4" style="width:12px; height:12px; display:inline-block;"></span> Kaza / <span class="circle s3" style="width:12px; height:12px; display:inline-block;"></span> Yapılmadı.</p>
+            <p><b>NAMAZ İSİMLERİ:</b><br><span style="color:#90ee90">■</span> Hepsi yeşilse <b>Soft Yeşil</b> olur.<br><span style="color:#e74c3c">■</span> Farz kırmızıysa <b>Soft Kırmızı</b> olur.</p>
+            <p><b>FARZ NAMAZLAR:</b><br><span class="circle s1" style="width:12px; height:12px; display:inline-block;"></span> <b>Koyu Yeşil:</b> Vaktinde kılındı.<br><span class="circle s2" style="width:12px; height:12px; display:inline-block;"></span> <b>Açık Yeşil:</b> Cemaatle kılındı.<br><span class="circle s4" style="width:12px; height:12px; display:inline-block;"></span> <b>Turuncu:</b> Kaza edildi.<br><span class="circle s3" style="width:12px; height:12px; display:inline-block;"></span> <b>Kırmızı:</b> Kazaya kaldı.</p>
+            <p><b>SÜNNET VE TESBİHAT:</b><br><span class="circle s1" style="width:12px; height:12px; display:inline-block;"></span> <b>Koyu Yeşil:</b> Yapıldı.<br><span class="circle s2" style="width:12px; height:12px; display:inline-block;"></span> <b>Açık Yeşil:</b> Geniş yapıldı.<br><span class="circle s3" style="width:12px; height:12px; display:inline-block;"></span> <b>Kırmızı:</b> Yapılmadı.</p>
         </div>`;
         modal.style.display = 'block';
     };
@@ -215,7 +196,7 @@
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>Aylık Rapor (${ayYilStr})</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span style="font-size:14px;">Aylık Rapor (${ayYilStr})</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>
         <div class="report-selector">${basliklar.map((b,i)=>`<button class="sel-btn ${genRaporTipIdx===i?'active':''}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
         let th = `<table class="monthly-report-table"><thead><tr><th class="col-gun"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
@@ -271,6 +252,11 @@
         modal.style.display = 'block';
     };
 
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwaBtn').style.display = 'block'; });
+    window.installPWA = () => { if (!deferredPrompt) return; deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { document.getElementById('pwaBtn').style.display = 'none'; deferredPrompt = null; }); };
+    window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
+    window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
+    window.tarihSec = (val) => { if(val) { seciliTarih = new Date(val); veriYukle(); } };
     window.degis = (i, s, t) => {
         if (t === 'ozel_renk') gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum + 1) % 5;
         else {
@@ -282,17 +268,17 @@
         }
         render();
     };
-
     window.ayDegis = (n, ad, t, vi, bi, id) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showStats(ad, t, vi, bi, id); };
     window.ayRaporuDegis = (n) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showGeneralReport(); };
     window.yilDegis = (n) => { raporTarih.setFullYear(raporTarih.getFullYear()+n); window.showYearlyReport(); };
     window.gitTarih = (d) => { seciliTarih = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d); closeModal(); veriYukle(); };
     window.setGenRaporTip = (idx) => { genRaporTipIdx = idx; window.showGeneralReport(); };
     window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; raporTarih = new Date(); };
+    window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); veriYukle(); };
     window.yeniEkle = () => { const ad = document.getElementById('habInp').value; if(!ad) return; let g = getGlobalOzeller(); g.push({ id: 'id' + Date.now(), ad, tip: confirm("Sayısal veri mi?") ? 'sayi' : 'renk', arsiv: false }); saveGlobalOzeller(g); document.getElementById('habInp').value = ""; veriYukle(); };
     window.silSecenekleri = (id) => { if(confirm("Arşivlensin mi?")) { let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) g[idx].arsiv = true; saveGlobalOzeller(g); veriYukle(); } };
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v; render(); };
-    window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let key = localStorage.key(i); if(key.startsWith('amel_')) all[key] = localStorage.getItem(key); } let blob = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `amel_yedek.json`; a.click(); };
+    window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let key = localStorage.key(i); if(key && key.startsWith('amel_')) all[key] = localStorage.getItem(key); } let blob = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { document.getElementById('fileInp').click(); };
     window.processFile = (inp) => { let fr = new FileReader(); fr.onload = () => { let data = JSON.parse(fr.result); Object.keys(data).forEach(k => localStorage.setItem(k, data[k])); location.reload(); }; fr.readAsText(inp.files[0]); };
     veriYukle();
