@@ -5,65 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.21.15</title>
+    <title>Amel Defteri V.21.16</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
+        * { box-sizing: border-box; }
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .main-title { text-align: center; font-size: 18px; font-weight: bold; color: #7fbbff; margin-bottom: 10px; text-transform: uppercase; }
         .container { width: 100%; max-width: 500px; margin: auto; padding-bottom: 150px; }
         
-        /* V.21.10 Header Yapısı */
         .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 8px; }
         .date-nav { display: flex; align-items: center; gap: 5px; }
         .date-display-box { text-align: center; cursor: pointer; padding: 5px 15px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 100px; }
         #hiddenDate { position: absolute; opacity: 0; left: 0; top: 0; width: 100%; height: 100%; cursor: pointer; border: none; }
         
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; z-index: 5; }
-        .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
         
-        /* Ana Ekran Amel Kartları */
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; }
-        .vakit-isim-box { padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 100px; text-align: center; transition: background 0.3s ease; }
+        .vakit-isim-box { padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 100px; text-align: center; }
         .vakit-ad { font-weight: bold; color: #fff; font-size: 0.75rem; }
-        .circles-row { display: flex; gap: 15px; margin-left: 20px; align-items: center; }
+        .circles-row { display: flex; gap: 15px; margin-left: auto; align-items: center; padding-right: 5px; }
         
-        /* Özel Ameller - Tam V.21.10 Görünümü */
         .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 5px; }
-        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 4px; border: 1px solid rgba(255,255,255,0.1); text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
-        .sayi-input { width: 90%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 6px 0; border-radius: 8px; margin: 5px auto; outline: none; }
+        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 4px; border: 1px solid rgba(255,255,255,0.1); text-align: center; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+        .sayi-input { width: 90%; max-width: 75px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 6px 0; border-radius: 8px; margin: 5px auto; outline: none; font-size: 12px; }
         
-        /* Renk Tanımları */
         .box-default { background: rgba(127, 187, 255, 0.15); }
         .box-success { background: rgba(144, 238, 144, 0.25); border-color: rgba(144, 238, 144, 0.4); }
         .box-danger { background: rgba(231, 76, 60, 0.25); border-color: rgba(231, 76, 60, 0.4); }
         .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
         .label-text { font-size: 8.5px; opacity: 0.8; margin-top: 3px; color: #7fbbff; }
-        .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
         
-        /* Modallar - V.21.10 Genişliği */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; overflow-y: auto; padding-top: 20px; }
-        .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 95%; max-width: 380px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
-        .close-x { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .s0 { background: rgba(255,255,255,0.05); } 
+        .s1 { background: var(--dark-green); } 
+        .s2 { background: var(--light-green); } 
+        .s3 { background: var(--red); } 
+        .s4 { background: var(--orange); }
         
-        /* Footer */
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 10px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
-        input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
+        .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 400px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
+        .close-x { position: absolute; top: 10px; right: 15px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 16px; }
+        
+        .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 10px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; }
+        input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; min-width: 0; }
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-        .settings-btn { background: rgba(255,255,255,0.1); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+        .settings-btn { background: rgba(255,255,255,0.1); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; color: white; display: flex; align-items: center; justify-content: center; }
 
-        /* Rapor Tabloları */
-        .monthly-report-table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 1px 1.5px; }
-        .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; }
-        .col-vakit { height: 11px; border-radius: 2px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; }
+        .monthly-report-table { width: 100%; border-collapse: separate; border-spacing: 1px 2px; table-layout: fixed; }
+        .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; }
+        .col-vakit { height: 12px; border-radius: 2px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.21.15</div>
+    <div class="main-title">Amel Defteri V.21.16</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -89,16 +88,17 @@
         <button class="close-x" onclick="closeModal()">✕</button>
         <div id="statTitle"></div>
         <div id="calGrid"></div>
-        <button class="add-btn" style="width:100%; background:var(--red); margin-top:15px;" onclick="closeModal()">KAPAT</button>
+        <button class="add-btn" style="width:100%; background:var(--red); margin-top:20px;" onclick="closeModal()">KAPAT</button>
     </div>
 </div>
 
 <div id="settingsModal" class="modal">
     <div class="modal-content">
         <button class="close-x" onclick="closeSettings()">✕</button>
-        <h3 style="text-align:center; color:var(--blue);">Ayarlar</h3>
-        <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="exportData()">💾 Verileri Yedekle (.json)</button>
-        <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="importData()">📂 Yedekten Geri Yükle</button>
+        <h3 style="text-align:center; color:var(--blue); margin-bottom:20px;">Ayarlar & Veri</h3>
+        <button class="add-btn" style="width:100%; margin-bottom:12px; background:rgba(255,255,255,0.08); text-align:left;" onclick="exportData()">💾 Verileri Yedekle (.json)</button>
+        <button class="add-btn" style="width:100%; margin-bottom:12px; background:rgba(255,255,255,0.08); text-align:left;" onclick="importData()">📂 Yedekten Geri Yükle</button>
+        <div id="pwaZone" style="display:none;"><button class="add-btn" style="width:100%; background:var(--dark-green);" onclick="installPWA()">📲 Uygulama Olarak Yükle</button></div>
     </div>
 </div>
 
@@ -173,13 +173,27 @@
         });
     }
 
+    // AYRINTILI BİLGİ EKRANI (REHBER)
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:#7fbbff;">Rehber</h3>`;
-        grid.innerHTML = `<div style="padding:10px; font-size:12px; line-height:1.6;">
-            <p><b>NAMAZLAR:</b><br><span style="color:#90ee90">■</span> Hepsi yeşilse <b>Soft Yeşil</b>.<br><span style="color:#e74c3c">■</span> Farz kırmızıysa <b>Soft Kırmızı</b>.</p>
-            <p><b>DURUMLAR:</b><br>Koyu Yeşil (Vaktinde), Açık Yeşil (Cemaat/Geniş), Turuncu (Kaza), Kırmızı (Kazaya kaldı).</p>
+        document.getElementById('statTitle').innerHTML = `<h2 style="text-align:center; color:#7fbbff; margin-bottom:15px;">Kullanım Rehberi</h2>`;
+        grid.innerHTML = `
+        <div style="font-size:12.5px; line-height:1.6; color:#ddd; padding:5px;">
+            <p><b style="color:var(--blue)">VAKİT RENKLERİ:</b><br>
+            <span style="color:var(--light-green)">●</span> <b>Yumuşak Yeşil:</b> Tüm namazlar (Farz, Sünnet, Tesbihat) kılındığında otomatik yanar.<br>
+            <span style="color:var(--red)">●</span> <b>Yumuşak Kırmızı:</b> Farz namazı "Kazaya Kaldı" işaretlenirse yanar.</p>
+            
+            <p><b style="color:var(--blue)">NAMAZ DURUMLARI (FARZ):</b><br>
+            <span class="circle s1" style="width:12px; height:12px; display:inline-block; border:none;"></span> <b>Koyu Yeşil:</b> Vaktinde kılındı.<br>
+            <span class="circle s2" style="width:12px; height:12px; display:inline-block; border:none;"></span> <b>Açık Yeşil:</b> Cemaatle/Geniş vakitte kılındı.<br>
+            <span class="circle s4" style="width:12px; height:12px; display:inline-block; border:none;"></span> <b>Turuncu:</b> Kaza edildi.<br>
+            <span class="circle s3" style="width:12px; height:12px; display:inline-block; border:none;"></span> <b>Kırmızı:</b> Kazaya kaldı.</p>
+
+            <p><b style="color:var(--blue)">ÖZEL AMEL VE İSTATİSTİK:</b><br>
+            - Amel ismine tıklayarak o amelin <b>aylık takvimini</b> görebilirsiniz.<br>
+            - Sayısal amellerde girdiğiniz rakamlar takvimde görünür.<br>
+            - <b>Arşiv:</b> Bitirdiğiniz amelleri arşivleyebilir, Yıllık Özet'te toplam skorunu görebilirsiniz.</p>
         </div>`;
         modal.style.display = 'block';
     };
@@ -188,8 +202,8 @@
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:20px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>
-        <div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-right:25px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>
+        <div style="display:flex; justify-content:center; gap:5px; margin-bottom:15px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:11px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
         let table = `<table class="monthly-report-table"><thead><tr><th class="col-gun"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
@@ -210,7 +224,7 @@
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:20px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span style="font-size:12px;">${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div><div style="text-align:center; font-size:11px; color:var(--blue);">${ayYilStr}</div>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-right:25px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span style="font-size:13px;">${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div><div style="text-align:center; font-size:12px; color:var(--blue);">${ayYilStr}</div>`;
         let gridHtml = `<div class="calendar-grid">`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
@@ -227,7 +241,7 @@
                     } 
                 }
             }
-            gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:2px; left:2px; opacity:0.5;">${d}</small>${val}</div>`;
+            gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:2px; left:2px; opacity:0.4; font-size:8px;">${d}</small>${val}</div>`;
         }
         grid.innerHTML = gridHtml + `</div>`;
         modal.style.display = 'block';
@@ -237,7 +251,7 @@
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const yil = raporTarih.getFullYear();
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-right:20px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b>${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-right:25px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b style="font-size:15px;">${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
         let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
         let arsiv = {};
         for (let m = 0; m < 12; m++) {
@@ -256,10 +270,12 @@
                 }
             }
         }
-        let h = `<div style="max-height:60vh; overflow-y:auto; font-size:12px;"><table style="width:100%; margin-bottom:10px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA</th><th style="text-align:right;">ADET</th></tr></thead><tbody>`;
-        Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
-        h += `</tbody></table><table style="width:100%;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">ARŞİV</th><th style="text-align:right;">SKOR</th></tr></thead><tbody>`;
-        Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].toplam}${arsiv[k].tip==='sayi'?'':' G'}</td></tr>`; });
+        let h = `<div style="max-height:60vh; overflow-y:auto; font-size:13px; padding:5px;"><table style="width:100%; margin-bottom:20px;"><thead><tr style="color:var(--red); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left; padding-bottom:5px;">KAZA NAMAZLARI</th><th style="text-align:right;">ADET</th></tr></thead><tbody>`;
+        Object.keys(kaza).forEach(k => { h += `<tr><td style="padding:4px 0;">${k}</td><td style="text-align:right; font-weight:bold;">${kaza[k]}</td></tr>`; });
+        h += `</tbody></table><table style="width:100%;"><thead><tr style="color:var(--blue); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left; padding-bottom:5px;">ARŞİVLENEN AMEL</th><th style="text-align:right;">SONUÇ</th></tr></thead><tbody>`;
+        const aKeys = Object.keys(arsiv);
+        if (aKeys.length === 0) h += `<tr><td colspan="2" style="text-align:center; opacity:0.5; padding:20px;">Veri yok.</td></tr>`;
+        else aKeys.sort().forEach(k => { h += `<tr><td style="padding:4px 0;">${k}</td><td style="text-align:right; font-weight:bold;">${arsiv[k].toplam}${arsiv[k].tip==='sayi'?'':' G'}</td></tr>`; });
         grid.innerHTML = h + `</tbody></table></div>`;
         modal.style.display = 'block';
     };
