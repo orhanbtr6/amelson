@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.21.11</title>
+    <title>Amel Defteri V.21.12</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -15,43 +15,33 @@
         .main-title { text-align: center; font-size: 18px; font-weight: bold; color: #7fbbff; margin-bottom: 10px; text-transform: uppercase; }
         .container { width: 100%; max-width: 500px; margin: auto; padding-bottom: 150px; }
         .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 8px; }
-        
         .date-nav { display: flex; align-items: center; gap: 5px; }
         .date-display-box { text-align: center; cursor: pointer; padding: 5px 15px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 100px; }
         #hiddenDate { position: absolute; opacity: 0; left: 0; top: 0; width: 100%; height: 100%; cursor: pointer; border: none; }
-        
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; z-index: 5; }
         .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; }
         .vakit-isim-box { padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 100px; text-align: center; transition: background 0.3s ease; }
         .box-default { background: rgba(127, 187, 255, 0.15); }
         .box-success { background: rgba(144, 238, 144, 0.25); border-color: rgba(144, 238, 144, 0.4); }
         .box-danger { background: rgba(231, 76, 60, 0.25); border-color: rgba(231, 76, 60, 0.4); }
-        
         .vakit-ad { font-weight: bold; color: #fff; font-size: 0.75rem; }
         .circles-row { display: flex; gap: 15px; margin-left: 20px; align-items: center; }
         .circle-wrap { text-align: center; display: flex; flex-direction: column; align-items: center; }
         .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
         .label-text { font-size: 8.5px; opacity: 0.8; margin-top: 3px; color: #7fbbff; }
-        
         .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
-        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; overflow-y: auto; padding-top: 20px; }
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 95%; max-width: 380px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
         .close-x { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        
         .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 10px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
-        input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
+        input[type="text"], input[type="number"] { border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
         .settings-btn { background: rgba(255,255,255,0.1); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
-        
         .menu-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); width: 100%; color: white; text-align: left; font-size: 14px; }
-        
         .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 5px; }
         .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 4px; border: 1px solid rgba(255,255,255,0.1); text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
         .sayi-input { width: 90%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 6px 0; border-radius: 8px; margin: 5px auto; outline: none; }
-        
         .monthly-report-table { width: 100% !important; margin: 0 auto; table-layout: fixed; border-collapse: separate; border-spacing: 1px 1.5px; }
         .col-gun { width: 25px; text-align: center; font-size: 10px; opacity: 0.5; padding: 0; }
         .col-vakit { height: 11px; border-radius: 2px; cursor: pointer; }
@@ -67,7 +57,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.21.11</div>
+    <div class="main-title">Amel Defteri V.21.12</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -104,7 +94,7 @@
         <button class="menu-item" onclick="exportData()">💾 Verileri Yedekle (.json)</button>
         <button class="menu-item" onclick="importData()">📂 Yedekten Geri Yükle</button>
         <button id="pwaBtn" class="menu-item" style="display:none;" onclick="installPWA()">📲 Uygulama Olarak Yükle</button>
-        <div style="font-size:10px; opacity:0.5; text-align:center; margin-top:20px;">Versiyon 21.11 - 2026</div>
+        <div style="font-size:10px; opacity:0.5; text-align:center; margin-top:20px;">Versiyon 21.12 - 2026</div>
     </div>
 </div>
 
@@ -226,8 +216,15 @@
             let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
             let val = "", cls = "s0", lab = `<small>${d}</small>`;
             if (v) {
-                if (tip === 'vakit') cls = "s" + (v.vakitler[vIdx].durumlar[bIdx] || 0);
-                else { let o = (v.ozeller || []).find(x => x.id === id || x.ad === ad); if (o && (o.durum > 0 || o.durum !== "")) { cls = o.tip === 'sayi' ? 's2' : 's' + o.durum; if(o.tip === 'sayi') val = `<b>${o.durum}</b>`; } }
+                if (tip === 'vakit') {
+                    cls = "s" + (v.vakitler[vIdx].durumlar[bIdx] || 0);
+                } else { 
+                    let o = (v.ozeller || []).find(x => x.id === id || x.ad === ad); 
+                    if (o && ((o.tip === 'sayi' && parseFloat(o.durum) > 0) || (o.tip !== 'sayi' && o.durum > 0))) { 
+                        cls = o.tip === 'sayi' ? 's2' : 's' + o.durum; 
+                        if(o.tip === 'sayi') val = `<b>${o.durum}</b>`; 
+                    } 
+                }
             }
             gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})">${lab}${val}</div>`;
         }
@@ -240,10 +237,8 @@
         const grid = document.getElementById('calGrid');
         const yil = raporTarih.getFullYear();
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b>${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
-        
         let kazaSayilari = { "Sabah Namazı": 0, "Öğle Namazı": 0, "İkindi Namazı": 0, "Akşam Namazı": 0, "Yatsı Namazı": 0 };
         let arsivAmeller = {};
-        
         for (let m = 0; m < 12; m++) {
             let son = new Date(yil, m + 1, 0).getDate();
             for (let d = 1; d <= son; d++) {
@@ -263,15 +258,12 @@
                 }
             }
         }
-        
         let h = `<div style="max-height:60vh; overflow-y:auto; padding:5px;"><table style="width:100%; font-size:12px; margin-bottom:15px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA NAMAZLARI</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
         Object.keys(kazaSayilari).forEach(v => { h += `<tr><td>${v}</td><td style="text-align:right; font-weight:bold;">${kazaSayilari[v]}</td></tr>`; });
         h += `</tbody></table><table style="width:100%; font-size:12px;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">ARŞİVLENENLER</th><th style="text-align:right;">SONUÇ</th></tr></thead><tbody>`;
-        
         const keys = Object.keys(arsivAmeller);
         if (keys.length === 0) h += `<tr><td colspan="2" style="text-align:center; opacity:0.5; padding:10px;">Arşiv verisi yok.</td></tr>`;
         else keys.sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right; font-weight:bold;">${arsivAmeller[k].toplam}${arsivAmeller[k].tip === 'sayi' ? '' : ' Gün'}</td></tr>`; });
-        
         grid.innerHTML = h + `</tbody></table></div>`;
         modal.style.display = 'block';
     };
