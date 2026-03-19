@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.22</title>
+    <title>Amel Defteri V.21.23</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
@@ -60,7 +60,6 @@
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; min-width: 0; }
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-        /* AYARLAR BÖLÜMÜ EKSTRE STİL */
         .settings-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
         .settings-label { display: block; font-size: 13px; color: #7fbbff; margin-bottom: 8px; font-weight: bold; }
         .time-input { background: #0b3d59; color: white; border: 1px solid var(--blue); padding: 8px; border-radius: 8px; width: 100%; font-size: 16px; outline: none; }
@@ -191,13 +190,13 @@
         });
     }
 
-    // HATIRLATICI MANTIĞI
+    // GÜÇLENDİRİLMİŞ BİLDİRİM MANTIĞI
     window.setReminder = () => {
         const time = document.getElementById('remTime').value;
         if (!time) return;
         
         if (!("Notification" in window)) {
-            alert("Bu tarayıcı bildirimleri desteklemiyor.");
+            alert("Maalesef tarayıcınız bildirimleri desteklemiyor.");
             return;
         }
 
@@ -205,9 +204,10 @@
             if (permission === "granted") {
                 localStorage.setItem('amel_reminder_time', time);
                 document.getElementById('remStatus').innerText = `✓ Saat ${time} için kuruldu.`;
-                checkNotification();
+                // Bir test bildirimi gönder
+                new Notification("Amel Defteri", { body: "Bildirimler başarıyla aktif edildi!", icon: "https://cdn-icons-png.flaticon.com/512/3212/3212456.png" });
             } else {
-                alert("Bildirim izni reddedildi.");
+                alert("Bildirim izni vermeniz gerekiyor. Lütfen ayarlardan açın.");
             }
         });
     };
@@ -218,22 +218,30 @@
         
         if (document.getElementById('remTime')) {
             document.getElementById('remTime').value = savedTime;
-            document.getElementById('remStatus').innerText = `✓ Saat ${savedTime} için aktif.`;
+            document.getElementById('remStatus').innerText = `✓ Hatırlatıcı aktif: ${savedTime}`;
         }
 
+        // Arka plan/Uyku kontrolü için 15 saniyede bir kontrol
         setInterval(() => {
             const now = new Date();
             const current = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            if (current === savedTime && now.getSeconds() === 0) {
-                new Notification("Amel Defteri", {
-                    body: "Bugün Amel defterini doldurdun mu?",
-                    icon: "https://cdn-icons-png.flaticon.com/512/3212/3212456.png"
-                });
+            
+            if (current === savedTime && now.getSeconds() < 15) {
+                const lastSent = localStorage.getItem('last_notif_min');
+                if (lastSent !== current) {
+                    new Notification("Amel Defteri", {
+                        body: "Bugün Amel defterini doldurdun mu?",
+                        icon: "https://cdn-icons-png.flaticon.com/512/3212/3212456.png",
+                        tag: "amel-reminder", // Aynı dakikada birden fazla çıkmasın
+                        renotify: true
+                    });
+                    localStorage.setItem('last_notif_min', current);
+                }
             }
-        }, 1000);
+        }, 15000);
     }
 
-    // AYRINTILI RENK BİLGİSİ EKRANI - KORUNDU
+    // DİĞER FONKSİYONLAR - KORUNDU
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
@@ -245,19 +253,13 @@
             <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Cemaatle Kılındı<br>
             <span class="circle s4" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kaza Edildi<br>
             <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kazaya Kaldı</p>
-
             <p><b style="color:var(--light-green)">[ SÜNNET ]</b><br>
             <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılındı / Vaktinde<br>
             <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılınmadı</p>
-
             <p><b style="color:var(--blue)">[ TESBİHAT / DİĞER ]</b><br>
             <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Tam Yapıldı<br>
             <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Nafile / Ekstra<br>
             <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Yapılmadı</p>
-            
-            <p><b style="color:#7fbbff">[ VAKİT KUTUSU ]</b><br>
-            - <span style="color:var(--light-green)">Yeşil:</span> O vaktin hepsi tamam.<br>
-            - <span style="color:var(--red)">Kırmızı:</span> Farz kazaya kaldı.</p>
         </div>`;
         modal.style.display = 'block';
     };
