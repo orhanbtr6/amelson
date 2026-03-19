@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Amel Defteri V.21.10</title>
+    <title>Amel Defteri V.21.11</title>
     
     <link rel="manifest" href="manifest.json">
 
@@ -67,7 +67,7 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri V.21.10</div>
+    <div class="main-title">Amel Defteri V.21.11</div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -104,7 +104,7 @@
         <button class="menu-item" onclick="exportData()">💾 Verileri Yedekle (.json)</button>
         <button class="menu-item" onclick="importData()">📂 Yedekten Geri Yükle</button>
         <button id="pwaBtn" class="menu-item" style="display:none;" onclick="installPWA()">📲 Uygulama Olarak Yükle</button>
-        <div style="font-size:10px; opacity:0.5; text-align:center; margin-top:20px;">Versiyon 21.10 - 2026</div>
+        <div style="font-size:10px; opacity:0.5; text-align:center; margin-top:20px;">Versiyon 21.11 - 2026</div>
     </div>
 </div>
 
@@ -240,15 +240,39 @@
         const grid = document.getElementById('calGrid');
         const yil = raporTarih.getFullYear();
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-right:25px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b>${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
+        
         let kazaSayilari = { "Sabah Namazı": 0, "Öğle Namazı": 0, "İkindi Namazı": 0, "Akşam Namazı": 0, "Yatsı Namazı": 0 };
+        let arsivAmeller = {};
+        
         for (let m = 0; m < 12; m++) {
-            for (let d = 1; d <= 31; d++) {
+            let son = new Date(yil, m + 1, 0).getDate();
+            for (let d = 1; d <= son; d++) {
                 let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d))));
-                if (v) v.vakitler.forEach((vk) => { if(vk.durumlar[0] === 3) kazaSayilari[vk.ad]++; });
+                if (!v) continue;
+                v.vakitler.forEach((vk) => { if(vk.durumlar[0] === 3) kazaSayilari[vk.ad]++; });
+                if (v.ozeller) {
+                    v.ozeller.forEach(vo => {
+                        const globalListe = getGlobalOzeller();
+                        const arsivdenBul = globalListe.find(g => g.id === vo.id && g.arsiv);
+                        if (arsivdenBul) {
+                            if (!arsivAmeller[vo.ad]) arsivAmeller[vo.ad] = { toplam: 0, tip: vo.tip };
+                            if (vo.tip === 'sayi') arsivAmeller[vo.ad].toplam += parseFloat(vo.durum || 0);
+                            else if (vo.durum > 0) arsivAmeller[vo.ad].toplam += 1;
+                        }
+                    });
+                }
             }
         }
-        grid.innerHTML = `<table style="width:100%; font-size:12px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA NAMAZLARI</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>` + 
-            Object.keys(kazaSayilari).map(v => `<tr><td>${v}</td><td style="text-align:right; font-weight:bold;">${kazaSayilari[v]}</td></tr>`).join('') + `</tbody></table>`;
+        
+        let h = `<div style="max-height:60vh; overflow-y:auto; padding:5px;"><table style="width:100%; font-size:12px; margin-bottom:15px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA NAMAZLARI</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
+        Object.keys(kazaSayilari).forEach(v => { h += `<tr><td>${v}</td><td style="text-align:right; font-weight:bold;">${kazaSayilari[v]}</td></tr>`; });
+        h += `</tbody></table><table style="width:100%; font-size:12px;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">ARŞİVLENENLER</th><th style="text-align:right;">SONUÇ</th></tr></thead><tbody>`;
+        
+        const keys = Object.keys(arsivAmeller);
+        if (keys.length === 0) h += `<tr><td colspan="2" style="text-align:center; opacity:0.5; padding:10px;">Arşiv verisi yok.</td></tr>`;
+        else keys.sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right; font-weight:bold;">${arsivAmeller[k].toplam}${arsivAmeller[k].tip === 'sayi' ? '' : ' Gün'}</td></tr>`; });
+        
+        grid.innerHTML = h + `</tbody></table></div>`;
         modal.style.display = 'block';
     };
 
