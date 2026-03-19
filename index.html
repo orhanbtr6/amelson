@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.24</title>
+    <title>Amel Defteri V.21.25</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
@@ -112,7 +112,7 @@
                 <input type="time" id="remTime" class="time-input" value="22:00">
                 <button class="add-btn" style="padding:8px 12px; font-size:12px;" onclick="setReminder()">KUR</button>
             </div>
-            <button class="add-btn" style="width:100%; background:var(--orange); font-size:11px; padding:5px;" onclick="testNotif()">🔔 ŞİMDİ TEST ET (Bildirim Geliyor mu?)</button>
+            <button class="add-btn" style="width:100%; background:var(--orange); font-size:11px; padding:5px;" onclick="testNotif()">🔔 ŞİMDİ TEST ET</button>
             <small id="remStatus" style="display:block; margin-top:8px; font-size:10px; color:var(--light-green); opacity:0.8;"></small>
         </div>
 
@@ -191,31 +191,21 @@
         });
     }
 
-    // ANDROID UYUMLU BİLDİRİM SİSTEMİ
+    // BİLDİRİM FONKSİYONLARI (TASARIMI ETKİLEMEZ)
     window.testNotif = () => {
         if (Notification.permission === "granted") {
-            const n = new Notification("Amel Defteri", {
-                body: "Test başarılı! Saat gelince bildirim alacaksınız.",
-                icon: "https://cdn-icons-png.flaticon.com/512/3212/3212456.png",
-                vibrate: [200, 100, 200]
-            });
+            new Notification("Amel Defteri", { body: "Test başarılı!", icon: "https://cdn-icons-png.flaticon.com/512/3212/3212456.png" });
             if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-        } else {
-            alert("Önce 'KUR' butonuna basarak bildirim izni vermelisiniz.");
-        }
+        } else { alert("Önce KUR butonuna basmalısınız."); }
     };
 
     window.setReminder = () => {
         const time = document.getElementById('remTime').value;
-        if (!time) return;
-        
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
+        Notification.requestPermission().then(p => {
+            if (p === "granted") {
                 localStorage.setItem('amel_reminder_time', time);
-                document.getElementById('remStatus').innerText = `✓ Saat ${time} için kuruldu.`;
+                document.getElementById('remStatus').innerText = `✓ Saat ${time} aktif.`;
                 window.testNotif();
-            } else {
-                alert("Lütfen telefonunuzun ayarlarından tarayıcıya bildirim izni verin.");
             }
         });
     };
@@ -223,25 +213,13 @@
     function checkNotification() {
         const savedTime = localStorage.getItem('amel_reminder_time');
         if (!savedTime) return;
-        
-        if (document.getElementById('remTime')) {
-            document.getElementById('remTime').value = savedTime;
-            document.getElementById('remStatus').innerText = `✓ Hatırlatıcı aktif: ${savedTime}`;
-        }
-
         setInterval(() => {
             const now = new Date();
             const current = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            
             if (current === savedTime && now.getSeconds() < 12) {
                 const lastSent = localStorage.getItem('last_notif_min');
                 if (lastSent !== current) {
-                    const n = new Notification("Amel Defteri", {
-                        body: "Bugün Amel defterini doldurdun mu?",
-                        icon: "https://cdn-icons-png.flaticon.com/512/3212/3212456.png",
-                        tag: "amel-reminder",
-                        requireInteraction: true // Kullanıcı tıklayana kadar bildirim ekranda kalsın
-                    });
+                    new Notification("Amel Defteri", { body: "Bugün Amel defterini doldurdun mu?", tag: "amel-reminder", requireInteraction: true });
                     if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
                     localStorage.setItem('last_notif_min', current);
                 }
@@ -249,18 +227,64 @@
         }, 12000);
     }
 
-    // VERİ ANALİZİ VE MODAL İŞLEMLERİ
+    // --- GERİ YÜKLENEN V.21.4 GÖRSEL FONKSİYONLARI ---
+
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         document.getElementById('statTitle').innerHTML = `<h2 style="text-align:center; color:#7fbbff; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">Renklerin Anlamı</h2>`;
-        grid.innerHTML = `<div style="font-size:12px; line-height:1.6; color:#eee;">
-            <p><b style="color:var(--orange)">[ FARZ ]</b><br>1: Vakit, 2: Cemaat, 4: Kaza, 3: Kazaya Kaldı</p>
-            <p><b style="color:var(--light-green)">[ SÜNNET ]</b><br>1: Kılındı, 3: Kılınmadı</p>
-            <p><b style="color:var(--blue)">[ TESBİHAT ]</b><br>1: Yapıldı, 2: Nafile, 3: Yapılmadı</p>
+        grid.innerHTML = `
+        <div style="font-size:12.5px; line-height:1.5; color:#eee;">
+            <p><b style="color:var(--orange)">[ FARZ NAMAZI ]</b><br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Vaktinde Kılındı<br>
+            <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Cemaatle Kılındı<br>
+            <span class="circle s4" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kaza Edildi<br>
+            <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kazaya Kaldı</p>
+            <p><b style="color:var(--light-green)">[ SÜNNET ]</b><br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılındı / Vaktinde<br>
+            <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılınmadı</p>
+            <p><b style="color:var(--blue)">[ TESBİHAT / DİĞER ]</b><br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Tam Yapıldı<br>
+            <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Nafile / Ekstra<br>
+            <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Yapılmadı</p>
         </div>`;
         modal.style.display = 'block';
     };
+
+    window.showYearlyReport = () => {
+        const modal = document.getElementById('statModal');
+        const grid = document.getElementById('calGrid');
+        const yil = raporTarih.getFullYear();
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-right:25px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b style="font-size:15px;">${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
+        let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
+        let arsiv = {};
+        for (let m = 0; m < 12; m++) {
+            for (let d = 1; d <= 31; d++) {
+                let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d))));
+                if (!v) continue;
+                v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; });
+                if (v.ozeller) {
+                    v.ozeller.forEach(vo => {
+                        if (getGlobalOzeller().find(g => g.id === vo.id && g.arsiv)) {
+                            if (!arsiv[vo.ad]) arsiv[vo.ad] = { toplam: 0, tip: vo.tip };
+                            if (vo.tip === 'sayi') arsiv[vo.ad].toplam += parseFloat(vo.durum || 0);
+                            else if (vo.durum > 0) arsiv[vo.ad].toplam += 1;
+                        }
+                    });
+                }
+            }
+        }
+        let h = `<div style="max-height:60vh; overflow-y:auto; font-size:13px; padding:5px;"><table style="width:100%; margin-bottom:20px;"><thead><tr style="color:var(--red); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left; padding-bottom:5px;">KAZA NAMAZLARI</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
+        Object.keys(kaza).forEach(k => { h += `<tr><td style="padding:4px 0;">${k} Namazı</td><td style="text-align:right; font-weight:bold;">${kaza[k]}</td></tr>`; });
+        h += `</tbody></table><table style="width:100%;"><thead><tr style="color:var(--blue); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left;">ARŞİVLENEN AMEL</th><th style="text-align:right;">SONUÇ</th></tr></thead><tbody>`;
+        const aKeys = Object.keys(arsiv);
+        if (aKeys.length === 0) h += `<tr><td colspan="2" style="text-align:center; opacity:0.5; padding:20px;">Veri yok.</td></tr>`;
+        else aKeys.sort().forEach(k => { h += `<tr><td style="padding:4px 0;">${k}</td><td style="text-align:right; font-weight:bold;">${arsiv[k].toplam}${arsiv[k].tip==='sayi'?'':' G'}</td></tr>`; });
+        grid.innerHTML = h + `</tbody></table></div>`;
+        modal.style.display = 'block';
+    };
+
+    // --- DİĞER STANDART FONKSİYONLAR ---
 
     window.showGeneralReport = () => {
         const modal = document.getElementById('statModal');
@@ -308,36 +332,6 @@
             gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:2px; left:2px; opacity:0.4;">${d}</small>${val}</div>`;
         }
         grid.innerHTML = gridHtml + `</div>`;
-        modal.style.display = 'block';
-    };
-
-    window.showYearlyReport = () => {
-        const modal = document.getElementById('statModal');
-        const grid = document.getElementById('calGrid');
-        const yil = raporTarih.getFullYear();
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-right:25px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b style="font-size:15px;">${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
-        let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
-        let arsiv = {};
-        for (let m = 0; m < 12; m++) {
-            for (let d = 1; d <= 31; d++) {
-                let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d))));
-                if (!v) continue;
-                v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; });
-                if (v.ozeller) {
-                    v.ozeller.forEach(vo => {
-                        if (getGlobalOzeller().find(g => g.id === vo.id && g.arsiv)) {
-                            if (!arsiv[vo.ad]) arsiv[vo.ad] = { toplam: 0, tip: vo.tip };
-                            if (vo.tip === 'sayi') arsiv[vo.ad].toplam += parseFloat(vo.durum || 0);
-                            else if (vo.durum > 0) arsiv[vo.ad].toplam += 1;
-                        }
-                    });
-                }
-            }
-        }
-        let h = `<div style="max-height:60vh; overflow-y:auto; font-size:13px; padding:5px;"><table style="width:100%;"><thead><tr style="color:var(--red); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left; padding-bottom:5px;">KAZALAR</th><th style="text-align:right;">ADET</th></tr></thead><tbody>`;
-        Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right; font-weight:bold;">${kaza[k]}</td></tr>`; });
-        h += `</tbody></table></div>`;
-        grid.innerHTML = h;
         modal.style.display = 'block';
     };
 
