@@ -12,7 +12,12 @@
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { width: 100%; max-width: 500px; margin: auto; padding-bottom: 150px; }
         
-        .main-title { text-align: center; font-size: 22px; font-weight: 800; color: #a5d3ff; margin: 18px 0; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
+        /* BAŞLIK VE VERSİYON SİTİLİ */
+        .main-title-container { text-align: center; margin: 18px 0; cursor: pointer; transition: transform 0.1s; }
+        .main-title-container:active { transform: scale(0.98); }
+        .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
+        .version-tag { font-size: 9px; opacity: 0.4; vertical-align: super; margin-left: 4px; font-weight: normal; letter-spacing: 0; }
+
         .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 8px; }
         .date-nav { display: flex; align-items: center; gap: 5px; }
         .date-display-box { text-align: center; cursor: pointer; padding: 5px 12px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 100px; }
@@ -29,7 +34,6 @@
         .progress-bg { background: rgba(255,255,255,0.1); height: 5px; border-radius: 10px; overflow: hidden; margin-top: 2px; }
         .progress-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s ease-in-out; }
         
-        /* Bar Renk Sınıfları */
         .bar-red { background: var(--red); }
         .bar-orange { background: var(--orange); }
         .bar-green { background: var(--dark-green); }
@@ -68,7 +72,9 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Amel Defteri</div>
+    <div class="main-title-container" onclick="window.gitBugun()">
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.31</span>
+    </div>
     <div class="nav-header">
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -157,18 +163,14 @@
             const farz = v.durumlar[0], sunnet = v.durumlar[1], tesbih = v.durumlar[2];
             
             let percent = 0;
-            // 1. Farz Hesabı: Vaktinde (%30), Cemaat (%50), Kaza (%20)
             if (farz === 1) percent += 30; else if (farz === 2) percent += 50; else if (farz === 4) percent += 20;
-            // 2. Sünnet Hesabı: %25
             if (sunnet === 1 || sunnet === 2) percent += 25;
-            // 3. Tesbihat Hesabı: Yeşil ise (Açık veya Koyu farketmez) %25
             if (tesbih === 1 || tesbih === 2) percent += 25;
 
-            // Bar Rengi Mantığı
             let barColorClass = "bar-green";
             if (percent >= 100) { 
                 percent = 100; 
-                barColorClass = "bar-full"; // %100 ise Açık Yeşil
+                barColorClass = "bar-full";
                 boxClass = "box-success"; 
             }
             else if (percent > 50) { barColorClass = "bar-green"; }
@@ -202,7 +204,12 @@
         });
     }
 
-    // Fonksiyonların tamamı korundu
+    // YENİ: BAŞLIĞA TIKLAYINCA BUGÜNE GİT
+    window.gitBugun = () => {
+        seciliTarih = new Date();
+        veriYukle();
+    };
+
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
