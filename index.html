@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.31</title>
+    <title>Amel Defteri V.21.32</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
@@ -12,7 +12,6 @@
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { width: 100%; max-width: 500px; margin: auto; padding-bottom: 150px; }
         
-        /* BAŞLIK VE VERSİYON SİTİLİ */
         .main-title-container { text-align: center; margin: 18px 0; cursor: pointer; transition: transform 0.1s; }
         .main-title-container:active { transform: scale(0.98); }
         .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
@@ -73,7 +72,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.31</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.32</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -199,17 +198,16 @@
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             const globalListe = getGlobalOzeller();
             if (globalListe.find(g => g.id === o.id && g.arsiv) && (o.durum == 0 || o.durum == "")) return;
-            let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum}" class="sayi-input" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div style="display:flex; justify-content:center; padding:5px;"><div class="circle s${o.durum}" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div></div>`;
+            
+            // YENİ: Değer 0 ise kutucuğu boş bırak
+            let displayValue = (o.durum === 0 || o.durum === "0") ? "" : o.durum;
+            let ctrl = o.tip === 'sayi' ? `<input type="number" value="${displayValue}" placeholder="0" class="sayi-input" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div style="display:flex; justify-content:center; padding:5px;"><div class="circle s${o.durum}" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div></div>`;
+            
             oDiv.innerHTML += `<div class="ozel-card"><b style="font-size:11px; cursor:pointer;" onclick="window.showStats('${o.ad.replace(/'/g,"\\'")}', 'ozel', 0, 0, '${o.id}')">${o.ad}</b>${ctrl}<br><small onclick="window.silSecenekleri('${o.id}')" style="opacity:0.3; font-size:9px; cursor:pointer;">Arşivle</small></div>`;
         });
     }
 
-    // YENİ: BAŞLIĞA TIKLAYINCA BUGÜNE GİT
-    window.gitBugun = () => {
-        seciliTarih = new Date();
-        veriYukle();
-    };
-
+    window.gitBugun = () => { seciliTarih = new Date(); veriYukle(); };
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
@@ -333,7 +331,7 @@
         }
         render();
     };
-    window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v; render(); };
+    window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v === "" ? 0 : v; render(); };
     window.yeniEkle = () => { const ad = document.getElementById('habInp').value; if(!ad) return; let g = getGlobalOzeller(); g.push({ id: 'id' + Date.now(), ad, tip: confirm("Sayısal veri mi?") ? 'sayi' : 'renk', arsiv: false }); saveGlobalOzeller(g); document.getElementById('habInp').value = ""; veriYukle(); };
     window.silSecenekleri = (id) => { if(confirm("Arşivlensin mi?")) { let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) g[idx].arsiv = true; saveGlobalOzeller(g); veriYukle(); } };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k && k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
