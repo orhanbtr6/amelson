@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.33</title>
+    <title>Amel Defteri V.21.34</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
@@ -72,7 +72,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.33</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.34</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -160,19 +160,24 @@
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
             let boxClass = "box-default";
             const farz = v.durumlar[0], sunnet = v.durumlar[1], tesbih = v.durumlar[2];
+            
             let percent = 0;
             if (farz === 1) percent += 30; else if (farz === 2) percent += 50; else if (farz === 4) percent += 20;
             if (sunnet === 1 || sunnet === 2) percent += 25;
             if (tesbih === 1 || tesbih === 2) percent += 25;
-            let barColorClass = percent >= 100 ? "bar-full" : (percent > 50 ? "bar-green" : (percent >= 26 ? "bar-orange" : "bar-red"));
-            if (percent >= 100) { percent = 100; boxClass = "box-success"; }
+
+            let barColorClass = "bar-green";
+            if (percent >= 100) { percent = 100; barColorClass = "bar-full"; boxClass = "box-success"; }
+            else if (percent > 50) { barColorClass = "bar-green"; }
+            else if (percent >= 26) { barColorClass = "bar-orange"; }
+            else { barColorClass = "bar-red"; }
             if (farz === 3) boxClass = "box-danger";
 
             let row = `<div class="habit-card"><div class="vakit-isim-box ${boxClass}"><span class="vakit-ad">${vakitler[vIdx]}</span></div><div class="circles-row">`;
             basliklar.forEach((b, bIdx) => {
                 row += `<div style="text-align:center"><div class="circle s${v.durumlar[bIdx]}" onclick="window.degis(${vIdx}, ${bIdx}, 'vakit')"></div><span class="label-text" onclick="window.showStats('${vakitler[vIdx]} ${b}', 'vakit', ${vIdx}, ${bIdx})">${b}</span></div>`;
             });
-            vDiv.innerHTML += row + '</div><div class="progress-zone"><div class="progress-percent">${percent}%</div><div class="progress-bg"><div class="progress-bar ${barColorClass}" style="width: ${percent}%;"></div></div><div class="progress-label">Başarım</div></div></div>';
+            vDiv.innerHTML += row + `</div><div class="progress-zone"><div class="progress-percent">${percent}%</div><div class="progress-bg"><div class="progress-bar ${barColorClass}" style="width: ${percent}%;"></div></div><div class="progress-label">Başarım</div></div></div>`;
         });
 
         const oDiv = document.getElementById('ozelList');
@@ -187,11 +192,21 @@
     }
 
     window.gitBugun = () => { seciliTarih = new Date(); veriYukle(); };
+    
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         document.getElementById('statTitle').innerHTML = `<h2 style="text-align:center; color:#7fbbff; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">Renklerin Anlamı</h2>`;
-        grid.innerHTML = `<div style="font-size:12.5px; line-height:1.5; color:#eee;"><p><b style="color:var(--orange)">[ FARZ ]</b><br>s1:Vakit s2:Cemaat s4:Kaza s3:Kaza Kaldı</p><p><b style="color:var(--light-green)">[ SÜNNET ]</b><br>s1:Kılındı s3:Kılınmadı</p><p><b style="color:var(--blue)">[ TESBİHAT ]</b><br>s1:Tam s2:Nafile s3:Yapılmadı</p></div>`;
+        grid.innerHTML = `
+        <div style="font-size:12.5px; line-height:1.5; color:#eee;">
+            <p><b style="color:var(--orange)">[ FARZ NAMAZI ]</b><br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Vaktinde (%30) | <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Cemaat (%50)<br>
+            <span class="circle s4" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kaza (%20) | <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kazaya Kaldı</p>
+            <p><b style="color:var(--light-green)">[ SÜNNET ]</b><br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılındı (%25) | <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılınmadı</p>
+            <p><b style="color:var(--blue)">[ TESBİHAT ]</b><br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Tam (%25) | <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Nafile (%25)</p>
+        </div>`;
         modal.style.display = 'block';
     };
 
@@ -199,7 +214,8 @@
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div><div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>
+        <div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
         let table = `<table style="width:100%; border-spacing:1px; table-layout:fixed;"><thead><tr><th style="width:25px; font-size:10px; opacity:0.5;"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
@@ -249,7 +265,7 @@
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bi},'${id}')">❮</button><span style="font-size:13px;">${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bi},'${id}')">❯</button></div><div style="text-align:center; font-size:12px; color:var(--blue); margin-bottom:10px;">${ayYilStr}</div>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span style="font-size:13px;">${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div><div style="text-align:center; font-size:12px; color:var(--blue); margin-bottom:10px;">${ayYilStr}</div>`;
         let gridHtml = `<div class="calendar-grid">`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
@@ -257,9 +273,8 @@
             let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
             let val = "", cls = "s0";
             if (v) {
-                if (tip === 'vakit') cls = "s" + (v.vakitler[vIdx].durumlar[bIdx] || 0);
+                if (tip === 'vakit') { cls = "s" + (v.vakitler[vIdx].durumlar[bIdx] || 0); }
                 else { 
-                    // DÜZELTME: Hem ID hem de isim üzerinden arama yapılarak veri kaybı engellendi
                     let o = (v.ozeller || []).find(x => x.id === id) || (v.ozeller || []).find(x => x.ad === ad);
                     if (o) {
                         if (o.tip === 'sayi' && o.durum && o.durum != 0) { cls = 's2'; val = `<b>${o.durum}</b>`; }
@@ -283,6 +298,7 @@
     window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; raporTarih = new Date(); };
     window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
+    
     window.degis = (i, s, t) => {
         if (t === 'ozel_renk') gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum + 1) % 5;
         else {
@@ -294,12 +310,14 @@
         }
         render();
     };
+    
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v === "" ? 0 : v; render(); };
     window.yeniEkle = () => { const ad = document.getElementById('habInp').value; if(!ad) return; let g = getGlobalOzeller(); g.push({ id: 'id' + Date.now(), ad, tip: confirm("Sayısal veri mi?") ? 'sayi' : 'renk', arsiv: false }); saveGlobalOzeller(g); document.getElementById('habInp').value = ""; veriYukle(); };
     window.silSecenekleri = (id) => { if(confirm("Arşivlensin mi?")) { let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) g[idx].arsiv = true; saveGlobalOzeller(g); veriYukle(); } };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k && k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { document.getElementById('fileInp').click(); };
     window.processFile = (inp) => { let fr = new FileReader(); fr.onload = () => { let d = JSON.parse(fr.result); Object.keys(d).forEach(k => localStorage.setItem(k, d[k])); location.reload(); }; fr.readAsText(inp.files[0]); };
+    
     veriYukle();
 </script>
 </body>
