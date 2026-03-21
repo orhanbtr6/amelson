@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.29</title>
+    <title>Amel Defteri V.21.31</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
@@ -25,20 +25,23 @@
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
         .circles-row { display: flex; gap: 8px; align-items: center; }
         
-        /* BAŞARIM BARI VE YAZISI */
         .progress-zone { width: 85px; text-align: right; font-size: 9px; opacity: 0.9; margin-left: 5px; }
         .progress-bg { background: rgba(255,255,255,0.1); height: 5px; border-radius: 10px; overflow: hidden; margin-top: 2px; }
-        .progress-bar { background: var(--dark-green); height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s ease-in-out; }
-        .progress-bar.p100 { background: var(--light-green); }
+        .progress-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s ease-in-out; }
+        
+        /* Bar Renk Sınıfları */
+        .bar-red { background: var(--red); }
+        .bar-orange { background: var(--orange); }
+        .bar-green { background: var(--dark-green); }
+        .bar-full { background: var(--light-green); }
+
         .progress-percent { font-weight: bold; font-size: 10px; color: #fff; }
-        .progress-label { color: #ccc; font-size: 9.5px; font-weight: 500; } /* Geliştirilen Başarım Yazısı */
+        .progress-label { color: #ccc; font-size: 9.5px; font-weight: 500; }
         
         .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 5px; }
         .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 4px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
         .sayi-input { width: 85%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 6px 0; border-radius: 8px; margin: 5px auto; outline: none; }
         .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
-        
-        /* GELİŞTİRİLEN PUNTO (Farz, Sünnet, Tesbihat) */
         .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; cursor: pointer; display: block; }
         
         .s0 { background: rgba(255,255,255,0.05); } 
@@ -154,16 +157,29 @@
             const farz = v.durumlar[0], sunnet = v.durumlar[1], tesbih = v.durumlar[2];
             
             let percent = 0;
+            // 1. Farz Hesabı: Vaktinde (%30), Cemaat (%50), Kaza (%20)
             if (farz === 1) percent += 30; else if (farz === 2) percent += 50; else if (farz === 4) percent += 20;
+            // 2. Sünnet Hesabı: %25
             if (sunnet === 1 || sunnet === 2) percent += 25;
-            if (tesbih === 1) percent += 15; else if (tesbih === 2) percent += 25;
+            // 3. Tesbihat Hesabı: Yeşil ise (Açık veya Koyu farketmez) %25
+            if (tesbih === 1 || tesbih === 2) percent += 25;
+
+            // Bar Rengi Mantığı
+            let barColorClass = "bar-green";
+            if (percent >= 100) { 
+                percent = 100; 
+                barColorClass = "bar-full"; // %100 ise Açık Yeşil
+                boxClass = "box-success"; 
+            }
+            else if (percent > 50) { barColorClass = "bar-green"; }
+            else if (percent >= 26) { barColorClass = "bar-orange"; }
+            else { barColorClass = "bar-red"; }
 
             if (farz === 3) boxClass = "box-danger";
-            else if (percent >= 100) { boxClass = "box-success"; percent = 100; }
 
             let pBarHtml = `<div class="progress-zone">
                 <div class="progress-percent">${percent}%</div>
-                <div class="progress-bg"><div class="progress-bar ${percent===100?'p100':''}" style="width: ${percent}%;"></div></div>
+                <div class="progress-bg"><div class="progress-bar ${barColorClass}" style="width: ${percent}%;"></div></div>
                 <div class="progress-label">Başarım</div>
             </div>`;
 
@@ -186,7 +202,7 @@
         });
     }
 
-    // FONKSİYONLARIN TAMAMI KORUNDU
+    // Fonksiyonların tamamı korundu
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
@@ -194,16 +210,16 @@
         grid.innerHTML = `
         <div style="font-size:12.5px; line-height:1.5; color:#eee;">
             <p><b style="color:var(--orange)">[ FARZ NAMAZI ]</b><br>
-            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Vaktinde Kılındı<br>
-            <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Cemaatle Kılındı<br>
-            <span class="circle s4" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kaza Edildi<br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Vaktinde Kılındı (%30)<br>
+            <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Cemaatle Kılındı (%50)<br>
+            <span class="circle s4" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kaza Edildi (%20)<br>
             <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kazaya Kaldı</p>
             <p><b style="color:var(--light-green)">[ SÜNNET ]</b><br>
-            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılındı / Vaktinde<br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılındı / Vaktinde (%25)<br>
             <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılınmadı</p>
-            <p><b style="color:var(--blue)">[ TESBİHAT / DİĞER ]</b><br>
-            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Tam Yapıldı<br>
-            <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Nafile / Ekstra<br>
+            <p><b style="color:var(--blue)">[ TESBİHAT ]</b><br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Tam Yapıldı (%25)<br>
+            <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Nafile / Ekstra (%25)<br>
             <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Yapılmadı</p>
         </div>`;
         modal.style.display = 'block';
