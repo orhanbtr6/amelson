@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.26</title>
+    <title>Amel Defteri V.21.27</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
@@ -25,7 +25,7 @@
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
         .circles-row { display: flex; gap: 8px; align-items: center; }
         
-        /* TAMAMLANMA BARI VE YÜZDE ALANI (image_1.png referanslı) */
+        /* BAŞARIM BARI */
         .progress-zone { width: 85px; text-align: right; font-size: 9px; opacity: 0.9; margin-left: 5px; }
         .progress-label { color: #aaa; margin-bottom: 2px; }
         .progress-bg { background: rgba(255,255,255,0.1); height: 5px; border-radius: 10px; overflow: hidden; }
@@ -54,11 +54,6 @@
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; min-width: 0; }
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-        .settings-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
-        .settings-label { display: block; font-size: 13px; color: #7fbbff; margin-bottom: 8px; font-weight: bold; }
-        .time-input { background: #0b3d59; color: white; border: 1px solid var(--blue); padding: 8px; border-radius: 8px; width: 100%; font-size: 16px; outline: none; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
-        .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; }
     </style>
 </head>
 <body>
@@ -98,14 +93,6 @@
     <div class="modal-content">
         <button class="close-x" onclick="closeSettings()">✕</button>
         <h3 style="text-align:center; color:var(--blue); margin-bottom:20px;">Ayarlar</h3>
-        <div class="settings-item">
-            <label class="settings-label">🔔 Günlük Hatırlatıcı</label>
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
-                <input type="time" id="remTime" class="time-input" value="22:00">
-                <button class="add-btn" style="padding:8px 12px; font-size:12px;" onclick="setReminder()">KUR</button>
-            </div>
-            <small id="remStatus" style="display:block; margin-top:8px; font-size:10px; color:var(--light-green); opacity:0.8;"></small>
-        </div>
         <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="exportData()">💾 Verileri Yedekle (.json)</button>
         <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="importData()">📂 Yedekten Geri Yükle</button>
     </div>
@@ -160,20 +147,27 @@
             let boxClass = "box-default";
             const farz = v.durumlar[0], sunnet = v.durumlar[1], tesbih = v.durumlar[2];
             
-            // Tamamlanma Yüzdesi Hesaplama (Farz:50, Sunnet:30, Tesbihat:20)
+            // YENİ BAŞARIM HESAPLAMA KURALLARI
             let percent = 0;
-            if (farz === 1 || farz === 2 || farz === 4) percent += 50;
-            if (sunnet === 1 || sunnet === 2) percent += 30;
-            if (tesbih === 1 || tesbih === 2) percent += 20;
+            // 1. Farz Kuralları
+            if (farz === 1) percent += 30; // Vaktinde
+            else if (farz === 2) percent += 50; // Cemaatle
+            else if (farz === 4) percent += 20; // Kaza edildi (Turuncu)
+            
+            // 2. Sünnet Kuralı
+            if (sunnet === 1 || sunnet === 2) percent += 25;
+            
+            // 3. Tesbihat Kuralları
+            if (tesbih === 1) percent += 15; // Koyu yeşil
+            else if (tesbih === 2) percent += 25; // Açık yeşil
 
             if (farz === 3) boxClass = "box-danger";
-            else if (percent === 100) boxClass = "box-success";
+            else if (percent >= 100) { boxClass = "box-success"; percent = 100; }
 
-            // image_1.png referanslıPROGRESS BAR EKLENTİSİ
             let pBarHtml = `<div class="progress-zone">
                 <div class="progress-percent">${percent}%</div>
                 <div class="progress-bg"><div class="progress-bar ${percent===100?'p100':''}" style="width: ${percent}%;"></div></div>
-                <div class="progress-label">Tamamlanma</div>
+                <div class="progress-label">Başarım</div>
             </div>`;
 
             let row = `<div class="habit-card">
@@ -182,7 +176,7 @@
             basliklar.forEach((b, bIdx) => {
                 row += `<div style="text-align:center"><div class="circle s${v.durumlar[bIdx]}" onclick="window.degis(${vIdx}, ${bIdx}, 'vakit')"></div><span class="label-text" onclick="window.showStats('${vakitler[vIdx]} ${b}', 'vakit', ${vIdx}, ${bIdx})">${b}</span></div>`;
             });
-            vDiv.innerHTML += row + '</div>' + pBarHtml + '</div>'; // Bar en sağa eklendi
+            vDiv.innerHTML += row + '</div>' + pBarHtml + '</div>';
         });
 
         const oDiv = document.getElementById('ozelList');
@@ -195,43 +189,25 @@
         });
     }
 
-    // BİLDİRİM FONKSİYONLARI - KORUNDU
-    window.setReminder = () => {
-        const time = document.getElementById('remTime').value;
-        Notification.requestPermission().then(p => {
-            if (p === "granted") {
-                localStorage.setItem('amel_reminder_time', time);
-                document.getElementById('remStatus').innerText = `✓ Saat ${time} aktif.`;
-            }
-        });
-    };
-    function checkNotification() {
-        const savedTime = localStorage.getItem('amel_reminder_time');
-        if (!savedTime) return;
-        setInterval(() => {
-            const now = new Date();
-            const current = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            if (current === savedTime && now.getSeconds() < 12) {
-                const lastSent = localStorage.getItem('last_notif_min');
-                if (lastSent !== current) {
-                    new Notification("Amel Defteri", { body: "Bugün Amel defterini doldurdun mu?", requireInteraction: true });
-                    if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
-                    localStorage.setItem('last_notif_min', current);
-                }
-            }
-        }, 12000);
-    }
-
-    // V.21.4'TEN GERİ YÜKLENEN GÖRSEL FONKSİYONLAR - KORUNDU
+    // V.21.25 İLE AYNI OLAN BİLGİ (i) PANELI - TAM KORUMA
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         document.getElementById('statTitle').innerHTML = `<h2 style="text-align:center; color:#7fbbff; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">Renklerin Anlamı</h2>`;
         grid.innerHTML = `
         <div style="font-size:12.5px; line-height:1.5; color:#eee;">
-            <p><b style="color:var(--orange)">[ FARZ ]</b> 1: Vakit, 2: Cemaat, 4: Kaza, 3: Kaza Kal</p>
-            <p><b style="color:var(--light-green)">[ SÜNNET ]</b> 1: Kılındı, 3: Kılınmadı</p>
-            <p><b style="color:var(--blue)">[ TESBİHAT ]</b> 1: Yapıldı, 2: Nafile, 3: Yapılmadı</p>
+            <p><b style="color:var(--orange)">[ FARZ NAMAZI ]</b><br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Vaktinde Kılındı<br>
+            <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Cemaatle Kılındı<br>
+            <span class="circle s4" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kaza Edildi<br>
+            <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kazaya Kaldı</p>
+            <p><b style="color:var(--light-green)">[ SÜNNET ]</b><br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılındı / Vaktinde<br>
+            <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılınmadı</p>
+            <p><b style="color:var(--blue)">[ TESBİHAT / DİĞER ]</b><br>
+            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Tam Yapıldı<br>
+            <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Nafile / Ekstra<br>
+            <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Yapılmadı</p>
         </div>`;
         modal.style.display = 'block';
     };
@@ -269,7 +245,6 @@
         modal.style.display = 'block';
     };
 
-    // STANDART İŞLEMLER
     window.showGeneralReport = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
@@ -291,6 +266,7 @@
         grid.innerHTML = table + `</tbody></table>`;
         modal.style.display = 'block';
     };
+
     window.showStats = (ad, tip, vIdx, bIdx = 0, id = '') => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
@@ -317,7 +293,8 @@
         grid.innerHTML = gridHtml + `</div>`;
         modal.style.display = 'block';
     };
-    window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; const st = localStorage.getItem('amel_reminder_time'); if(st) document.getElementById('remTime').value = st; };
+
+    window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
     window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; raporTarih = new Date(); };
     window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); veriYukle(); };
@@ -346,7 +323,6 @@
     window.processFile = (inp) => { let fr = new FileReader(); fr.onload = () => { let d = JSON.parse(fr.result); Object.keys(d).forEach(k => localStorage.setItem(k, d[k])); location.reload(); }; fr.readAsText(inp.files[0]); };
     
     veriYukle();
-    checkNotification();
 </script>
 </body>
 </html>
