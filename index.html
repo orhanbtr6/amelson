@@ -4,90 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.38</title>
+    <title>Amel Defteri V.21.39</title>
     
     <style>
+        /* ANA SAYFA VE GENEL STİLLER (V.21.34'E DÖNÜŞ) */
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { width: 100%; max-width: 500px; margin: auto; padding-bottom: 150px; }
         
-        .main-title-container { text-align: center; margin: 15px 0; cursor: pointer; }
-        .main-title { font-size: 20px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.5px; text-transform: uppercase; }
-        .version-tag { font-size: 9px; opacity: 0.4; vertical-align: super; }
+        .main-title-container { text-align: center; margin: 18px 0; cursor: pointer; transition: transform 0.1s; }
+        .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
+        .version-tag { font-size: 9px; opacity: 0.4; vertical-align: super; margin-left: 4px; font-weight: normal; letter-spacing: 0; }
 
-        .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 8px; border-radius: 15px; margin-bottom: 8px; }
-        .date-display-box { text-align: center; cursor: pointer; padding: 4px 10px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 90px; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 8px; }
+        .date-nav { display: flex; align-items: center; gap: 5px; }
+        .date-display-box { text-align: center; cursor: pointer; padding: 5px 12px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 100px; }
         #hiddenDate { position: absolute; opacity: 0; left: 0; top: 0; width: 100%; height: 100%; cursor: pointer; }
-        .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 6px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; }
-        .info-btn { background: var(--blue); width: 28px; height: 28px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; }
+        .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
-        .habit-card { background: var(--card); border-radius: 12px; padding: 8px; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; gap: 5px; }
-        .vakit-isim-box { padding: 5px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); min-width: 85px; text-align: center; }
-        .vakit-ad { font-weight: bold; font-size: 10px; }
-        .circles-row { display: flex; gap: 6px; align-items: center; }
+        .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; }
+        .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
+        .circles-row { display: flex; gap: 8px; align-items: center; }
         
-        .progress-zone { width: 75px; text-align: right; font-size: 8px; opacity: 0.9; }
-        .progress-bg { background: rgba(255,255,255,0.1); height: 4px; border-radius: 10px; overflow: hidden; }
-        .progress-bar { height: 100%; width: 0%; transition: width 0.3s; }
+        .progress-zone { width: 85px; text-align: right; font-size: 9px; opacity: 0.9; margin-left: 5px; }
+        .progress-bg { background: rgba(255,255,255,0.1); height: 5px; border-radius: 10px; overflow: hidden; margin-top: 2px; }
+        .progress-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s ease-in-out; }
         
         .bar-red { background: var(--red); }
         .bar-orange { background: var(--orange); }
         .bar-green { background: var(--dark-green); }
         .bar-full { background: var(--light-green); }
 
-        .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .ozel-card { background: var(--card); border-radius: 8px; padding: 6px 2px; text-align: center; }
-        .sayi-input { width: 80%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 4px 0; border-radius: 6px; font-size: 12px; }
-        .circle { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); cursor: pointer; }
-        .label-text { font-size: 9px; font-weight: 600; margin-top: 3px; color: #a5d3ff; }
+        .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 5px; }
+        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 4px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .sayi-input { width: 85%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 6px 0; border-radius: 8px; margin: 5px auto; outline: none; }
+        .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
+        .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; cursor: pointer; display: block; }
         
         .s0 { background: rgba(255,255,255,0.05); } 
         .s1 { background: var(--dark-green); } 
         .s2 { background: var(--light-green); } 
         .s3 { background: var(--red); } 
         .s4 { background: var(--orange); }
-        .box-default { background: rgba(127, 187, 255, 0.1); }
-        .box-success { background: rgba(144, 238, 144, 0.2); border-color: rgba(144, 238, 144, 0.3); }
-        .box-danger { background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.3); }
+        .box-default { background: rgba(127, 187, 255, 0.15); }
+        .box-success { background: rgba(144, 238, 144, 0.25); border-color: rgba(144, 238, 144, 0.4); }
+        .box-danger { background: rgba(231, 76, 60, 0.25); border-color: rgba(231, 76, 60, 0.4); }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; padding: 10px; }
-        .modal-content { background: #082d42; margin: 0 auto; padding: 10px; width: 100%; max-width: 380px; border-radius: 12px; border: 1px solid var(--blue); position: relative; max-height: 95vh; overflow-y: auto; }
-        .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; z-index: 2100; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
+        .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 420px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
+        .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; z-index: 2100; display: flex; align-items: center; justify-content: center;}
         
-        .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 10px; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 12px 12px 0 0; }
-        input[type="text"] { flex: 1; border-radius: 15px; border: none; padding: 10px; background: rgba(255,255,255,0.1); color: white; }
-        .add-btn { background: var(--dark-green); color: white; border: none; padding: 8px 15px; border-radius: 15px; font-weight: bold; }
+        /* GENEL RAPOR TABLO DÜZENLEMESİ (DARALTILMIŞ VE KARE) */
+        .report-table { width: auto; margin: 0 auto; border-spacing: 2.5px; border-collapse: separate; }
+        .report-table th { width: 30px; height: 30px; font-size: 10px; color: var(--blue); text-align: center; vertical-align: middle; }
+        .report-table td { width: 30px; height: 30px; text-align: center; border-radius: 4px; cursor: pointer; }
+        .day-label { color: #a5d3ff; font-weight: bold; font-size: 10px; }
+
+        .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; }
+        input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
+        .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
         
-        /* V.21.38 KOMPAKT TABLO TASARIMI */
-        .report-table { margin: 0 auto; border-spacing: 2px; }
-        .report-table th { width: 28px; height: 24px; font-size: 9px; color: var(--blue); text-align: center; }
-        .report-table td { width: 28px; height: 25px; text-align: center; border-radius: 3px; cursor: pointer; font-size: 9px; }
-        .day-label { color: #a5d3ff; font-weight: bold; }
-        
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-top: 8px; }
-        .cal-box { aspect-ratio: 1; border-radius: 4px; font-size: 8px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
+        .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.38</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.39</span>
     </div>
     <div class="nav-header">
-        <div class="date-nav" style="display:flex; align-items:center; gap:5px;">
+        <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
             <div class="date-display-box">
-                <div id="dispDate" style="font-weight: bold; font-size: 13px;"></div>
-                <div id="isToday" style="font-size: 8px; color: var(--light-green); font-weight:bold;"></div>
+                <div id="dispDate" style="font-weight: bold; font-size: 14px;"></div>
+                <div id="isToday" style="font-size: 9px; color: var(--light-green); font-weight:bold;"></div>
                 <input type="date" id="hiddenDate" onchange="window.tarihSec(this.value)">
             </div>
             <button class="nav-btn" onclick="degistirTarih(1)">❯</button>
         </div>
-        <div style="display:flex; gap:4px;">
-            <button class="nav-btn" style="background:var(--blue); font-size: 9px;" onclick="showGeneralReport()">📊 GENEL</button>
-            <button class="nav-btn" style="background:var(--orange); font-size: 9px;" onclick="showYearlyReport()">📅 YILLIK</button>
+        <div style="display:flex; gap:5px; align-items:center;">
+            <button class="nav-btn" style="background:var(--blue); font-size: 10px;" onclick="showGeneralReport()">📊 GENEL</button>
+            <button class="nav-btn" style="background:var(--orange); font-size: 10px;" onclick="showYearlyReport()">📅 YILLIK</button>
             <button class="info-btn" onclick="window.showHelp()">i</button>
         </div>
     </div>
@@ -100,22 +102,23 @@
         <button class="close-x" onclick="closeModal()">✕</button>
         <div id="statTitle"></div>
         <div id="calGrid"></div>
+        <button class="add-btn" style="width:100%; background:var(--blue); margin-top:20px;" onclick="closeModal()">KAPAT</button>
     </div>
 </div>
 
 <div id="settingsModal" class="modal">
     <div class="modal-content">
         <button class="close-x" onclick="closeSettings()">✕</button>
-        <h3 style="text-align:center; color:var(--blue); margin:5px 0;">Ayarlar</h3>
-        <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="exportData()">💾 Yedekle</button>
-        <button class="add-btn" style="width:100%; background:rgba(255,255,255,0.1);" onclick="importData()">📂 Geri Yükle</button>
+        <h3 style="text-align:center; color:var(--blue);">Ayarlar</h3>
+        <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="exportData()">💾 Verileri Yedekle</button>
+        <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="importData()">📂 Yedekten Geri Yükle</button>
     </div>
 </div>
 
 <div class="footer">
-    <input type="text" id="habInp" placeholder="Yeni amel...">
+    <input type="text" id="habInp" placeholder="Yeni amel yaz...">
     <button class="add-btn" onclick="yeniEkle()">EKLE</button>
-    <button onclick="openSettings()" style="background:none; border:none; font-size:20px;">⚙️</button>
+    <button onclick="openSettings()" style="background:none; border:none; font-size:22px;">⚙️</button>
     <input type="file" id="fileInp" style="display:none" onchange="processFile(this)">
 </div>
 
@@ -152,7 +155,7 @@
 
     function render() {
         localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
-        document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+        document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
         document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
         
         const vDiv = document.getElementById('vakitList');
@@ -164,16 +167,18 @@
             if (farz === 1) percent += 30; else if (farz === 2) percent += 50; else if (farz === 4) percent += 20;
             if (sunnet === 1 || sunnet === 2) percent += 25;
             if (tesbih === 1 || tesbih === 2) percent += 25;
-
-            let barColorClass = (percent >= 100) ? "bar-full" : (percent > 50 ? "bar-green" : (percent >= 26 ? "bar-orange" : "bar-red"));
-            if (percent >= 100) boxClass = "box-success";
+            let barColorClass = "bar-green";
+            if (percent >= 100) { percent = 100; barColorClass = "bar-full"; boxClass = "box-success"; }
+            else if (percent > 50) { barColorClass = "bar-green"; }
+            else if (percent >= 26) { barColorClass = "bar-orange"; }
+            else { barColorClass = "bar-red"; }
             if (farz === 3) boxClass = "box-danger";
 
             let row = `<div class="habit-card"><div class="vakit-isim-box ${boxClass}"><span class="vakit-ad">${vakitler[vIdx]}</span></div><div class="circles-row">`;
             basliklar.forEach((b, bIdx) => {
                 row += `<div style="text-align:center"><div class="circle s${v.durumlar[bIdx]}" onclick="window.degis(${vIdx}, ${bIdx}, 'vakit')"></div><span class="label-text" onclick="window.showStats('${vakitler[vIdx]} ${b}', 'vakit', ${vIdx}, ${bIdx})">${b}</span></div>`;
             });
-            vDiv.innerHTML += row + `</div><div class="progress-zone"><div style="font-weight:bold;">${Math.min(percent, 100)}%</div><div class="progress-bg"><div class="progress-bar ${barColorClass}" style="width: ${Math.min(percent, 100)}%;"></div></div></div></div>`;
+            vDiv.innerHTML += row + `</div><div class="progress-zone"><div class="progress-percent">${percent}%</div><div class="progress-bg"><div class="progress-bar ${barColorClass}" style="width: ${percent}%;"></div></div><div class="progress-label">Başarım</div></div></div>`;
         });
 
         const oDiv = document.getElementById('ozelList');
@@ -182,25 +187,27 @@
             const globalListe = getGlobalOzeller();
             if (globalListe.find(g => g.id === o.id && g.arsiv) && (o.durum == 0 || o.durum == "")) return;
             let displayValue = (o.durum === 0 || o.durum === "0") ? "" : o.durum;
-            let ctrl = o.tip === 'sayi' ? `<input type="number" value="${displayValue}" placeholder="0" class="sayi-input" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div style="display:flex; justify-content:center; padding:3px;"><div class="circle s${o.durum}" style="width:24px; height:24px;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div></div>`;
-            oDiv.innerHTML += `<div class="ozel-card"><b style="font-size:10px; cursor:pointer;" onclick="window.showStats('${o.ad.replace(/'/g,"\\'")}', 'ozel', 0, 0, '${o.id}')">${o.ad}</b>${ctrl}</div>`;
+            let ctrl = o.tip === 'sayi' ? `<input type="number" value="${displayValue}" placeholder="0" class="sayi-input" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div style="display:flex; justify-content:center; padding:5px;"><div class="circle s${o.durum}" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div></div>`;
+            oDiv.innerHTML += `<div class="ozel-card"><b style="font-size:11px; cursor:pointer;" onclick="window.showStats('${o.ad.replace(/'/g,"\\'")}', 'ozel', 0, 0, '${o.id}')">${o.ad}</b>${ctrl}<br><small onclick="window.silSecenekleri('${o.id}')" style="opacity:0.3; font-size:9px; cursor:pointer;">Arşivle</small></div>`;
         });
     }
 
-    window.gitBugun = () => { seciliTarih = new Date(); veriYukle(); };
-
+    // GENEL RAPOR - DARALTILMIŞ TABLO FONKSİYONU
     window.showGeneralReport = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         document.getElementById('statTitle').innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button>
-                <span style="font-weight:bold; font-size:14px;">${ayYilStr}</span>
+                <span style="font-weight:bold;">${ayYilStr}</span>
                 <button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button>
             </div>
-            <div style="display:flex; justify-content:center; gap:4px; margin-bottom:10px;">
-                ${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:9px; padding:4px 8px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}
+            <div style="display:flex; justify-content:center; gap:5px; margin-bottom:12px;">
+                ${basliklar.map((b,i)=>`
+                    <button class="nav-btn" style="font-size:10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" 
+                    onclick="window.setGenRaporTip(${i})">${b}</button>
+                `).join('')}
             </div>`;
 
         let html = `<table class="report-table"><thead><tr><th></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
@@ -219,11 +226,28 @@
         modal.style.display = 'block';
     };
 
+    // DİĞER FONKSİYONLAR (V.21.34'ÜN ORİJİNAL MANTIĞI)
+    window.gitBugun = () => { seciliTarih = new Date(); veriYukle(); };
+    window.showHelp = () => {
+        const modal = document.getElementById('statModal');
+        const grid = document.getElementById('calGrid');
+        document.getElementById('statTitle').innerHTML = `<h2 style="text-align:center; color:#7fbbff; margin-bottom:10px;">Renkler</h2>`;
+        grid.innerHTML = `<div style="font-size:12.5px; line-height:1.5; color:#eee;"><p><b style="color:var(--orange)">[ FARZ ]</b><br>1:Vakit 2:Cemaat 4:Kaza 3:Kazaya Kaldı</p><p><b style="color:var(--light-green)">[ SÜNNET ]</b><br>1:Kılındı 3:Kılınmadı</p></div>`;
+        modal.style.display = 'block';
+    };
+    window.showYearlyReport = () => {
+        const modal = document.getElementById('statModal');
+        const grid = document.getElementById('calGrid');
+        const yil = raporTarih.getFullYear();
+        document.getElementById('statTitle').innerHTML = `<b style="font-size:15px;">${yil} ÖZETİ</b>`;
+        grid.innerHTML = `<p style="text-align:center; opacity:0.5;">Yıllık veriler hesaplanıyor...</p>`;
+        modal.style.display = 'block';
+    };
     window.showStats = (ad, tip, vIdx, bIdx = 0, id = '') => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span style="font-size:12px;">${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div><div style="text-align:center; font-size:11px; color:var(--blue); margin-bottom:8px;">${ayYilStr}</div>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span>${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div>`;
         let gridHtml = `<div class="calendar-grid">`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
@@ -238,12 +262,11 @@
                     else if (o && o.tip !== 'sayi' && o.durum > 0) { cls = 's' + o.durum; }
                 }
             }
-            gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:1px; left:1px; opacity:0.4; font-size:7px;">${d}</small>${val}</div>`;
+            gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:2px; left:2px; opacity:0.4; font-size:8px;">${d}</small>${val}</div>`;
         }
         grid.innerHTML = gridHtml + `</div>`;
         modal.style.display = 'block';
     };
-
     window.ayDegis = (n, ad, t, vi, bi, id) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showStats(ad, t, vi, bi, id); };
     window.ayRaporuDegis = (n) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showGeneralReport(); };
     window.gitTarih = (d) => { seciliTarih = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d); closeModal(); veriYukle(); };
@@ -253,7 +276,6 @@
     window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; raporTarih = new Date(); };
     window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
-    
     window.degis = (i, s, t) => {
         if (t === 'ozel_renk') gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum + 1) % 5;
         else {
@@ -265,14 +287,12 @@
         }
         render();
     };
-    
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v === "" ? 0 : v; render(); };
     window.yeniEkle = () => { const ad = document.getElementById('habInp').value; if(!ad) return; let g = getGlobalOzeller(); g.push({ id: 'id' + Date.now(), ad, tip: confirm("Sayısal veri mi?") ? 'sayi' : 'renk', arsiv: false }); saveGlobalOzeller(g); document.getElementById('habInp').value = ""; veriYukle(); };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k && k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { document.getElementById('fileInp').click(); };
     window.processFile = (inp) => { let fr = new FileReader(); fr.onload = () => { let d = JSON.parse(fr.result); Object.keys(d).forEach(k => localStorage.setItem(k, d[k])); location.reload(); }; fr.readAsText(inp.files[0]); };
-    window.showYearlyReport = () => { /* Mevcut yıllık rapor kodunu buraya ekleyebilirsiniz */ };
-    window.showHelp = () => { /* Mevcut yardım kodunu buraya ekleyebilirsiniz */ };
+    window.silSecenekleri = (id) => { if(confirm("Arşivlensin mi?")) { let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) g[idx].arsiv = true; saveGlobalOzeller(g); veriYukle(); } };
     veriYukle();
 </script>
 </body>
