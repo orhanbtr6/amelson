@@ -67,10 +67,15 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
 
-        /* GENEL RAPOR TABLO - MAKSİMUM DARALTMA */
-        #calGrid table { width: 100%; border-spacing: 2px; table-layout: fixed; margin: 0 auto; max-width: 180px; } /* Tablo genişliği iyice daraltıldı */
+        #calGrid table { width: 100%; border-spacing: 2px; table-layout: fixed; margin: 0 auto; max-width: 180px; }
         #calGrid th { font-size: 10px; padding: 1px 0; color: var(--blue); text-align: center; }
-        #calGrid td { height: 14px; border-radius: 2px; cursor: pointer; } /* Satır yüksekliği hafifçe azaltıldı */
+        #calGrid td { height: 14px; border-radius: 2px; cursor: pointer; }
+
+        /* YARDIM BÖLÜMÜ STİLLERİ */
+        .help-section { text-align: left; font-size: 13px; line-height: 1.6; color: #ddd; }
+        .help-section h3 { color: var(--blue); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-top: 15px; font-size: 16px; }
+        .help-item { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .help-circle { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -201,16 +206,25 @@
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<h2 style="text-align:center; color:#7fbbff; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">Renklerin Anlamı</h2>`;
+        document.getElementById('statTitle').innerHTML = `<h2 style="text-align:center; color:#7fbbff; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px;">Kullanım Rehberi</h2>`;
         grid.innerHTML = `
-        <div style="font-size:12.5px; line-height:1.5; color:#eee;">
-            <p><b style="color:var(--orange)">[ FARZ NAMAZI ]</b><br>
-            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Vaktinde (%30) | <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Cemaat (%50)<br>
-            <span class="circle s4" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kaza (%20) | <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kazaya Kaldı</p>
-            <p><b style="color:var(--light-green)">[ SÜNNET ]</b><br>
-            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılındı (%25) | <span class="circle s3" style="width:10px; height:10px; display:inline-block; border:none;"></span> Kılınmadı</p>
-            <p><b style="color:var(--blue)">[ TESBİHAT ]</b><br>
-            <span class="circle s1" style="width:10px; height:10px; display:inline-block; border:none;"></span> Tam (%25) | <span class="circle s2" style="width:10px; height:10px; display:inline-block; border:none;"></span> Nafile (%25)</p>
+        <div class="help-section">
+            <p>Amel Defteri, günlük ibadetlerinizi ve hedeflerinizi takip etmenize yardımcı olur. Dairelere tıklayarak durum değiştirebilirsiniz.</p>
+            
+            <h3>Namaz Puanlaması</h3>
+            <div class="help-item"><div class="help-circle s1"></div> <b>Vaktinde:</b> Farz namazı vaktinde kılındı. (%30)</div>
+            <div class="help-item"><div class="help-circle s2"></div> <b>Cemaat:</b> Farz cemaatle kılındı. (%50)</div>
+            <div class="help-item"><div class="help-circle s4"></div> <b>Kaza:</b> Geçmiş bir namaz kaza edildi. (%20)</div>
+            <div class="help-item"><div class="help-circle s3"></div> <b>Kazaya Kaldı:</b> Namaz vaktinde kılınamadı.</div>
+            
+            <h3>Sünnet ve Tesbihat</h3>
+            <p>Sünnet ve Tesbihat kısımları toplam başarıyı %25'er oranda etkiler. Yeşil tam puan, kırmızı ise yapılmadı demektir.</p>
+            
+            <h3>Özel Ameller</h3>
+            <p>En alttaki bölüme "Kitap Okuma", "Spor" gibi kendi hedeflerinizi ekleyebilirsiniz. İster <b>Sayısal</b> (sayfa sayısı gibi) ister <b>Renk</b> bazlı takip yapabilirsiniz.</p>
+            
+            <h3>İstatistik ve Arşiv</h3>
+            <p>Herhangi bir başlığın ismine tıklayarak o amelin aylık takvimini görebilirsiniz. Artık takip etmek istemediğiniz özel amelleri altındaki "Arşivle" butonuyla kaldırabilir, Yıllık Özet kısmında toplamlarını görebilirsiniz.</p>
         </div>`;
         modal.style.display = 'block';
     };
