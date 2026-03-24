@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.39</title>
+    <title>Amel Defteri V.21.40</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
@@ -48,11 +48,9 @@
         .v-row-label-full { font-size: 9px; font-weight: bold; position: sticky; left: 0; background: #082d42; padding: 0 5px; width: 65px; z-index: 10; text-align: left; }
         .analysis-card { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 10px; margin-top: 10px; border: 1px solid rgba(52, 152, 219, 0.3); }
         .analysis-title { font-size: 11px; font-weight: bold; color: var(--blue); margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; }
-        .analysis-text { font-size: 10px; line-height: 1.4; }
+        .vakit-skor-row { display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
-        .help-section { margin-bottom: 15px; border-left: 3px solid var(--blue); padding-left: 10px; }
-        .help-title { color: var(--blue); font-weight: bold; font-size: 13px; margin-bottom: 5px; }
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
@@ -62,7 +60,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.39</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.40</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -125,19 +123,28 @@
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
         const globalListe = getGlobalOzeller();
+        const bugunZaman = new Date(seciliTarih).setHours(0,0,0,0);
         
         if (kaydedilmis) {
             gunlukVeriler = kaydedilmis;
             const mevcutIdler = (gunlukVeriler.ozeller || []).map(o => o.id);
-            globalListe.forEach(g => { if (!g.arsiv && !mevcutIdler.includes(g.id)) gunlukVeriler.ozeller.push({ ...g, durum: 0 }); });
+            globalListe.forEach(g => {
+                const eklendigiZaman = g.eklemeTarihi || 0;
+                if (!g.arsiv && !mevcutIdler.includes(g.id) && bugunZaman >= eklendigiZaman) {
+                    gunlukVeriler.ozeller.push({ ...g, durum: 0 });
+                }
+            });
+            // Arşivlenenleri ve ekleme tarihinden öncekileri temizle
             gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => {
                 const gHali = globalListe.find(g => g.id === o.id);
-                return (gHali && gHali.arsiv) ? (o.durum > 0) : true;
+                if(!gHali) return false;
+                if(gHali.arsiv) return (o.durum > 0);
+                return bugunZaman >= (gHali.eklemeTarihi || 0);
             });
         } else {
             gunlukVeriler = { 
                 vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
-                ozeller: globalListe.filter(g => !g.arsiv).map(g => ({ ...g, durum: 0 })) 
+                ozeller: globalListe.filter(g => !g.arsiv && bugunZaman >= (g.eklemeTarihi || 0)).map(g => ({ ...g, durum: 0 })) 
             };
         }
         render();
@@ -179,6 +186,7 @@
         for (let d = 1; d <= son; d++) table += `<th class="th-gun">${d}</th>`;
         table += `</tr></thead><tbody>`;
         let vSkor = [0,0,0,0,0], gunS = 0;
+        
         vakitler.forEach((vAd, vIdx) => {
             table += `<tr><td class="v-row-label-full">${vAd.split(" ")[0]}</td>`;
             for (let d = 1; d <= son; d++) {
@@ -186,18 +194,68 @@
                 let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
                 let dur = (v && v.vakitler[vIdx]) ? (v.vakitler[vIdx].durumlar[genRaporTipIdx] || 0) : 0;
                 table += `<td class="s${dur}" onclick="window.gitTarih(${d})"></td>`;
-                if(v && vIdx === 0) gunS++;
-                if(v) { let s=v.vakitler[vIdx].durumlar[0], p=(s==1?30:s==2?50:s==4?20:0); if(v.vakitler[vIdx].durumlar[1]>0) p+=25; if(v.vakitler[vIdx].durumlar[2]>0) p+=25; vSkor[vIdx]+=p; }
+                if(v) { 
+                    let s=v.vakitler[vIdx].durumlar[0], p=(s==1?30:s==2?50:s==4?20:0); 
+                    if(v.vakitler[vIdx].durumlar[1]>0) p+=25; 
+                    if(v.vakitler[vIdx].durumlar[2]>0) p+=25; 
+                    vSkor[vIdx]+=p;
+                    if(vIdx === 0) gunS++; // Kaydı olan gün sayısı
+                }
             }
             table += `</tr>`;
         });
+        
         let analiz = "";
         if(gunS > 0) {
-            let maxI=0, minI=0; vSkor.forEach((v,i)=>{if(v>vSkor[maxI]) maxI=i; if(v<vSkor[minI]) minI=i;});
-            analiz = `<div class="analysis-card"><div class="analysis-title">📊 AYLIK PERFORMANS ANALİZİ</div><div class="analysis-text">Maşallah Orhan hocam, bu ayki namaz istikrarınızı analiz ettim. Genel ortalamanız <b>%${Math.round(vSkor.reduce((a,b)=>a+b,0)/(gunS))}</b> olarak görünüyor. <br><br>🌟 <b>En Kuvvetli Vakit:</b> ${vakitler[maxI]} (%${Math.round(vSkor[maxI]/(gunS/5))}) - Bu vakitteki özeniniz daim olsun. <br>⚠️ <b>En Zayıf Vakit:</b> ${vakitler[minI]} (%${Math.round(vSkor[minI]/(gunS/5))}) - Bu vaktin bereketini artırmak için biraz daha gayret edebiliriz.</div></div>`;
+            const kayitliGunS = gunS;
+            analiz = `<div class="analysis-card"><div class="analysis-title">📊 VAKİT BAZLI BAŞARI (%)</div>`;
+            vSkor.forEach((skor, i) => {
+                let ort = Math.round(skor / kayitliGunS);
+                analiz += `<div class="vakit-skor-row"><span>${vakitler[i]}</span><b>%${ort}</b></div>`;
+            });
+            analiz += `</div>`;
         }
         grid.innerHTML = table + `</tbody></table></div>` + analiz;
         document.getElementById('statModal').style.display = 'block';
+    };
+
+    window.yeniEkle = () => { 
+        const ad = document.getElementById('habInp').value; 
+        if(!ad) return; 
+        let g = getGlobalOzeller(); 
+        g.push({ 
+            id: 'id_' + Date.now() + '_' + Math.floor(Math.random()*1000), 
+            ad, 
+            tip: confirm("Sayı mı?") ? 'sayi' : 'renk', 
+            arsiv: false,
+            eklemeTarihi: new Date().setHours(0,0,0,0) // Sadece bugun ve sonrasi icin
+        }); 
+        saveGlobalOzeller(g); 
+        document.getElementById('habInp').value = ""; 
+        veriYukle(); 
+    };
+
+    window.showStats = (ad, tip, vI, bI = 0, id = '') => {
+        const grid = document.getElementById('calGrid');
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad}','${tip}',${vI},${bI},'${id}')">❮</button><span>${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad}','${tip}',${vI},${bI},'${id}')">❯</button></div>`;
+        let gridH = `<div class="calendar-grid">`;
+        let s = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+        for (let d = 1; d <= s; d++) {
+            let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
+            let val = "", cls = "s0";
+            if (v) {
+                if (tip === 'vakit') cls = "s" + (v.vakitler[vI].durumlar[bI] || 0);
+                else { 
+                    let o = (v.ozeller || []).find(x => x.ad === ad); 
+                    if (o) { 
+                        if (o.tip === 'sayi' && o.durum > 0) { cls = 's2'; val = `<b>${o.durum}</b>`; } 
+                        else if (o.durum > 0) cls = 's' + o.durum; 
+                    } 
+                }
+            }
+            gridH += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:2px; left:2px; opacity:0.4; font-size:8px;">${d}</small>${val}</div>`;
+        }
+        grid.innerHTML = gridH + `</div>`; document.getElementById('statModal').style.display = 'block';
     };
 
     window.showYearlyReport = () => {
@@ -209,7 +267,6 @@
                 let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); if (!v) continue;
                 v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; });
                 (v.ozeller || []).forEach(vo => {
-                    // ID ne olursa olsun ISME gore topla
                     if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip }; 
                     if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); else if (vo.durum > 0) arsiv[vo.ad].t += 1;
                 });
@@ -226,33 +283,9 @@
         const grid = document.getElementById('calGrid'); document.getElementById('statTitle').innerHTML = `<h3>Kapsamlı Rehber</h3>`;
         grid.innerHTML = `
             <div class="help-section"><div class="help-title">Namaz Puanları (Farz)</div><div style="font-size:11px;">🟢 <b>Vaktinde:</b> %30 <br>🌿 <b>Cemaat:</b> %50 <br>🟠 <b>Kaza Edildi:</b> %20 <br>🔴 <b>Kazaya Kaldı:</b> %0 </div></div>
-            <div class="help-section"><div class="help-title">Sünnet ve Tesbihat</div><div style="font-size:11px;">Her biri yapıldığında <b>+%25</b> başarı ekler. Bir vakitten %100 almak için Farz(Vaktinde/Cemaat) + Sünnet + Tesbihat tam olmalıdır.</div></div>
-            <div class="help-section"><div class="help-title">Özel Ameller</div><div style="font-size:11px;">Sayısal veya renkli takip yapabilirsiniz. Arşivlenen amelleri aynı isimle tekrar eklerseniz, sistem bunları birleştirerek takvimde gösterir.</div></div>`;
+            <div class="help-section"><div class="help-title">Sünnet ve Tesbihat</div><div style="font-size:11px;">Her biri yapıldığında <b>+%25</b> başarı ekler.</div></div>
+            <div class="help-section"><div class="help-title">Dinamik Takip</div><div style="font-size:11px;">Yeni eklenen ameller sadece eklendiği gün ve sonrasında listelenir. Arşivlenen ameller ise ismen aranarak geçmiş verilerine ulaşılabilir.</div></div>`;
         document.getElementById('statModal').style.display = 'block';
-    };
-
-    window.showStats = (ad, tip, vI, bI = 0, id = '') => {
-        const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad}','${tip}',${vI},${bI},'${id}')">❮</button><span>${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad}','${tip}',${vI},${bI},'${id}')">❯</button></div>`;
-        let gridH = `<div class="calendar-grid">`;
-        let s = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        for (let d = 1; d <= s; d++) {
-            let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
-            let val = "", cls = "s0";
-            if (v) {
-                if (tip === 'vakit') cls = "s" + (v.vakitler[vI].durumlar[bI] || 0);
-                else { 
-                    // ISME gore arama yap (ID fakli olsa da bulsun)
-                    let o = (v.ozeller || []).find(x => x.ad === ad); 
-                    if (o) { 
-                        if (o.tip === 'sayi' && o.durum > 0) { cls = 's2'; val = `<b>${o.durum}</b>`; } 
-                        else if (o.durum > 0) cls = 's' + o.durum; 
-                    } 
-                }
-            }
-            gridH += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:2px; left:2px; opacity:0.4; font-size:8px;">${d}</small>${val}</div>`;
-        }
-        grid.innerHTML = gridH + `</div>`; document.getElementById('statModal').style.display = 'block';
     };
 
     window.degis = (i, s, t) => {
@@ -277,7 +310,6 @@
     window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v; render(); };
-    window.yeniEkle = () => { const ad = document.getElementById('habInp').value; if(!ad) return; let g = getGlobalOzeller(); g.push({ id: 'id_' + Date.now() + '_' + Math.floor(Math.random()*1000), ad, tip: confirm("Sayı mı?") ? 'sayi' : 'renk', arsiv: false }); saveGlobalOzeller(g); document.getElementById('habInp').value = ""; veriYukle(); };
     window.silSecenekleri = (id) => { if(confirm("Arşivlensin mi?")) { let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) g[idx].arsiv = true; saveGlobalOzeller(g); veriYukle(); } };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { document.getElementById('fileInp').click(); };
