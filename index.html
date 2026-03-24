@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.45</title>
+    <title>Amel Defteri V.21.46</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
@@ -14,15 +14,17 @@
         .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
         .version-tag { font-size: 9px; opacity: 0.4; vertical-align: super; margin-left: 4px; }
         
-        .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 8px; }
-        .date-display-box { text-align: center; cursor: pointer; padding: 5px 12px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 100px; }
+        /* Tarih Bölümü Düzeltmesi */
+        .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 8px 10px; border-radius: 20px; margin-bottom: 8px; }
+        .date-nav { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
+        .date-display-box { text-align: center; cursor: pointer; padding: 4px 10px; border-radius: 12px; position: relative; background: rgba(255,255,255,0.05); min-width: 110px; display: flex; flex-direction: column; align-items: center; }
         #hiddenDate { position: absolute; opacity: 0; left: 0; top: 0; width: 100%; height: 100%; cursor: pointer; }
-        .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; }
-        .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 14px; border-radius: 12px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+        .info-btn { background: var(--blue); width: 32px; height: 32px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
         
-        /* ANASAYFA V.21.42 TASARIMI (Geri Getirilen Kısım) */
+        /* Vakit Kutuları */
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; gap: 5px; }
-        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; }
+        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); transition: 0.3s; }
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
         .circles-row { display: flex; gap: 8px; align-items: center; }
         .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; margin: auto; }
@@ -31,8 +33,12 @@
         .progress-bg { background: rgba(255,255,255,0.1); height: 5px; border-radius: 10px; overflow: hidden; margin-top: 2px; }
         .progress-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s; }
         
-        /* Renkler */
-        .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
+        /* Dinamik Durum Renkleri */
+        .s0 { background: rgba(255,255,255,0.05); } 
+        .s1 { background: var(--dark-green); } 
+        .s2 { background: var(--light-green); } 
+        .s3 { background: var(--red); } 
+        .s4 { background: var(--orange); }
         .bar-red { background: var(--red); } .bar-orange { background: var(--orange); } .bar-green { background: var(--dark-green); } .bar-full { background: var(--light-green); }
 
         .ozel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 5px; }
@@ -40,10 +46,11 @@
         .ozel-card b { font-size: 9px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;}
         .ozel-active { background: rgba(144, 238, 144, 0.15) !important; border-color: rgba(144, 238, 144, 0.4) !important; }
 
-        /* RAPOR & MODAL (KORUNAN YENİ DÜZEN) */
+        /* Rapor Paneli & İstatistik */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 480px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
         .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; }
+        
         .genel-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; background: rgba(0,0,0,0.4); margin-top: 10px; padding: 5px; }
         .genel-table { border-collapse: separate; border-spacing: 2px; width: 100%; }
         .genel-table td { height: 16px; border-radius: 2px; }
@@ -55,7 +62,12 @@
         .bar-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; flex: 1; margin: 0 10px; }
         .bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--light-green)); border-radius: 4px; transition: width 0.5s; }
 
+        /* Kapsamlı Bilgi Kartları */
         .help-section { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid var(--blue); }
+        .help-title { color: var(--blue); font-weight: bold; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+        .help-text { font-size: 11px; line-height: 1.5; color: #ccc; }
+        .color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
@@ -66,7 +78,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.45</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.46</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -78,9 +90,9 @@
             </div>
             <button class="nav-btn" onclick="degistirTarih(1)">❯</button>
         </div>
-        <div style="display:flex; gap:5px; align-items:center;">
-            <button class="nav-btn" style="background:var(--blue); font-size: 10px;" onclick="showGeneralReport()">📊 GENEL</button>
-            <button class="nav-btn" style="background:var(--orange); font-size: 10px;" onclick="showYearlyReport()">📅 YILLIK</button>
+        <div style="display:flex; gap:4px; align-items:center;">
+            <button class="nav-btn" style="background:var(--blue); font-size: 9px; padding: 8px;" onclick="showGeneralReport()">📊 GENEL</button>
+            <button class="nav-btn" style="background:var(--orange); font-size: 9px; padding: 8px;" onclick="showYearlyReport()">📅 YILLIK</button>
             <button class="info-btn" onclick="window.showHelp()">i</button>
         </div>
     </div>
@@ -161,13 +173,16 @@
         
         const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
-            let percent = 0; const farz = v.durumlar[0];
-            if (farz === 1) percent += 30; else if (farz === 2) percent += 50; else if (farz === 4) percent += 20;
-            if (v.durumlar[1] > 0) percent += 25; if (v.durumlar[2] > 0) percent += 25;
+            let percent = 0; 
+            const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
             
+            if (f === 1) percent += 30; else if (f === 2) percent += 50; else if (f === 4) percent += 20;
+            if (s > 0) percent += 25; if (t > 0) percent += 25;
+            
+            // Dinamik Vakit Başlık Rengi
             let boxClass = "";
-            if (farz === 3) boxClass = "s3"; 
-            else if (percent >= 100) boxClass = "s2";
+            if (f === 3) boxClass = "s3"; // Farz Kırmızı ise Başlık Kırmızı
+            else if ((f===1||f===2) && (s===1||s===2) && (t===1||t===2)) boxClass = "s1"; // Üçü de yeşilse Koyu Yeşil
 
             let barColor = percent >= 100 ? "bar-full" : (percent > 50 ? "bar-green" : (percent >= 26 ? "bar-orange" : "bar-red"));
             
@@ -217,27 +232,37 @@
 
     window.showHelp = () => {
         const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:var(--blue); margin:0 0 15px 0;">Amel Defteri Rehberi</h3>`;
+        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:var(--blue); margin:0 0 10px 0;">Kapsamlı Rehber</h3>`;
         grid.innerHTML = `
             <div class="help-section">
-                <div class="help-title">1. Renkler ve Durumlar</div>
+                <div class="help-title">📌 Renklerin Anlamı</div>
                 <div class="help-text">
-                    • <b>Koyu Yeşil:</b> Vaktinde kılındı / Tamamlandı.<br>
-                    • <b>Açık Yeşil:</b> Cemaatle kılındı / Fazlasıyla yapıldı.<br>
-                    • <b>Turuncu:</b> Kaza edildi.<br>
-                    • <b>Kırmızı:</b> Kazaya kaldı / Yapılmadı.
+                    <span class="color-dot s1"></span> <b>Koyu Yeşil:</b> Vaktinde kılındı / Tamam.<br>
+                    <span class="color-dot s2"></span> <b>Açık Yeşil:</b> Cemaatle / Fazlasıyla yapıldı.<br>
+                    <span class="color-dot s4"></span> <b>Turuncu:</b> Kaza edildi.<br>
+                    <span class="color-dot s3"></span> <b>Kırmızı:</b> Kazaya kaldı / Yapılmadı.
                 </div>
             </div>
             <div class="help-section">
-                <div class="help-title">2. Puanlama & Başarı</div>
+                <div class="help-title">⚡ Akıllı Vakit Başlığı</div>
                 <div class="help-text">
-                    Vaktinde kılınan her namaz %30, Cemaat %50 değerindedir. Sünnet ve Tesbihatlar ise +%25 başarı ekler.
+                    • Farz, Sünnet ve Tesbihat'ın <b>hepsi yeşilse</b> vakit ismi <b style="color:var(--dark-green)">YEŞİL</b> yanar.<br>
+                    • Farz namaz <b>kırmızıysa</b> vakit ismi direkt <b style="color:var(--red)">KIRMIZI</b> olur.
                 </div>
             </div>
             <div class="help-section">
-                <div class="help-title">3. İstatistikler</div>
+                <div class="help-title">📊 Başarı Puanlama</div>
                 <div class="help-text">
-                    Genel rapordaki yüzdeler, o namazın ay içindeki <b>vaktinde/cemaatle</b> kılınma istikrarını gösterir.
+                    • <b>Farz:</b> Vaktinde %30, Cemaat %50.<br>
+                    • <b>Sünnet:</b> +%25 başarı.<br>
+                    • <b>Tesbihat:</b> +%25 başarı.<br>
+                    Yıllık özette toplam amel adetlerini görebilirsiniz.
+                </div>
+            </div>
+            <div class="help-section">
+                <div class="help-title">⚙️ Veri & Yedekleme</div>
+                <div class="help-text">
+                    Ayarlar kısmından verilerinizi <b>JSON</b> dosyası olarak indirebilir, telefon değiştirince geri yükleyebilirsiniz.
                 </div>
             </div>`;
         document.getElementById('statModal').style.display = 'block';
