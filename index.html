@@ -12,70 +12,68 @@
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { width: 100%; max-width: 500px; margin: auto; padding-bottom: 150px; }
         
-        .main-title-container { text-align: center; margin: 18px 0; cursor: pointer; transition: transform 0.1s; }
-        .main-title-container:active { transform: scale(0.98); }
-        .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
-        .version-tag { font-size: 9px; opacity: 0.4; vertical-align: super; margin-left: 4px; font-weight: normal; letter-spacing: 0; }
+        .main-title-container { text-align: center; margin: 12px 0; cursor: pointer; transition: transform 0.1s; }
+        .main-title { display: inline-block; font-size: 20px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.5px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
+        .version-tag { font-size: 8px; opacity: 0.4; vertical-align: super; margin-left: 4px; }
 
-        .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 8px; }
-        .date-nav { display: flex; align-items: center; gap: 5px; }
-        .date-display-box { text-align: center; cursor: pointer; padding: 5px 12px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 100px; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 8px; border-radius: 15px; margin-bottom: 8px; }
+        .date-nav { display: flex; align-items: center; gap: 4px; }
+        .date-display-box { text-align: center; cursor: pointer; padding: 4px 8px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 90px; }
         #hiddenDate { position: absolute; opacity: 0; left: 0; top: 0; width: 100%; height: 100%; cursor: pointer; }
-        .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; }
-        .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 6px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; }
+        .info-btn { background: var(--blue); width: 28px; height: 28px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
-        .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; gap: 5px; }
-        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; }
-        .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
-        .circles-row { display: flex; gap: 8px; align-items: center; }
+        .habit-card { background: var(--card); border-radius: 12px; padding: 8px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+        .vakit-isim-box { padding: 4px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); min-width: 85px; text-align: center; }
+        .vakit-ad { font-weight: bold; font-size: 10px; color: #fff; }
+        .circles-row { display: flex; gap: 6px; align-items: center; }
         
-        .progress-zone { width: 85px; text-align: right; font-size: 9px; opacity: 0.9; margin-left: 5px; }
-        .progress-bg { background: rgba(255,255,255,0.1); height: 5px; border-radius: 10px; overflow: hidden; margin-top: 2px; }
-        .progress-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s ease-in-out; }
+        .progress-zone { width: 75px; text-align: right; font-size: 8px; opacity: 0.9; margin-left: 4px; }
+        .progress-bg { background: rgba(255,255,255,0.1); height: 4px; border-radius: 10px; overflow: hidden; margin-top: 2px; }
+        .progress-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s; }
         
         .bar-red { background: var(--red); }
         .bar-orange { background: var(--orange); }
         .bar-green { background: var(--dark-green); }
         .bar-full { background: var(--light-green); }
 
-        .progress-percent { font-weight: bold; font-size: 10px; color: #fff; }
-        .progress-label { color: #ccc; font-size: 9.5px; font-weight: 500; }
+        /* ÖZEL AMEL GRİD - YAN YANA 4 ADET */
+        .ozel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 4px; }
+        .ozel-card { background: var(--card); border-radius: 8px; padding: 6px 2px; border: 1px solid rgba(255,255,255,0.06); text-align: center; overflow: hidden; }
+        .ozel-card b { font-size: 9px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
+        .sayi-input { width: 90%; background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.1); text-align: center; padding: 4px 0; border-radius: 6px; margin: 4px auto; outline: none; font-size: 11px; }
         
-        .ozel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 5px; }
-        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 4px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        .sayi-input { width: 85%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 6px 0; border-radius: 8px; margin: 5px auto; outline: none; }
-        .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
-        .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; cursor: pointer; display: block; }
+        .circle { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; margin: auto; }
+        .label-text { font-size: 9px; font-weight: 600; opacity: 0.8; margin-top: 3px; color: #a5d3ff; cursor: pointer; display: block; }
         
         .s0 { background: rgba(255,255,255,0.05); } 
         .s1 { background: var(--dark-green); } 
         .s2 { background: var(--light-green); } 
         .s3 { background: var(--red); } 
         .s4 { background: var(--orange); }
-        .box-default { background: rgba(127, 187, 255, 0.15); }
-        .box-success { background: rgba(144, 238, 144, 0.25); border-color: rgba(144, 238, 144, 0.4); }
-        .box-danger { background: rgba(231, 76, 60, 0.25); border-color: rgba(231, 76, 60, 0.4); }
+        .box-default { background: rgba(127, 187, 255, 0.1); }
+        .box-success { background: rgba(144, 238, 144, 0.15); }
+        .box-danger { background: rgba(231, 76, 60, 0.15); }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 420px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
-        .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; z-index: 2100; display: flex; align-items: center; justify-content: center;}
+        .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;}
         
-        .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; }
-        input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
-        .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 10px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 12px 12px 0 0; }
+        input[type="text"] { flex: 1; border-radius: 15px; border: none; padding: 10px; background: rgba(255,255,255,0.1); color: white; outline: none; font-size: 13px; }
+        .add-btn { background: var(--dark-green); color: white; border: none; padding: 8px 14px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 12px; }
         
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
 
-        #calGrid table { width: 100%; border-spacing: 2px; table-layout: fixed; margin: 0 auto; max-width: 180px; }
-        #calGrid th { font-size: 10px; padding: 1px 0; color: var(--blue); text-align: center; }
-        #calGrid td { height: 14px; border-radius: 2px; cursor: pointer; }
+        #calGrid table { width: 100%; border-spacing: 2px; table-layout: fixed; margin: 0 auto; max-width: 170px; }
+        #calGrid th { font-size: 9px; padding: 1px 0; color: var(--blue); text-align: center; }
+        #calGrid td { height: 13px; border-radius: 2px; cursor: pointer; }
 
-        /* YARDIM BÖLÜMÜ STİLLERİ */
-        .help-section { text-align: left; font-size: 13px; line-height: 1.6; color: #ddd; }
-        .help-section h3 { color: var(--blue); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-top: 15px; font-size: 16px; }
-        .help-item { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-        .help-circle { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+        .help-section { text-align: left; font-size: 13px; line-height: 1.5; color: #ddd; }
+        .help-section h3 { color: var(--blue); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; margin-top: 12px; font-size: 15px; }
+        .help-item { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .help-circle { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -88,15 +86,15 @@
         <div class="date-nav">
             <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
             <div class="date-display-box">
-                <div id="dispDate" style="font-weight: bold; font-size: 14px;"></div>
-                <div id="isToday" style="font-size: 9px; color: var(--light-green); font-weight:bold;"></div>
+                <div id="dispDate" style="font-weight: bold; font-size: 13px;"></div>
+                <div id="isToday" style="font-size: 8px; color: var(--light-green); font-weight:bold;"></div>
                 <input type="date" id="hiddenDate" onchange="window.tarihSec(this.value)">
             </div>
             <button class="nav-btn" onclick="degistirTarih(1)">❯</button>
         </div>
-        <div style="display:flex; gap:5px; align-items:center;">
-            <button class="nav-btn" style="background:var(--blue); font-size: 10px;" onclick="showGeneralReport()">📊 GENEL</button>
-            <button class="nav-btn" style="background:var(--orange); font-size: 10px;" onclick="showYearlyReport()">📅 YILLIK</button>
+        <div style="display:flex; gap:4px; align-items:center;">
+            <button class="nav-btn" style="background:var(--blue); font-size: 9px; padding: 6px 8px;" onclick="showGeneralReport()">📊 GENEL</button>
+            <button class="nav-btn" style="background:var(--orange); font-size: 9px; padding: 6px 8px;" onclick="showYearlyReport()">📅 YILLIK</button>
             <button class="info-btn" onclick="window.showHelp()">i</button>
         </div>
     </div>
@@ -123,9 +121,9 @@
 </div>
 
 <div class="footer">
-    <input type="text" id="habInp" placeholder="Yeni amel yaz...">
+    <input type="text" id="habInp" placeholder="Yeni amel...">
     <button class="add-btn" onclick="yeniEkle()">EKLE</button>
-    <button onclick="openSettings()" style="background:none; border:none; font-size:22px;">⚙️</button>
+    <button onclick="openSettings()" style="background:none; border:none; font-size:20px;">⚙️</button>
     <input type="file" id="fileInp" style="display:none" onchange="processFile(this)">
 </div>
 
@@ -170,19 +168,16 @@
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
             let boxClass = "box-default";
             const farz = v.durumlar[0], sunnet = v.durumlar[1], tesbih = v.durumlar[2];
-            
             let percent = 0;
             if (farz === 1) percent += 30; else if (farz === 2) percent += 50; else if (farz === 4) percent += 20;
             if (sunnet === 1 || sunnet === 2) percent += 25;
             if (tesbih === 1 || tesbih === 2) percent += 25;
-
             let barColorClass = "bar-green";
             if (percent >= 100) { percent = 100; barColorClass = "bar-full"; boxClass = "box-success"; }
             else if (percent > 50) { barColorClass = "bar-green"; }
             else if (percent >= 26) { barColorClass = "bar-orange"; }
             else { barColorClass = "bar-red"; }
             if (farz === 3) boxClass = "box-danger";
-
             let row = `<div class="habit-card"><div class="vakit-isim-box ${boxClass}"><span class="vakit-ad">${vakitler[vIdx]}</span></div><div class="circles-row">`;
             basliklar.forEach((b, bIdx) => {
                 row += `<div style="text-align:center"><div class="circle s${v.durumlar[bIdx]}" onclick="window.degis(${vIdx}, ${bIdx}, 'vakit')"></div><span class="label-text" onclick="window.showStats('${vakitler[vIdx]} ${b}', 'vakit', ${vIdx}, ${bIdx})">${b}</span></div>`;
@@ -196,36 +191,17 @@
             const globalListe = getGlobalOzeller();
             if (globalListe.find(g => g.id === o.id && g.arsiv) && (o.durum == 0 || o.durum == "")) return;
             let displayValue = (o.durum === 0 || o.durum === "0") ? "" : o.durum;
-            let ctrl = o.tip === 'sayi' ? `<input type="number" value="${displayValue}" placeholder="0" class="sayi-input" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div style="display:flex; justify-content:center; padding:5px;"><div class="circle s${o.durum}" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div></div>`;
-            oDiv.innerHTML += `<div class="ozel-card"><b style="font-size:11px; cursor:pointer;" onclick="window.showStats('${o.ad.replace(/'/g,"\\'")}', 'ozel', 0, 0, '${o.id}')">${o.ad}</b>${ctrl}<br><small onclick="window.silSecenekleri('${o.id}')" style="opacity:0.3; font-size:9px; cursor:pointer;">Arşivle</small></div>`;
+            let ctrl = o.tip === 'sayi' ? `<input type="number" value="${displayValue}" placeholder="0" class="sayi-input" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div style="display:flex; justify-content:center; padding:2px;"><div class="circle s${o.durum}" style="width:24px; height:24px;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div></div>`;
+            oDiv.innerHTML += `<div class="ozel-card"><b onclick="window.showStats('${o.ad.replace(/'/g,"\\'")}', 'ozel', 0, 0, '${o.id}')">${o.ad}</b>${ctrl}<small onclick="window.silSecenekleri('${o.id}')" style="opacity:0.3; font-size:8px; cursor:pointer; display:block; margin-top:2px;">Arşivle</small></div>`;
         });
     }
 
     window.gitBugun = () => { seciliTarih = new Date(); veriYukle(); };
-    
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         document.getElementById('statTitle').innerHTML = `<h2 style="text-align:center; color:#7fbbff; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px;">Kullanım Rehberi</h2>`;
-        grid.innerHTML = `
-        <div class="help-section">
-            <p>Amel Defteri, günlük ibadetlerinizi ve hedeflerinizi takip etmenize yardımcı olur. Dairelere tıklayarak durum değiştirebilirsiniz.</p>
-            
-            <h3>Namaz Puanlaması</h3>
-            <div class="help-item"><div class="help-circle s1"></div> <b>Vaktinde:</b> Farz namazı vaktinde kılındı. (%30)</div>
-            <div class="help-item"><div class="help-circle s2"></div> <b>Cemaat:</b> Farz cemaatle kılındı. (%50)</div>
-            <div class="help-item"><div class="help-circle s4"></div> <b>Kaza:</b> Geçmiş bir namaz kaza edildi. (%20)</div>
-            <div class="help-item"><div class="help-circle s3"></div> <b>Kazaya Kaldı:</b> Namaz vaktinde kılınamadı.</div>
-            
-            <h3>Sünnet ve Tesbihat</h3>
-            <p>Sünnet ve Tesbihat kısımları toplam başarıyı %25'er oranda etkiler. Yeşil tam puan, kırmızı ise yapılmadı demektir.</p>
-            
-            <h3>Özel Ameller</h3>
-            <p>En alttaki bölüme "Kitap Okuma", "Spor" gibi kendi hedeflerinizi ekleyebilirsiniz. İster <b>Sayısal</b> (sayfa sayısı gibi) ister <b>Renk</b> bazlı takip yapabilirsiniz.</p>
-            
-            <h3>İstatistik ve Arşiv</h3>
-            <p>Herhangi bir başlığın ismine tıklayarak o amelin aylık takvimini görebilirsiniz. Artık takip etmek istemediğiniz özel amelleri altındaki "Arşivle" butonuyla kaldırabilir, Yıllık Özet kısmında toplamlarını görebilirsiniz.</p>
-        </div>`;
+        grid.innerHTML = `<div class="help-section"><p>Dairelere tıklayarak durum değiştirebilirsiniz.</p><h3>Namaz Puanlaması</h3><div class="help-item"><div class="help-circle s1"></div> <b>Vaktinde:</b> Farz kılındı (%30)</div><div class="help-item"><div class="help-circle s2"></div> <b>Cemaat:</b> Farz cemaat (%50)</div><div class="help-item"><div class="help-circle s4"></div> <b>Kaza:</b> Kaza edildi (%20)</div><div class="help-item"><div class="help-circle s3"></div> <b>Kazaya Kaldı:</b> Kılınamadı.</div><h3>Özel Ameller</h3><p>Yeni hedefleri yan yana 4'lü kompakt görünümde takip edebilirsiniz. İsimlere tıklayarak istatistikleri görebilirsiniz.</p></div>`;
         modal.style.display = 'block';
     };
 
@@ -233,15 +209,13 @@
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>
-        <div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
-        
-        let table = `<table><thead><tr><th style="width:22px; font-size:10px; opacity:0.5;"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div><div style="display:flex; justify-content:center; gap:4px; margin-bottom:10px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:9px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
+        let table = `<table><thead><tr><th style="width:20px; opacity:0.5;"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
             let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
             let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
-            table += `<tr><td style="text-align:center; font-size:9px; opacity:0.5; height:14px;">${d}</td>`;
+            table += `<tr><td style="text-align:center; font-size:8px; opacity:0.5; height:13px;">${d}</td>`;
             for (let i = 0; i < 5; i++) {
                 let dur = (v && v.vakitler[i]) ? (v.vakitler[i].durumlar[genRaporTipIdx] || 0) : 0;
                 table += `<td class="s${dur}" onclick="window.gitTarih(${d})"></td>`;
@@ -256,9 +230,8 @@
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const yil = raporTarih.getFullYear();
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b style="font-size:15px;">${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
-        let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
-        let arsiv = {};
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b style="font-size:14px;">${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
+        let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {};
         for (let m = 0; m < 12; m++) {
             for (let d = 1; d <= 31; d++) {
                 let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d))));
@@ -273,7 +246,7 @@
                 });
             }
         }
-        let h = `<div style="max-height:60vh; overflow-y:auto; font-size:13px;"><table style="width:100%; margin-bottom:20px;"><thead><tr style="color:var(--red); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left;">KAZA</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
+        let h = `<div style="max-height:60vh; overflow-y:auto; font-size:12px;"><table style="width:100%; margin-bottom:15px;"><thead><tr style="color:var(--red); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left;">KAZA</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
         Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
         h += `</tbody></table><table style="width:100%;"><thead><tr style="color:var(--blue); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left;">ARŞİV</th><th style="text-align:right;">SONUÇ</th></tr></thead><tbody>`;
         Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].toplam}${arsiv[k].tip==='sayi'?'':' G'}</td></tr>`; });
@@ -285,7 +258,7 @@
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span style="font-size:13px;">${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div><div style="text-align:center; font-size:12px; color:var(--blue); margin-bottom:10px;">${ayYilStr}</div>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span style="font-size:12px;">${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad.replace(/'/g,"\\'")}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div><div style="text-align:center; font-size:11px; color:var(--blue); margin-bottom:10px;">${ayYilStr}</div>`;
         let gridHtml = `<div class="calendar-grid">`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
@@ -302,7 +275,7 @@
                     }
                 }
             }
-            gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:2px; left:2px; opacity:0.4; font-size:8px;">${d}</small>${val}</div>`;
+            gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:1px; left:1px; opacity:0.4; font-size:7px;">${d}</small>${val}</div>`;
         }
         grid.innerHTML = gridHtml + `</div>`;
         modal.style.display = 'block';
@@ -318,7 +291,6 @@
     window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; raporTarih = new Date(); };
     window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
-    
     window.degis = (i, s, t) => {
         if (t === 'ozel_renk') gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum + 1) % 5;
         else {
@@ -330,14 +302,12 @@
         }
         render();
     };
-    
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v === "" ? 0 : v; render(); };
     window.yeniEkle = () => { const ad = document.getElementById('habInp').value; if(!ad) return; let g = getGlobalOzeller(); g.push({ id: 'id' + Date.now(), ad, tip: confirm("Sayısal veri mi?") ? 'sayi' : 'renk', arsiv: false }); saveGlobalOzeller(g); document.getElementById('habInp').value = ""; veriYukle(); };
     window.silSecenekleri = (id) => { if(confirm("Arşivlensin mi?")) { let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) g[idx].arsiv = true; saveGlobalOzeller(g); veriYukle(); } };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k && k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { document.getElementById('fileInp').click(); };
     window.processFile = (inp) => { let fr = new FileReader(); fr.onload = () => { let d = JSON.parse(fr.result); Object.keys(d).forEach(k => localStorage.setItem(k, d[k])); location.reload(); }; fr.readAsText(inp.files[0]); };
-    
     veriYukle();
 </script>
 </body>
