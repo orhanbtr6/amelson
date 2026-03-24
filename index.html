@@ -38,9 +38,10 @@
         .bar-full { background: var(--light-green); }
 
         .ozel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 5px; }
-        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 2px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 2px; border: 1px solid rgba(255,255,255,0.1); text-align: center; transition: background 0.3s; }
         .ozel-card b { font-size: 9px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sayi-input { width: 85%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 4px 0; border-radius: 8px; margin: 5px auto; outline: none; font-size: 11px; }
+        .ozel-active { background: rgba(144, 238, 144, 0.2) !important; border: 1px solid rgba(144, 238, 144, 0.4) !important; }
         
         .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; margin: auto; }
         .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; cursor: pointer; display: block; }
@@ -69,11 +70,11 @@
         #calGrid th { font-size: 10px; padding: 1px 0; color: var(--blue); text-align: center; }
         #calGrid td { height: 14px; border-radius: 2px; cursor: pointer; }
 
-        /* YARDIM BÖLÜMÜ EK STİLLER */
         .help-section { text-align: left; font-size: 13px; line-height: 1.6; color: #ddd; }
         .help-section h3 { color: var(--blue); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-top: 15px; font-size: 16px; }
         .help-item { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
         .help-circle { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2); }
+        .warn-card { background: rgba(231, 76, 60, 0.1); border: 1px solid var(--red); padding: 10px; border-radius: 10px; margin-top: 15px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -190,15 +191,19 @@
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             const globalListe = getGlobalOzeller();
             if (globalListe.find(g => g.id === o.id && g.arsiv) && (o.durum == 0 || o.durum == "")) return;
+            
+            // KOŞULLU RENKLENDİRME (Soft Yeşil)
+            let isActive = false;
+            if (o.tip === 'sayi' && o.durum > 0) isActive = true;
+            if (o.tip !== 'sayi' && (o.durum == 1 || o.durum == 2)) isActive = true;
+            
             let displayValue = (o.durum === 0 || o.durum === "0") ? "" : o.durum;
             let ctrl = o.tip === 'sayi' ? `<input type="number" value="${displayValue}" placeholder="0" class="sayi-input" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div style="display:flex; justify-content:center; padding:2px;"><div class="circle s${o.durum}" style="width:28px; height:28px;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div></div>`;
-            oDiv.innerHTML += `<div class="ozel-card"><b onclick="window.showStats('${o.ad.replace(/'/g,"\\'")}', 'ozel', 0, 0, '${o.id}')">${o.ad}</b>${ctrl}<small onclick="window.silSecenekleri('${o.id}')" style="opacity:0.3; font-size:8px; cursor:pointer; display:block; margin-top:2px;">Arşivle</small></div>`;
+            oDiv.innerHTML += `<div class="ozel-card ${isActive ? 'ozel-active' : ''}"><b onclick="window.showStats('${o.ad.replace(/'/g,"\\'")}', 'ozel', 0, 0, '${o.id}')">${o.ad}</b>${ctrl}<small onclick="window.silSecenekleri('${o.id}')" style="opacity:0.3; font-size:8px; cursor:pointer; display:block; margin-top:2px;">Arşivle</small></div>`;
         });
     }
 
     window.gitBugun = () => { seciliTarih = new Date(); veriYukle(); };
-
-    // ÇOK DETAYLI BİLGİ BÖLÜMÜ
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
@@ -206,21 +211,15 @@
         grid.innerHTML = `
         <div class="help-section">
             <p>Amel Defteri, günlük ibadetlerinizi ve kişisel hedeflerinizi takip etmek için tasarlanmıştır.</p>
-            
             <h3>Namaz Puanlaması (Farz)</h3>
             <div class="help-item"><div class="help-circle s1"></div> <b>Vaktinde:</b> Farz namaz kılındı. (%30)</div>
             <div class="help-item"><div class="help-circle s2"></div> <b>Cemaat:</b> Cemaatle kılındı. (%50)</div>
             <div class="help-item"><div class="help-circle s4"></div> <b>Kaza:</b> Geçmiş bir namaz kaza edildi. (%20)</div>
             <div class="help-item"><div class="help-circle s3"></div> <b>Kazaya Kaldı:</b> Vakit kaza olarak işaretlendi.</div>
-            
-            <h3>Sünnet ve Tesbihat</h3>
-            <p>Sünnet (Yeşil) ve Tesbihat (Yeşil/Mavi) kısımları toplam başarı çubuğunu %25'er oranda etkiler.</p>
-            
-            <h3>Özel Ameller ve Kompakt Görünüm</h3>
-            <p>En alttaki 4'lü grid yapısına kendi hedeflerinizi (Kitap, Spor vb.) ekleyebilirsiniz. İster sayısal ister renk bazlı takip yapın. Bir ameli artık görmek istemiyorsanız "Arşivle" diyerek kaldırabilirsiniz.</p>
-            
-            <h3>İstatistik ve Takvim</h3>
-            <p>Herhangi bir amelin veya namaz başlığının <b>isminin üzerine tıklayarak</b> o aya ait detaylı takvim görünümüne ve geçmiş verilerinize ulaşabilirsiniz.</p>
+            <h3>Özel Ameller</h3>
+            <p>Eğer bir sayı girerseniz veya yeşil işaretleme yaparsanız, kutucuk <b>soft yeşil</b> renge bürünerek başarınızı gösterir.</p>
+            <h3>İstatistik</h3>
+            <p>İsimlerin üzerine tıklayarak aylık takvimi görebilirsiniz.</p>
         </div>`;
         modal.style.display = 'block';
     };
@@ -251,12 +250,24 @@
         const grid = document.getElementById('calGrid');
         const yil = raporTarih.getFullYear();
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b style="font-size:15px;">${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
+        
         let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {};
+        let vakitSkorları = [0, 0, 0, 0, 0], gunSayisi = 0;
+
         for (let m = 0; m < 12; m++) {
             for (let d = 1; d <= 31; d++) {
-                let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d))));
+                let t = new Date(yil, m, d);
+                if(t.getFullYear() !== yil || t.getMonth() !== m) continue;
+                let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
                 if (!v) continue;
-                v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; });
+                gunSayisi++;
+                v.vakitler.forEach((vk, i) => { 
+                    if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; 
+                    // Başarı analizi için skor hesapla (Farz için: 1=30, 2=50, 4=20, 3=0)
+                    let s = vk.durumlar[0];
+                    let p = s==1?30 : s==2?50 : s==4?20 : 0;
+                    vakitSkorları[i] += p;
+                });
                 (v.ozeller || []).forEach(vo => {
                     if (getGlobalOzeller().find(g => g.id === vo.id && g.arsiv)) {
                         if (!arsiv[vo.ad]) arsiv[vo.ad] = { toplam: 0, tip: vo.tip };
@@ -266,11 +277,29 @@
                 });
             }
         }
+
+        // EN DÜŞÜK VAKTİ BUL
+        let enDusukVakitIdx = 0, enDusukPuan = 999999;
+        if(gunSayisi > 0) {
+            vakitSkorları.forEach((toplam, idx) => {
+                let ort = toplam / gunSayisi;
+                if(ort < enDusukPuan) { enDusukPuan = ort; enDusukVakitIdx = idx; }
+            });
+        }
+        let enDusukVakitAd = vakitler[enDusukVakitIdx];
+        let basariYuzdesi = gunSayisi > 0 ? Math.round((enDusukPuan / 50) * 100) : 0;
+
         let h = `<div style="max-height:60vh; overflow-y:auto; font-size:13px;"><table style="width:100%; margin-bottom:20px;"><thead><tr style="color:var(--red); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left;">KAZA</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
         Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
         h += `</tbody></table><table style="width:100%;"><thead><tr style="color:var(--blue); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="text-align:left;">ARŞİV</th><th style="text-align:right;">SONUÇ</th></tr></thead><tbody>`;
         Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].toplam}${arsiv[k].tip==='sayi'?'':' G'}</td></tr>`; });
-        grid.innerHTML = h + `</tbody></table></div>`;
+        h += `</tbody></table>`;
+        
+        if(gunSayisi > 0) {
+            h += `<div class="warn-card"><b style="color:var(--orange)">⚠️ ANALİZ:</b><br>Bu yıl en çok <b>${enDusukVakitAd}</b> vaktinde zorlanılmış. (Ortalama Başarı: %${basariYuzdesi})<br><small>Bu amele daha fazla dikkat edilmesi önerilir.</small></div>`;
+        }
+
+        grid.innerHTML = h + `</div>`;
         modal.style.display = 'block';
     };
 
