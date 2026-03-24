@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.39</title>
+    <title>Amel Defteri V.21.40</title>
     
     <style>
-        /* ANA SAYFA VE GENEL STİLLER (V.21.34'E DÖNÜŞ) */
+        /* V.21.34 ORIJINAL ANA SAYFA STİLLERİ */
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
@@ -15,7 +15,7 @@
         
         .main-title-container { text-align: center; margin: 18px 0; cursor: pointer; transition: transform 0.1s; }
         .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
-        .version-tag { font-size: 9px; opacity: 0.4; vertical-align: super; margin-left: 4px; font-weight: normal; letter-spacing: 0; }
+        .version-tag { font-size: 9px; opacity: 0.4; vertical-align: super; margin-left: 4px; font-weight: normal; }
 
         .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 8px; }
         .date-nav { display: flex; align-items: center; gap: 5px; }
@@ -53,15 +53,15 @@
         .box-success { background: rgba(144, 238, 144, 0.25); border-color: rgba(144, 238, 144, 0.4); }
         .box-danger { background: rgba(231, 76, 60, 0.25); border-color: rgba(231, 76, 60, 0.4); }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
-        .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 420px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 15px 10px; }
+        .modal-content { background: #082d42; margin: 0 auto; padding: 12px; width: 100%; max-width: 400px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
         .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; z-index: 2100; display: flex; align-items: center; justify-content: center;}
         
-        /* GENEL RAPOR TABLO DÜZENLEMESİ (DARALTILMIŞ VE KARE) */
-        .report-table { width: auto; margin: 0 auto; border-spacing: 2.5px; border-collapse: separate; }
-        .report-table th { width: 30px; height: 30px; font-size: 10px; color: var(--blue); text-align: center; vertical-align: middle; }
-        .report-table td { width: 30px; height: 30px; text-align: center; border-radius: 4px; cursor: pointer; }
-        .day-label { color: #a5d3ff; font-weight: bold; font-size: 10px; }
+        /* GENEL BÖLÜMÜ - MİNYATÜR KARE TABLO */
+        .report-table { width: auto; margin: 0 auto; border-spacing: 2px; border-collapse: separate; }
+        .report-table th { width: 26px; height: 26px; font-size: 9px; color: var(--blue); text-align: center; vertical-align: middle; }
+        .report-table td { width: 26px; height: 26px; text-align: center; border-radius: 3px; cursor: pointer; }
+        .day-label { color: #a5d3ff; font-weight: bold; font-size: 9px; width: 20px !important; }
 
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
@@ -75,7 +75,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.39</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.40</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -102,7 +102,7 @@
         <button class="close-x" onclick="closeModal()">✕</button>
         <div id="statTitle"></div>
         <div id="calGrid"></div>
-        <button class="add-btn" style="width:100%; background:var(--blue); margin-top:20px;" onclick="closeModal()">KAPAT</button>
+        <button class="add-btn" style="width:100%; background:var(--blue); margin-top:15px;" onclick="closeModal()">KAPAT</button>
     </div>
 </div>
 
@@ -192,20 +192,20 @@
         });
     }
 
-    // GENEL RAPOR - DARALTILMIŞ TABLO FONKSİYONU
+    // GENEL RAPOR - MİNYATÜR KARE TASARIM (V.21.34 TABANLI)
     window.showGeneralReport = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         document.getElementById('statTitle').innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button>
-                <span style="font-weight:bold;">${ayYilStr}</span>
-                <button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button>
+                <button class="nav-btn" style="padding:4px 10px;" onclick="window.ayRaporuDegis(-1)">❮</button>
+                <span style="font-weight:bold; font-size:14px;">${ayYilStr}</span>
+                <button class="nav-btn" style="padding:4px 10px;" onclick="window.ayRaporuDegis(1)">❯</button>
             </div>
             <div style="display:flex; justify-content:center; gap:5px; margin-bottom:12px;">
                 ${basliklar.map((b,i)=>`
-                    <button class="nav-btn" style="font-size:10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" 
+                    <button class="nav-btn" style="font-size:9px; padding:5px 10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" 
                     onclick="window.setGenRaporTip(${i})">${b}</button>
                 `).join('')}
             </div>`;
@@ -226,21 +226,13 @@
         modal.style.display = 'block';
     };
 
-    // DİĞER FONKSİYONLAR (V.21.34'ÜN ORİJİNAL MANTIĞI)
+    // ORIJINAL YARDIM VE ISTATISTIK FONKSIYONLARI
     window.gitBugun = () => { seciliTarih = new Date(); veriYukle(); };
     window.showHelp = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         document.getElementById('statTitle').innerHTML = `<h2 style="text-align:center; color:#7fbbff; margin-bottom:10px;">Renkler</h2>`;
         grid.innerHTML = `<div style="font-size:12.5px; line-height:1.5; color:#eee;"><p><b style="color:var(--orange)">[ FARZ ]</b><br>1:Vakit 2:Cemaat 4:Kaza 3:Kazaya Kaldı</p><p><b style="color:var(--light-green)">[ SÜNNET ]</b><br>1:Kılındı 3:Kılınmadı</p></div>`;
-        modal.style.display = 'block';
-    };
-    window.showYearlyReport = () => {
-        const modal = document.getElementById('statModal');
-        const grid = document.getElementById('calGrid');
-        const yil = raporTarih.getFullYear();
-        document.getElementById('statTitle').innerHTML = `<b style="font-size:15px;">${yil} ÖZETİ</b>`;
-        grid.innerHTML = `<p style="text-align:center; opacity:0.5;">Yıllık veriler hesaplanıyor...</p>`;
         modal.style.display = 'block';
     };
     window.showStats = (ad, tip, vIdx, bIdx = 0, id = '') => {
@@ -293,6 +285,7 @@
     window.importData = () => { document.getElementById('fileInp').click(); };
     window.processFile = (inp) => { let fr = new FileReader(); fr.onload = () => { let d = JSON.parse(fr.result); Object.keys(d).forEach(k => localStorage.setItem(k, d[k])); location.reload(); }; fr.readAsText(inp.files[0]); };
     window.silSecenekleri = (id) => { if(confirm("Arşivlensin mi?")) { let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) g[idx].arsiv = true; saveGlobalOzeller(g); veriYukle(); } };
+    window.showYearlyReport = () => { alert("Yıllık Rapor Modülü Hazırlanıyor..."); };
     veriYukle();
 </script>
 </body>
