@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.38</title>
+    <title>Amel Defteri V.21.39</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
@@ -62,7 +62,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.38</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.39</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -209,14 +209,15 @@
                 let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); if (!v) continue;
                 v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; });
                 (v.ozeller || []).forEach(vo => {
-                    const gL = getGlobalOzeller(); const gH = gL.find(g => g.id === vo.id);
-                    if (gH && gH.arsiv) { if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip }; if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); else if (vo.durum > 0) arsiv[vo.ad].t += 1; }
+                    // ID ne olursa olsun ISME gore topla
+                    if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip }; 
+                    if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); else if (vo.durum > 0) arsiv[vo.ad].t += 1;
                 });
             }
         }
         let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; border-bottom:1px solid rgba(255,255,255,0.1);"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA ÇETELESİ</th><th style="text-align:right;">ADET</th></tr></thead><tbody>`;
         Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
-        h += `</tbody></table><p style="color:var(--blue); font-size:12px; font-weight:bold; margin:10px 0 5px;">ARŞİVLENENLER (TOPLAM)</p><table style="width:100%; font-size:11px;">`;
+        h += `</tbody></table><p style="color:var(--blue); font-size:12px; font-weight:bold; margin:10px 0 5px;">TÜM AMEL TOPLAMLARI (YILLIK)</p><table style="width:100%; font-size:11px;">`;
         Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].t} ${arsiv[k].tip==='sayi'?'':'G'}</td></tr>`; });
         grid.innerHTML = h + `</table></div>`; document.getElementById('statModal').style.display = 'block';
     };
@@ -226,7 +227,7 @@
         grid.innerHTML = `
             <div class="help-section"><div class="help-title">Namaz Puanları (Farz)</div><div style="font-size:11px;">🟢 <b>Vaktinde:</b> %30 <br>🌿 <b>Cemaat:</b> %50 <br>🟠 <b>Kaza Edildi:</b> %20 <br>🔴 <b>Kazaya Kaldı:</b> %0 </div></div>
             <div class="help-section"><div class="help-title">Sünnet ve Tesbihat</div><div style="font-size:11px;">Her biri yapıldığında <b>+%25</b> başarı ekler. Bir vakitten %100 almak için Farz(Vaktinde/Cemaat) + Sünnet + Tesbihat tam olmalıdır.</div></div>
-            <div class="help-section"><div class="help-title">Özel Ameller</div><div style="font-size:11px;">Sayısal veya renkli takip yapabilirsiniz. Arşivlenenler yeni günlerde gizlenir ancak geçmiş verileri korunur ve ismen aratılabilir.</div></div>`;
+            <div class="help-section"><div class="help-title">Özel Ameller</div><div style="font-size:11px;">Sayısal veya renkli takip yapabilirsiniz. Arşivlenen amelleri aynı isimle tekrar eklerseniz, sistem bunları birleştirerek takvimde gösterir.</div></div>`;
         document.getElementById('statModal').style.display = 'block';
     };
 
@@ -240,7 +241,14 @@
             let val = "", cls = "s0";
             if (v) {
                 if (tip === 'vakit') cls = "s" + (v.vakitler[vI].durumlar[bI] || 0);
-                else { let o = (v.ozeller || []).find(x => x.id === id); if (o) { if (o.tip === 'sayi' && o.durum > 0) { cls = 's2'; val = `<b>${o.durum}</b>`; } else if (o.durum > 0) cls = 's' + o.durum; } }
+                else { 
+                    // ISME gore arama yap (ID fakli olsa da bulsun)
+                    let o = (v.ozeller || []).find(x => x.ad === ad); 
+                    if (o) { 
+                        if (o.tip === 'sayi' && o.durum > 0) { cls = 's2'; val = `<b>${o.durum}</b>`; } 
+                        else if (o.durum > 0) cls = 's' + o.durum; 
+                    } 
+                }
             }
             gridH += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:2px; left:2px; opacity:0.4; font-size:8px;">${d}</small>${val}</div>`;
         }
