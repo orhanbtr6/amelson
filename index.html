@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.34</title>
+    <title>Amel Defteri V.21.35</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
@@ -60,7 +60,6 @@
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 460px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
         .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;}
         
-        /* GENEL TABLO - TAM VAKİT İSİMLERİ İLE */
         .genel-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; background: rgba(0,0,0,0.3); margin-top: 10px; padding: 5px 0; }
         .genel-table { width: 100%; border-collapse: separate; border-spacing: 1px; table-layout: fixed; }
         .genel-table th { font-size: 7px; padding: 2px 0; color: #7fbbff; font-weight: normal; }
@@ -85,7 +84,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.34</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.35</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -148,12 +147,20 @@
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
         const globalListe = getGlobalOzeller();
+        
         if (kaydedilmis) {
             gunlukVeriler = kaydedilmis;
-            const idler = (kaydedilmis.ozeller || []).map(o => o.id);
-            globalListe.filter(g => !g.arsiv && !idler.includes(g.id)).forEach(g => { gunlukVeriler.ozeller.push({ ...g, durum: 0 }); });
+            const mevcutIdler = (gunlukVeriler.ozeller || []).map(o => o.id);
+            globalListe.forEach(g => {
+                if (!g.arsiv && !mevcutIdler.includes(g.id)) {
+                    gunlukVeriler.ozeller.push({ ...g, durum: 0 });
+                }
+            });
         } else {
-            gunlukVeriler = { vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), ozeller: globalListe.filter(g => !g.arsiv).map(g => ({ ...g, durum: 0 })) };
+            gunlukVeriler = { 
+                vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
+                ozeller: globalListe.filter(g => !g.arsiv).map(g => ({ ...g, durum: 0 })) 
+            };
         }
         render();
     }
@@ -185,7 +192,6 @@
         });
     }
 
-    // GENEL RAPOR - TAM İSİMLER & ULTRA KOMPAKT
     window.showGeneralReport = () => {
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
@@ -226,7 +232,8 @@
                     let s = vk.durumlar[0]; let p = s==1?30:s==2?50:s==4?20:0; vakitSkorları[i] += p;
                 });
                 (v.ozeller || []).forEach(vo => {
-                    if (getGlobalOzeller().find(g => g.id === vo.id && g.arsiv)) {
+                    const gList = getGlobalOzeller();
+                    if (gList.find(g => g.id === vo.id && g.arsiv)) {
                         if (!arsiv[vo.ad]) arsiv[vo.ad] = { toplam: 0, tip: vo.tip };
                         if (vo.tip === 'sayi') arsiv[vo.ad].toplam += parseFloat(vo.durum || 0); else if (vo.durum > 0) arsiv[vo.ad].toplam += 1;
                     }
@@ -238,7 +245,7 @@
         
         let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; border-bottom:1px solid rgba(255,255,255,0.1);"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
         Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
-        h += `</tbody></table><p style="color:var(--blue); font-size:12px; font-weight:bold; margin:10px 0 5px;">ARŞİVLENENLER</p><table class="arsiv-table">`;
+        h += `</tbody></table><p style="color:var(--blue); font-size:12px; font-weight:bold; margin:10px 0 5px;">ARŞİVLENENLER (TOPLAM)</p><table class="arsiv-table">`;
         Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].toplam} ${arsiv[k].tip==='sayi'?'':'G'}</td></tr>`; });
         if(gunSayisi > 0) h += `</table><div class="warn-card">⚠️ <b>ANALİZ:</b> Bu yıl en çok <b>${vakitler[enDusukIdx]}</b> vaktinde zorlanılmış. (Başarı: %${Math.round((enDusukPuan/50)*100)})</div></div>`;
         grid.innerHTML = h; document.getElementById('statModal').style.display = 'block';
@@ -249,8 +256,8 @@
         grid.innerHTML = `
             <div class="help-section"><div class="help-title">Namaz Puanları (Farz)</div><div style="font-size:11px;">🟢 <b>Vaktinde:</b> %30 Başarı<br>🌿 <b>Cemaat:</b> %50 Başarı<br>🟠 <b>Kaza Edildi:</b> %20 Başarı<br>🔴 <b>Kazaya Kaldı:</b> %0 (Kırmızı kart)</div></div>
             <div class="help-section"><div class="help-title">Sünnet ve Tesbihat</div><div style="font-size:11px;">Her biri tam yapıldığında <b>+%25</b> başarı ekler. Bir vakitten %100 almak için Farz(Vaktinde/Cemaat) + Sünnet + Tesbihat tam olmalıdır.</div></div>
-            <div class="help-section"><div class="help-title">Özel Ameller</div><div style="font-size:11px;">Sayısal veya renkli takip yapabilirsiniz. Sayı girildiğinde veya yeşil işaretlendiğinde kutucuk otomatik parlar. Arşivlenenler yıllık özet tablosunda toplanır.</div></div>
-            <div class="help-section"><div class="help-title">Genel ve Yıllık Rapor</div><div style="font-size:11px;">📊 <b>Genel:</b> Aylık tüm vakitleri tek ekranda özetler.<br>📅 <b>Yıllık:</b> Kaza çetelesi ve en çok zorlandığınız vaktin analizini sunar.</div></div>
+            <div class="help-section"><div class="help-title">Özel Ameller</div><div style="font-size:11px;">Sayısal veya renkli takip yapabilirsiniz. Arşivlenen ameller yeni günlerde karşınıza çıkmaz ancak eski kayıtlar korunur.</div></div>
+            <div class="help-section"><div class="help-title">Genel ve Yıllık Rapor</div><div style="font-size:11px;">📊 <b>Genel:</b> Tüm vakitleri tek ekranda özetler.<br>📅 <b>Yıllık:</b> Kaza çetelesi ve zorluk analizi sunar.</div></div>
         `;
         document.getElementById('statModal').style.display = 'block';
     };
