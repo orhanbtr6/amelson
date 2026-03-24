@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.36</title>
+    <title>Amel Defteri V.21.37</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
@@ -67,13 +67,31 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
 
-        /* YENİ: V.21.36 GENEL KARE VE DAR TASARIM */
-        .report-wrapper { display: flex; justify-content: center; padding: 5px; }
-        .report-grid-container { display: grid; grid-template-columns: repeat(7, 42px); gap: 6px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 15px; }
-        .day-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; width: 42px; height: 42px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
-        .day-number { font-size: 10px; font-weight: bold; margin-bottom: 2px; color: #a5d3ff; }
-        .vakit-dots { display: flex; flex-wrap: wrap; gap: 2px; width: 24px; justify-content: center; }
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.1); }
+        /* V.21.37 GENEL TABLO DARALTMA VE ORTALAMA */
+        .report-table { 
+            width: auto; /* Otomatik genişlik */
+            margin: 0 auto; /* Merkeze hizalar */
+            border-collapse: separate; 
+            border-spacing: 3px; 
+            font-size: 11px;
+        }
+        .report-table th { 
+            width: 32px; /* Sütun genişliğini daralttık */
+            height: 32px;
+            padding: 0;
+            text-align: center; 
+            color: var(--blue); 
+            font-size: 10px;
+        }
+        .report-table td { 
+            width: 32px; /* Hücre genişliği */
+            height: 32px; /* Hücre yüksekliği (Kareye yakın) */
+            padding: 0;
+            text-align: center; 
+            border-radius: 4px; 
+            cursor: pointer;
+        }
+        .day-label { color: #a5d3ff; font-weight: bold; font-size: 10px; }
         
     </style>
 </head>
@@ -81,7 +99,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.36</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.37</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -219,14 +237,12 @@
         modal.style.display = 'block';
     };
 
-    // V.21.36 GENEL RAPOR KARE GRID FONKSİYONU
     window.showGeneralReport = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        
         document.getElementById('statTitle').innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button>
                 <span style="font-weight:bold;">${ayYilStr}</span>
                 <button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button>
@@ -238,27 +254,19 @@
                 `).join('')}
             </div>`;
 
-        let html = `<div class="report-wrapper"><div class="report-grid-container">`;
+        let html = `<table class="report-table"><thead><tr><th></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
         let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        
         for (let d = 1; d <= sonGun; d++) {
             let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
             let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
-            
-            html += `
-                <div class="day-card" onclick="window.gitTarih(${d})">
-                    <span class="day-number">${d}</span>
-                    <div class="vakit-dots">`;
-            
+            html += `<tr><td class="day-label" onclick="window.gitTarih(${d})">${d}</td>`;
             for (let i = 0; i < 5; i++) {
                 let dur = (v && v.vakitler[i]) ? (v.vakitler[i].durumlar[genRaporTipIdx] || 0) : 0;
-                html += `<div class="dot s${dur}"></div>`;
+                html += `<td class="s${dur}" onclick="window.gitTarih(${d})"></td>`;
             }
-            
-            html += `</div></div>`;
+            html += `</tr>`;
         }
-        
-        grid.innerHTML = html + `</div></div>`;
+        grid.innerHTML = html + `</tbody></table>`;
         modal.style.display = 'block';
     };
 
