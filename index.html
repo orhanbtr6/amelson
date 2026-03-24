@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.34</title>
+    <title>Amel Defteri V.21.35</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
@@ -66,13 +66,22 @@
         
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
+
+        /* YENİ: GENEL BÖLÜMÜ KARE GRID TASARIMI (V.21.35) */
+        .report-grid-container { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 5px; background: rgba(0,0,0,0.15); border-radius: 10px; }
+        .day-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 3px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: background 0.2s; }
+        .day-card:active { background: rgba(255,255,255,0.1); }
+        .day-number { font-size: 9px; opacity: 0.5; margin-bottom: 3px; font-weight: bold;}
+        .vakit-dots { display: flex; flex-direction: column; gap: 1.5px; width: 100%; align-items: center; }
+        .dot { width: 80%; height: 4px; border-radius: 1px; background: rgba(255,255,255,0.05); }
+        
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.34</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.35</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -210,25 +219,46 @@
         modal.style.display = 'block';
     };
 
+    // YENİ: GENEL BÖLÜMÜ KARE GRID YAPISI (V.21.35)
     window.showGeneralReport = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>
-        <div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
-        let table = `<table style="width:100%; border-spacing:1px; table-layout:fixed;"><thead><tr><th style="width:25px; font-size:10px; opacity:0.5;"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
-        let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        for (let d = 1; d <= son; d++) {
+        
+        document.getElementById('statTitle').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button>
+                <span style="font-weight:bold;">${ayYilStr}</span>
+                <button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button>
+            </div>
+            <div style="display:flex; justify-content:center; gap:5px; margin-bottom:15px;">
+                ${basliklar.map((b,i)=>`
+                    <button class="nav-btn" style="font-size:10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" 
+                    onclick="window.setGenRaporTip(${i})">${b}</button>
+                `).join('')}
+            </div>`;
+
+        let html = `<div class="report-grid-container">`;
+        let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+        
+        for (let d = 1; d <= sonGun; d++) {
             let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
             let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
-            table += `<tr><td style="text-align:center; font-size:10px; opacity:0.5;">${d}</td>`;
+            
+            html += `
+                <div class="day-card" onclick="window.gitTarih(${d})">
+                    <span class="day-number">${d}</span>
+                    <div class="vakit-dots">`;
+            
             for (let i = 0; i < 5; i++) {
                 let dur = (v && v.vakitler[i]) ? (v.vakitler[i].durumlar[genRaporTipIdx] || 0) : 0;
-                table += `<td style="height:12px; border-radius:2px;" class="s${dur}" onclick="window.gitTarih(${d})"></td>`;
+                html += `<div class="dot s${dur}"></div>`;
             }
-            table += `</tr>`;
+            
+            html += `</div></div>`;
         }
-        grid.innerHTML = table + `</tbody></table>`;
+        
+        grid.innerHTML = html + `</div>`;
         modal.style.display = 'block';
     };
 
@@ -317,7 +347,6 @@
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k && k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { document.getElementById('fileInp').click(); };
     window.processFile = (inp) => { let fr = new FileReader(); fr.onload = () => { let d = JSON.parse(fr.result); Object.keys(d).forEach(k => localStorage.setItem(k, d[k])); location.reload(); }; fr.readAsText(inp.files[0]); };
-    
     veriYukle();
 </script>
 </body>
