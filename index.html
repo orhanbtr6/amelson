@@ -68,9 +68,9 @@
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
 
         /* GENEL RAPOR TABLO DARALTMA CSS */
-        #calGrid table { width: 100%; border-spacing: 1px; table-layout: fixed; }
-        #calGrid th { font-size: 8px; padding: 2px 0; color: var(--blue); }
-        #calGrid td { height: 16px; border-radius: 2px; cursor: pointer; } /* Hücre yüksekliği daraltıldı */
+        #calGrid table { width: 100%; border-spacing: 2px; table-layout: fixed; margin: 0 auto; }
+        #calGrid th { font-size: 10px; padding: 2px 0; color: var(--blue); text-align: center; }
+        #calGrid td { height: 16px; border-radius: 3px; cursor: pointer; } 
     </style>
 </head>
 <body>
@@ -222,7 +222,8 @@
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>
         <div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
         
-        let table = `<table><thead><tr><th style="width:25px; font-size:10px; opacity:0.5;"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
+        // Kareye yakın yapı için genişlikleri daralttık
+        let table = `<table style="max-width:250px;"><thead><tr><th style="width:25px; font-size:10px; opacity:0.5;"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
             let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
