@@ -66,6 +66,11 @@
         
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
+
+        /* GENEL RAPOR TABLO DARALTMA CSS */
+        #calGrid table { width: 100%; border-spacing: 1px; table-layout: fixed; }
+        #calGrid th { font-size: 8px; padding: 2px 0; color: var(--blue); }
+        #calGrid td { height: 16px; border-radius: 2px; cursor: pointer; } /* Hücre yüksekliği daraltıldı */
     </style>
 </head>
 <body>
@@ -216,15 +221,16 @@
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>
         <div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:10px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
-        let table = `<table style="width:100%; border-spacing:1px; table-layout:fixed;"><thead><tr><th style="width:25px; font-size:10px; opacity:0.5;"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
+        
+        let table = `<table><thead><tr><th style="width:25px; font-size:10px; opacity:0.5;"></th><th>S</th><th>Ö</th><th>İ</th><th>A</th><th>Y</th></tr></thead><tbody>`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
             let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
             let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
-            table += `<tr><td style="text-align:center; font-size:10px; opacity:0.5;">${d}</td>`;
+            table += `<tr><td style="text-align:center; font-size:9px; opacity:0.5; height:16px;">${d}</td>`;
             for (let i = 0; i < 5; i++) {
                 let dur = (v && v.vakitler[i]) ? (v.vakitler[i].durumlar[genRaporTipIdx] || 0) : 0;
-                table += `<td style="height:12px; border-radius:2px;" class="s${dur}" onclick="window.gitTarih(${d})"></td>`;
+                table += `<td class="s${dur}" onclick="window.gitTarih(${d})"></td>`;
             }
             table += `</tr>`;
         }
