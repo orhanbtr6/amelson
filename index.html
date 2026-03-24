@@ -38,7 +38,7 @@
         .bar-full { background: var(--light-green); }
 
         .ozel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 5px; }
-        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 2px; border: 1px solid rgba(255,255,255,0.1); text-align: center; transition: background 0.3s; }
+        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 2px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
         .ozel-card b { font-size: 9px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sayi-input { width: 85%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 4px 0; border-radius: 8px; margin: 5px auto; outline: none; font-size: 11px; }
         .ozel-active { background: rgba(144, 238, 144, 0.2) !important; border: 1px solid rgba(144, 238, 144, 0.4) !important; }
@@ -56,15 +56,16 @@
         .box-danger { background: rgba(231, 76, 60, 0.25); }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
-        .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 420px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
+        .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 440px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
         .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;}
         
-        /* GENEL RAPOR İÇİN YATAY TABLO */
-        .genel-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; background: rgba(0,0,0,0.2); margin-top: 10px; }
-        .genel-table { width: max-content; border-collapse: separate; border-spacing: 2px; }
-        .genel-table th { font-size: 9px; padding: 5px 3px; color: #7fbbff; min-width: 18px; }
-        .genel-table td { width: 18px; height: 18px; border-radius: 3px; }
-        .v-row-label { font-size: 10px; font-weight: bold; position: sticky; left: 0; background: #082d42; padding: 0 5px; min-width: 55px; }
+        /* ULTRA KOMPAKT GENEL TABLO */
+        .genel-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; background: rgba(0,0,0,0.3); margin-top: 10px; padding: 5px 0; }
+        .genel-table { width: 100%; border-collapse: separate; border-spacing: 1px; table-layout: fixed; }
+        .genel-table th { font-size: 8px; padding: 2px 0; color: #7fbbff; font-weight: normal; }
+        .th-gun { writing-mode: vertical-lr; transform: rotate(180deg); height: 25px; min-width: 8px; }
+        .genel-table td { height: 12px; border-radius: 1px; border: 0.1px solid rgba(255,255,255,0.02); }
+        .v-row-label { font-size: 9px; font-weight: bold; position: sticky; left: 0; background: #082d42; padding: 0 4px; width: 45px; z-index: 10; }
 
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
@@ -73,6 +74,8 @@
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
         .warn-card { background: rgba(231, 76, 60, 0.1); border: 1px solid var(--red); padding: 10px; border-radius: 10px; margin-top: 15px; font-size: 12px; }
+        .arsiv-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+        .arsiv-table td { padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -179,20 +182,20 @@
         });
     }
 
-    // GENEL RAPOR - YENİ YATAY TABLO
+    // GENEL RAPOR - ULTRA KOMPAKT (EKRANA SIĞDIRMA)
     window.showGeneralReport = () => {
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div><div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:9px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div><div style="display:flex; justify-content:center; gap:3px; margin-bottom:5px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:8px; padding:4px 6px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
         
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label">Vakit</th>`;
-        for (let d = 1; d <= son; d++) table += `<th>${d}</th>`;
+        let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label"></th>`;
+        for (let d = 1; d <= son; d++) table += `<th class="th-gun">${d}</th>`;
         table += `</tr></thead><tbody>`;
 
         vakitler.forEach((vAd, vIdx) => {
-            let kısaAd = vAd.split(" ")[0];
-            table += `<tr><td class="v-row-label">${kısaAd}</td>`;
+            let kısa = vAd.substring(0, 2).toUpperCase();
+            table += `<tr><td class="v-row-label">${kısa}</td>`;
             for (let d = 1; d <= son; d++) {
                 let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
                 let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
@@ -208,19 +211,34 @@
     window.showYearlyReport = () => {
         const grid = document.getElementById('calGrid'); const yil = raporTarih.getFullYear();
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b>${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
-        let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, vakitSkorları = [0,0,0,0,0], gunSayisi = 0;
+        let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {}, vakitSkorları = [0,0,0,0,0], gunSayisi = 0;
+        
         for (let m = 0; m < 12; m++) {
             for (let d = 1; d <= 31; d++) {
                 let t = new Date(yil, m, d); if(t.getFullYear() !== yil || t.getMonth() !== m) continue;
                 let v = JSON.parse(localStorage.getItem(getLocalKey(t))); if (!v) continue;
-                gunSayisi++; v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; let s = vk.durumlar[0]; let p = s==1?30:s==2?50:s==4?20:0; vakitSkorları[i] += p; });
+                gunSayisi++;
+                v.vakitler.forEach((vk, i) => { 
+                    if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++;
+                    let s = vk.durumlar[0]; let p = s==1?30:s==2?50:s==4?20:0; vakitSkorları[i] += p;
+                });
+                (v.ozeller || []).forEach(vo => {
+                    if (getGlobalOzeller().find(g => g.id === vo.id && g.arsiv)) {
+                        if (!arsiv[vo.ad]) arsiv[vo.ad] = { toplam: 0, tip: vo.tip };
+                        if (vo.tip === 'sayi') arsiv[vo.ad].toplam += parseFloat(vo.durum || 0); else if (vo.durum > 0) arsiv[vo.ad].toplam += 1;
+                    }
+                });
             }
         }
+        
         let enDusukIdx = 0, enDusukPuan = 999999;
         if(gunSayisi>0) { vakitSkorları.forEach((toplam, idx) => { let ort = toplam / gunSayisi; if(ort < enDusukPuan) { enDusukPuan = ort; enDusukIdx = idx; } }); }
-        let h = `<div style="font-size:13px;"><table style="width:100%;"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
+        
+        let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; border-bottom:1px solid rgba(255,255,255,0.1);"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
         Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
-        if(gunSayisi > 0) h += `</tbody></table><div class="warn-card">⚠️ <b>ANALİZ:</b> Bu yıl en çok <b>${vakitler[enDusukIdx]}</b> vaktinde zorlanılmış. (Ortalama Başarı: %${Math.round((enDusukPuan/50)*100)})</div></div>`;
+        h += `</tbody></table><p style="color:var(--blue); font-size:12px; font-weight:bold; margin:10px 0 5px;">ARŞİVLENENLER</p><table class="arsiv-table">`;
+        Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].toplam} ${arsiv[k].tip==='sayi'?'':'G'}</td></tr>`; });
+        if(gunSayisi > 0) h += `</table><div class="warn-card">⚠️ <b>ANALİZ:</b> En çok <b>${vakitler[enDusukIdx]}</b> vaktinde zorlanılmış. (Başarı: %${Math.round((enDusukPuan/50)*100)})</div></div>`;
         grid.innerHTML = h; document.getElementById('statModal').style.display = 'block';
     };
 
@@ -244,7 +262,7 @@
 
     window.showHelp = () => {
         const grid = document.getElementById('calGrid'); document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center;">Rehber</h3>`;
-        grid.innerHTML = `<div style="font-size:12px; line-height:1.5;"><b>Farz Renkleri:</b><br>🟢 Vaktinde (%30)<br>🌿 Cemaat (%50)<br>🟠 Kaza (%20)<br>🔴 Kazaya Kaldı<br><br><b>Analiz:</b> Yıllık bölümde en çok zorlandığınız vakit otomatik hesaplanır.</div>`;
+        grid.innerHTML = `<div style="font-size:12px; line-height:1.5;"><b>Namaz Puanları:</b><br>🟢 Vaktinde (%30) | 🌿 Cemaat (%50)<br>🟠 Kaza (%20) | 🔴 Kazaya Kaldı<br><br><b>Genel Bölümü:</b> Bir ayı tek ekranda görmek için hücreler küçültülmüştür. Renkler başarınızı temsil eder.</div>`;
         document.getElementById('statModal').style.display = 'block';
     };
 
