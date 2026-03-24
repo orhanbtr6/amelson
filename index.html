@@ -13,13 +13,15 @@
         .container { width: 100%; max-width: 500px; margin: auto; padding-bottom: 150px; }
         
         .main-title-container { text-align: center; margin: 18px 0; cursor: pointer; }
-        .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; }
+        .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
+        .version-tag { font-size: 9px; opacity: 0.4; vertical-align: super; margin-left: 4px; }
 
         .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 8px; }
         .date-nav { display: flex; align-items: center; gap: 5px; }
         .date-display-box { text-align: center; cursor: pointer; padding: 5px 12px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 100px; }
         #hiddenDate { position: absolute; opacity: 0; left: 0; top: 0; width: 100%; height: 100%; cursor: pointer; }
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; }
+        .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; gap: 5px; }
         .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; }
@@ -36,8 +38,8 @@
         .bar-full { background: var(--light-green); }
 
         .ozel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 5px; }
-        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 2px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        .ozel-card b { font-size: 9px; display: block; overflow: hidden; text-overflow: ellipsis; }
+        .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 2px; border: 1px solid rgba(255,255,255,0.1); text-align: center; transition: background 0.3s; }
+        .ozel-card b { font-size: 9px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sayi-input { width: 85%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 4px 0; border-radius: 8px; margin: 5px auto; outline: none; font-size: 11px; }
         .ozel-active { background: rgba(144, 238, 144, 0.2) !important; border: 1px solid rgba(144, 238, 144, 0.4) !important; }
         
@@ -57,20 +59,19 @@
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 420px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
         .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;}
         
-        /* GENEL BÖLÜMÜ İÇİN ÖZEL TABLO (Yatay Kaydırmalı) */
-        .genel-table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; background: rgba(0,0,0,0.2); }
-        .genel-table { border-collapse: separate; border-spacing: 2px; width: max-content; }
-        .genel-table th { font-size: 9px; min-width: 18px; padding: 5px 2px; color: var(--blue); }
-        .genel-table td { width: 18px; height: 18px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.05); }
-        .v-label { font-size: 10px; font-weight: bold; position: sticky; left: 0; background: #082d42; padding: 0 8px; min-width: 50px; border: none !important; }
+        /* GENEL RAPOR İÇİN YATAY TABLO */
+        .genel-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; background: rgba(0,0,0,0.2); margin-top: 10px; }
+        .genel-table { width: max-content; border-collapse: separate; border-spacing: 2px; }
+        .genel-table th { font-size: 9px; padding: 5px 3px; color: #7fbbff; min-width: 18px; }
+        .genel-table td { width: 18px; height: 18px; border-radius: 3px; }
+        .v-row-label { font-size: 10px; font-weight: bold; position: sticky; left: 0; background: #082d42; padding: 0 5px; min-width: 55px; }
 
-        /* ESKİ TAKVİM GRİD YAPISI (KORUNDU) */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
 
-        .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-radius: 15px 15px 0 0; }
-        .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
+        .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
         .warn-card { background: rgba(231, 76, 60, 0.1); border: 1px solid var(--red); padding: 10px; border-radius: 10px; margin-top: 15px; font-size: 12px; }
     </style>
 </head>
@@ -78,7 +79,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.34</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -90,9 +91,10 @@
             </div>
             <button class="nav-btn" onclick="degistirTarih(1)">❯</button>
         </div>
-        <div style="display:flex; gap:5px;">
+        <div style="display:flex; gap:5px; align-items:center;">
             <button class="nav-btn" style="background:var(--blue); font-size: 10px;" onclick="showGeneralReport()">📊 GENEL</button>
             <button class="nav-btn" style="background:var(--orange); font-size: 10px;" onclick="showYearlyReport()">📅 YILLIK</button>
+            <button class="info-btn" onclick="window.showHelp()">i</button>
         </div>
     </div>
     <div id="vakitList"></div>
@@ -108,14 +110,24 @@
     </div>
 </div>
 
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <button class="close-x" onclick="closeSettings()">✕</button>
+        <h3 style="text-align:center; color:var(--blue);">Ayarlar</h3>
+        <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="exportData()">💾 Verileri Yedekle</button>
+        <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="importData()">📂 Yedekten Geri Yükle</button>
+    </div>
+</div>
+
 <div class="footer">
     <input type="text" id="habInp" placeholder="Yeni amel yaz...">
     <button class="add-btn" onclick="yeniEkle()">EKLE</button>
-    <button onclick="exportData()" style="background:none; border:none; font-size:20px;">💾</button>
+    <button onclick="openSettings()" style="background:none; border:none; font-size:22px;">⚙️</button>
+    <input type="file" id="fileInp" style="display:none" onchange="processFile(this)">
 </div>
 
 <script>
-    const vakitler = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
+    const vakitler = ["Sabah Namazı", "Öğle Namazı", "İkindi Namazı", "Akşam Namazı", "Yatsı Namazı"];
     const basliklar = ["Farz", "Sünnet", "Tesbihat"];
     let seciliTarih = new Date();
     let raporTarih = new Date();
@@ -145,8 +157,7 @@
         document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
         document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
         
-        const vDiv = document.getElementById('vakitList');
-        vDiv.innerHTML = '';
+        const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
             let boxClass = "box-default"; const farz = v.durumlar[0], sunnet = v.durumlar[1], tesbih = v.durumlar[2];
             let percent = 0;
@@ -154,32 +165,34 @@
             if (sunnet === 1 || sunnet === 2) percent += 25; if (tesbih === 1 || tesbih === 2) percent += 25;
             let barColor = percent >= 100 ? "bar-full" : (percent > 50 ? "bar-green" : (percent >= 26 ? "bar-orange" : "bar-red"));
             if (farz === 3) boxClass = "box-danger"; else if (percent >= 100) boxClass = "box-success";
+            
             let row = `<div class="habit-card"><div class="vakit-isim-box ${boxClass}"><span class="vakit-ad">${vakitler[vIdx]}</span></div><div class="circles-row">`;
             basliklar.forEach((b, bIdx) => { row += `<div style="text-align:center"><div class="circle s${v.durumlar[bIdx]}" onclick="window.degis(${vIdx}, ${bIdx}, 'vakit')"></div><span class="label-text" onclick="window.showStats('${vakitler[vIdx]} ${b}', 'vakit', ${vIdx}, ${bIdx})">${b}</span></div>`; });
-            vDiv.innerHTML += row + `</div><div class="progress-zone"><div class="progress-percent">${percent}%</div><div class="progress-bg"><div class="progress-bar ${barColor}" style="width: ${percent}%;"></div></div></div></div>`;
+            vDiv.innerHTML += row + `</div><div class="progress-zone"><div class="progress-percent">${percent}%</div><div class="progress-bg"><div class="progress-bar ${barColor}" style="width: ${percent}%;"></div></div><div class="progress-label">Başarım</div></div></div>`;
         });
 
         const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             let isActive = (o.tip === 'sayi' && o.durum > 0) || (o.tip !== 'sayi' && (o.durum == 1 || o.durum == 2));
             let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum||""}" placeholder="0" class="sayi-input" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div style="display:flex; justify-content:center; padding:2px;"><div class="circle s${o.durum}" style="width:28px; height:28px;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div></div>`;
-            oDiv.innerHTML += `<div class="ozel-card ${isActive ? 'ozel-active' : ''}"><b onclick="window.showStats('${o.ad}', 'ozel', 0, 0, '${o.id}')">${o.ad}</b>${ctrl}</div>`;
+            oDiv.innerHTML += `<div class="ozel-card ${isActive ? 'ozel-active' : ''}"><b onclick="window.showStats('${o.ad}', 'ozel', 0, 0, '${o.id}')">${o.ad}</b>${ctrl}<small onclick="window.silSecenekleri('${o.id}')" style="opacity:0.3; font-size:8px; display:block; cursor:pointer;">Arşivle</small></div>`;
         });
     }
 
-    // GENEL RAPOR (SADECE BURASI YATAY)
+    // GENEL RAPOR - YENİ YATAY TABLO
     window.showGeneralReport = () => {
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div><div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:9px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
         
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        let table = `<div class="genel-table-wrapper"><table class="genel-table"><thead><tr><th class="v-label">Vakit</th>`;
+        let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label">Vakit</th>`;
         for (let d = 1; d <= son; d++) table += `<th>${d}</th>`;
         table += `</tr></thead><tbody>`;
 
         vakitler.forEach((vAd, vIdx) => {
-            table += `<tr><td class="v-label">${vAd}</td>`;
+            let kısaAd = vAd.split(" ")[0];
+            table += `<tr><td class="v-row-label">${kısaAd}</td>`;
             for (let d = 1; d <= son; d++) {
                 let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
                 let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
@@ -189,26 +202,6 @@
             table += `</tr>`;
         });
         grid.innerHTML = table + `</tbody></table></div>`;
-        document.getElementById('statModal').style.display = 'block';
-    };
-
-    // ESKİ GRİD TAKVİM (DEĞİŞMEDİ)
-    window.showStats = (ad, tip, vIdx, bIdx = 0, id = '') => {
-        const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span style="font-size:13px;">${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div>`;
-        let gridHtml = `<div class="calendar-grid">`;
-        let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        for (let d = 1; d <= son; d++) {
-            let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
-            let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
-            let val = "", cls = "s0";
-            if (v) {
-                if (tip === 'vakit') cls = "s" + (v.vakitler[vIdx].durumlar[bIdx] || 0);
-                else { let o = (v.ozeller || []).find(x => x.id === id); if (o) { if (o.tip === 'sayi' && o.durum > 0) { cls = 's2'; val = `<b>${o.durum}</b>`; } else if (o.durum > 0) cls = 's' + o.durum; } }
-            }
-            gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:2px; left:2px; opacity:0.4; font-size:8px;">${d}</small>${val}</div>`;
-        }
-        grid.innerHTML = gridHtml + `</div>`;
         document.getElementById('statModal').style.display = 'block';
     };
 
@@ -224,11 +217,35 @@
             }
         }
         let enDusukIdx = 0, enDusukPuan = 999999;
-        vakitSkorları.forEach((toplam, idx) => { let ort = toplam / gunSayisi; if(ort < enDusukPuan) { enDusukPuan = ort; enDusukIdx = idx; } });
+        if(gunSayisi>0) { vakitSkorları.forEach((toplam, idx) => { let ort = toplam / gunSayisi; if(ort < enDusukPuan) { enDusukPuan = ort; enDusukIdx = idx; } }); }
         let h = `<div style="font-size:13px;"><table style="width:100%;"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
         Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
-        if(gunSayisi > 0) h += `</tbody></table><div class="warn-card">⚠️ <b>ANALİZ:</b> En çok <b>${vakitler[enDusukIdx]}</b> vaktinde zorlanılmış. (Başarı: %${Math.round((enDusukPuan/50)*100)})</div></div>`;
+        if(gunSayisi > 0) h += `</tbody></table><div class="warn-card">⚠️ <b>ANALİZ:</b> Bu yıl en çok <b>${vakitler[enDusukIdx]}</b> vaktinde zorlanılmış. (Ortalama Başarı: %${Math.round((enDusukPuan/50)*100)})</div></div>`;
         grid.innerHTML = h; document.getElementById('statModal').style.display = 'block';
+    };
+
+    window.showStats = (ad, tip, vIdx, bIdx = 0, id = '') => {
+        const grid = document.getElementById('calGrid');
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span style="font-size:12px;">${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div>`;
+        let gridHtml = `<div class="calendar-grid">`;
+        let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+        for (let d = 1; d <= son; d++) {
+            let t = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
+            let v = JSON.parse(localStorage.getItem(getLocalKey(t)));
+            let val = "", cls = "s0";
+            if (v) {
+                if (tip === 'vakit') cls = "s" + (v.vakitler[vIdx].durumlar[bIdx] || 0);
+                else { let o = (v.ozeller || []).find(x => x.id === id); if (o) { if (o.tip === 'sayi' && o.durum > 0) { cls = 's2'; val = `<b>${o.durum}</b>`; } else if (o.durum > 0) cls = 's' + o.durum; } }
+            }
+            gridHtml += `<div class="cal-box ${cls}" onclick="window.gitTarih(${d})"><small style="position:absolute; top:2px; left:2px; opacity:0.4; font-size:8px;">${d}</small>${val}</div>`;
+        }
+        grid.innerHTML = gridHtml + `</div>`; document.getElementById('statModal').style.display = 'block';
+    };
+
+    window.showHelp = () => {
+        const grid = document.getElementById('calGrid'); document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center;">Rehber</h3>`;
+        grid.innerHTML = `<div style="font-size:12px; line-height:1.5;"><b>Farz Renkleri:</b><br>🟢 Vaktinde (%30)<br>🌿 Cemaat (%50)<br>🟠 Kaza (%20)<br>🔴 Kazaya Kaldı<br><br><b>Analiz:</b> Yıllık bölümde en çok zorlandığınız vakit otomatik hesaplanır.</div>`;
+        document.getElementById('statModal').style.display = 'block';
     };
 
     window.degis = (i, s, t) => {
@@ -250,9 +267,14 @@
     window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); veriYukle(); };
     window.tarihSec = (v) => { if(v) { seciliTarih = new Date(v); veriYukle(); } };
     window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; raporTarih = new Date(); };
+    window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
+    window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v; render(); };
     window.yeniEkle = () => { const ad = document.getElementById('habInp').value; if(!ad) return; let g = getGlobalOzeller(); g.push({ id: 'id' + Date.now(), ad, tip: confirm("Sayı mı?") ? 'sayi' : 'renk', arsiv: false }); saveGlobalOzeller(g); document.getElementById('habInp').value = ""; veriYukle(); };
+    window.silSecenekleri = (id) => { if(confirm("Arşivlensin mi?")) { let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) g[idx].arsiv = true; saveGlobalOzeller(g); veriYukle(); } };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
+    window.importData = () => { document.getElementById('fileInp').click(); };
+    window.processFile = (inp) => { let fr = new FileReader(); fr.onload = () => { let d = JSON.parse(fr.result); Object.keys(d).forEach(k => localStorage.setItem(k, d[k])); location.reload(); }; fr.readAsText(inp.files[0]); };
     veriYukle();
 </script>
 </body>
