@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.35</title>
+    <title>Amel Defteri V.21.36</title>
     
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
@@ -67,13 +67,13 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
 
-        /* YENİ: GENEL BÖLÜMÜ KARE GRID TASARIMI (V.21.35) */
-        .report-grid-container { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 5px; background: rgba(0,0,0,0.15); border-radius: 10px; }
-        .day-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 3px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: background 0.2s; }
-        .day-card:active { background: rgba(255,255,255,0.1); }
-        .day-number { font-size: 9px; opacity: 0.5; margin-bottom: 3px; font-weight: bold;}
-        .vakit-dots { display: flex; flex-direction: column; gap: 1.5px; width: 100%; align-items: center; }
-        .dot { width: 80%; height: 4px; border-radius: 1px; background: rgba(255,255,255,0.05); }
+        /* YENİ: V.21.36 GENEL KARE VE DAR TASARIM */
+        .report-wrapper { display: flex; justify-content: center; padding: 5px; }
+        .report-grid-container { display: grid; grid-template-columns: repeat(7, 42px); gap: 6px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 15px; }
+        .day-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; width: 42px; height: 42px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+        .day-number { font-size: 10px; font-weight: bold; margin-bottom: 2px; color: #a5d3ff; }
+        .vakit-dots { display: flex; flex-wrap: wrap; gap: 2px; width: 24px; justify-content: center; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.1); }
         
     </style>
 </head>
@@ -81,7 +81,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.35</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.36</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -219,7 +219,7 @@
         modal.style.display = 'block';
     };
 
-    // YENİ: GENEL BÖLÜMÜ KARE GRID YAPISI (V.21.35)
+    // V.21.36 GENEL RAPOR KARE GRID FONKSİYONU
     window.showGeneralReport = () => {
         const modal = document.getElementById('statModal');
         const grid = document.getElementById('calGrid');
@@ -238,7 +238,7 @@
                 `).join('')}
             </div>`;
 
-        let html = `<div class="report-grid-container">`;
+        let html = `<div class="report-wrapper"><div class="report-grid-container">`;
         let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         
         for (let d = 1; d <= sonGun; d++) {
@@ -258,7 +258,7 @@
             html += `</div></div>`;
         }
         
-        grid.innerHTML = html + `</div>`;
+        grid.innerHTML = html + `</div></div>`;
         modal.style.display = 'block';
     };
 
