@@ -4,76 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.35</title>
-    
+    <title>Amel Defteri V.21.36</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { width: 100%; max-width: 500px; margin: auto; padding-bottom: 150px; }
-        
         .main-title-container { text-align: center; margin: 18px 0; cursor: pointer; }
         .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
         .version-tag { font-size: 9px; opacity: 0.4; vertical-align: super; margin-left: 4px; }
-
         .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 20px; margin-bottom: 8px; }
         .date-nav { display: flex; align-items: center; gap: 5px; }
         .date-display-box { text-align: center; cursor: pointer; padding: 5px 12px; border-radius: 10px; position: relative; background: rgba(255,255,255,0.05); min-width: 100px; }
         #hiddenDate { position: absolute; opacity: 0; left: 0; top: 0; width: 100%; height: 100%; cursor: pointer; }
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; }
         .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; gap: 5px; }
         .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; }
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
         .circles-row { display: flex; gap: 8px; align-items: center; }
-        
         .progress-zone { width: 85px; text-align: right; font-size: 9px; opacity: 0.9; margin-left: 5px; }
         .progress-bg { background: rgba(255,255,255,0.1); height: 5px; border-radius: 10px; overflow: hidden; margin-top: 2px; }
         .progress-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s; }
-        .progress-label { font-size: 8px; opacity: 0.5; margin-top: 2px; }
-        
-        .bar-red { background: var(--red); }
-        .bar-orange { background: var(--orange); }
-        .bar-green { background: var(--dark-green); }
-        .bar-full { background: var(--light-green); }
-
+        .bar-red { background: var(--red); } .bar-orange { background: var(--orange); } .bar-green { background: var(--dark-green); } .bar-full { background: var(--light-green); }
         .ozel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 5px; }
         .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 2px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        .ozel-card b { font-size: 9px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ozel-card b { font-size: 9px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;}
         .sayi-input { width: 85%; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); text-align: center; padding: 4px 0; border-radius: 8px; margin: 5px auto; outline: none; font-size: 11px; }
         .ozel-active { background: rgba(144, 238, 144, 0.2) !important; border: 1px solid rgba(144, 238, 144, 0.4) !important; }
-        
         .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; margin: auto; }
         .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; cursor: pointer; display: block; }
-        
-        .s0 { background: rgba(255,255,255,0.05); } 
-        .s1 { background: var(--dark-green); } 
-        .s2 { background: var(--light-green); } 
-        .s3 { background: var(--red); } 
-        .s4 { background: var(--orange); }
-        .box-default { background: rgba(127, 187, 255, 0.15); }
-        .box-success { background: rgba(144, 238, 144, 0.25); }
-        .box-danger { background: rgba(231, 76, 60, 0.25); }
-
+        .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
+        .box-default { background: rgba(127, 187, 255, 0.15); } .box-success { background: rgba(144, 238, 144, 0.25); } .box-danger { background: rgba(231, 76, 60, 0.25); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 460px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
         .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;}
-        
         .genel-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; background: rgba(0,0,0,0.3); margin-top: 10px; padding: 5px 0; }
         .genel-table { width: 100%; border-collapse: separate; border-spacing: 1px; table-layout: fixed; }
         .genel-table th { font-size: 7px; padding: 2px 0; color: #7fbbff; font-weight: normal; }
         .th-gun { writing-mode: vertical-lr; transform: rotate(180deg); height: 22px; min-width: 8px; text-align: center; }
         .genel-table td { height: 12px; border-radius: 1px; border: 0.1px solid rgba(255,255,255,0.02); }
         .v-row-label-full { font-size: 9px; font-weight: bold; position: sticky; left: 0; background: #082d42; padding: 0 5px; width: 65px; z-index: 10; text-align: left; }
-
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-box { aspect-ratio: 1; border-radius: 6px; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; }
-
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-        .warn-card { background: rgba(231, 76, 60, 0.1); border: 1px solid var(--red); padding: 10px; border-radius: 10px; margin-top: 15px; font-size: 12px; }
         .arsiv-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
         .arsiv-table td { padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .help-section { margin-bottom: 15px; border-left: 3px solid var(--blue); padding-left: 10px; }
@@ -84,7 +60,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.35</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.36</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -150,11 +126,22 @@
         
         if (kaydedilmis) {
             gunlukVeriler = kaydedilmis;
-            const mevcutIdler = (gunlukVeriler.ozeller || []).map(o => o.id);
+            // 1. Önce o günde olup küresel listeden silinmiş (id'si olmayan) hayaletleri temizle
+            gunlukVeriler.ozeller = (gunlukVeriler.ozeller || []).filter(o => globalListe.some(g => g.id === o.id));
+            // 2. Küresel listede olup o günde olmayanları ekle (Sadece Arşivlenmemişse)
+            const mevcutIdler = gunlukVeriler.ozeller.map(o => o.id);
             globalListe.forEach(g => {
                 if (!g.arsiv && !mevcutIdler.includes(g.id)) {
                     gunlukVeriler.ozeller.push({ ...g, durum: 0 });
                 }
+            });
+            // 3. Arşivlenmiş olanları SADECE verisi varsa (durum > 0) göster, yoksa anında kaldır
+            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => {
+                const globalHali = globalListe.find(g => g.id === o.id);
+                if (globalHali && globalHali.arsiv) {
+                    return (o.durum > 0); // Sadece içi doluysa kalsın
+                }
+                return true; // Arşivli değilse kalsın
             });
         } else {
             gunlukVeriler = { 
@@ -172,16 +159,16 @@
         
         const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
-            let boxClass = "box-default"; const farz = v.durumlar[0], sunnet = v.durumlar[1], tesbih = v.durumlar[2];
+            let boxClass = "box-default"; const farz = v.durumlar[0];
             let percent = 0;
             if (farz === 1) percent += 30; else if (farz === 2) percent += 50; else if (farz === 4) percent += 20;
-            if (sunnet === 1 || sunnet === 2) percent += 25; if (tesbih === 1 || tesbih === 2) percent += 25;
+            if (v.durumlar[1] > 0) percent += 25; if (v.durumlar[2] > 0) percent += 25;
             let barColor = percent >= 100 ? "bar-full" : (percent > 50 ? "bar-green" : (percent >= 26 ? "bar-orange" : "bar-red"));
             if (farz === 3) boxClass = "box-danger"; else if (percent >= 100) boxClass = "box-success";
             
             let row = `<div class="habit-card"><div class="vakit-isim-box ${boxClass}"><span class="vakit-ad">${vakitler[vIdx]}</span></div><div class="circles-row">`;
             basliklar.forEach((b, bIdx) => { row += `<div style="text-align:center"><div class="circle s${v.durumlar[bIdx]}" onclick="window.degis(${vIdx}, ${bIdx}, 'vakit')"></div><span class="label-text" onclick="window.showStats('${vakitler[vIdx]} ${b}', 'vakit', ${vIdx}, ${bIdx})">${b}</span></div>`; });
-            vDiv.innerHTML += row + `</div><div class="progress-zone"><div class="progress-percent">${percent}%</div><div class="progress-bg"><div class="progress-bar ${barColor}" style="width: ${percent}%;"></div></div><div class="progress-label">Başarım</div></div></div>`;
+            vDiv.innerHTML += row + `</div><div class="progress-zone"><div class="progress-percent">${percent}%</div><div class="progress-bg"><div class="progress-bar ${barColor}" style="width: ${percent}%;"></div></div></div></div>`;
         });
 
         const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
@@ -196,12 +183,10 @@
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div><div style="display:flex; justify-content:center; gap:3px; margin-bottom:5px;">${basliklar.map((b,i)=>`<button class="nav-btn" style="font-size:8px; padding:4px 6px; background:${genRaporTipIdx===i?'var(--blue)':'rgba(255,255,255,0.1)'}" onclick="window.setGenRaporTip(${i})">${b}</button>`).join('')}</div>`;
-        
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label-full"></th>`;
         for (let d = 1; d <= son; d++) table += `<th class="th-gun">${d}</th>`;
         table += `</tr></thead><tbody>`;
-
         vakitler.forEach((vAd, vIdx) => {
             let kısaVakit = vAd.split(" ")[0];
             table += `<tr><td class="v-row-label-full">${kısaVakit}</td>`;
@@ -221,16 +206,12 @@
         const grid = document.getElementById('calGrid'); const yil = raporTarih.getFullYear();
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><button class="nav-btn" onclick="window.yilDegis(-1)">❮</button><b>${yil} ÖZETİ</b><button class="nav-btn" onclick="window.yilDegis(1)">❯</button></div>`;
         let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {}, vakitSkorları = [0,0,0,0,0], gunSayisi = 0;
-        
         for (let m = 0; m < 12; m++) {
             for (let d = 1; d <= 31; d++) {
                 let t = new Date(yil, m, d); if(t.getFullYear() !== yil || t.getMonth() !== m) continue;
                 let v = JSON.parse(localStorage.getItem(getLocalKey(t))); if (!v) continue;
                 gunSayisi++;
-                v.vakitler.forEach((vk, i) => { 
-                    if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++;
-                    let s = vk.durumlar[0]; let p = s==1?30:s==2?50:s==4?20:0; vakitSkorları[i] += p;
-                });
+                v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; let s = vk.durumlar[0]; let p = s==1?30:s==2?50:s==4?20:0; vakitSkorları[i] += p; });
                 (v.ozeller || []).forEach(vo => {
                     const gList = getGlobalOzeller();
                     if (gList.find(g => g.id === vo.id && g.arsiv)) {
@@ -242,29 +223,24 @@
         }
         let enDusukIdx = 0, enDusukPuan = 999999;
         if(gunSayisi>0) { vakitSkorları.forEach((toplam, idx) => { let ort = toplam / gunSayisi; if(ort < enDusukPuan) { enDusukPuan = ort; enDusukIdx = idx; } }); }
-        
         let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; border-bottom:1px solid rgba(255,255,255,0.1);"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA</th><th style="text-align:right;">TOPLAM</th></tr></thead><tbody>`;
         Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
         h += `</tbody></table><p style="color:var(--blue); font-size:12px; font-weight:bold; margin:10px 0 5px;">ARŞİVLENENLER (TOPLAM)</p><table class="arsiv-table">`;
         Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].toplam} ${arsiv[k].tip==='sayi'?'':'G'}</td></tr>`; });
-        if(gunSayisi > 0) h += `</table><div class="warn-card">⚠️ <b>ANALİZ:</b> Bu yıl en çok <b>${vakitler[enDusukIdx]}</b> vaktinde zorlanılmış. (Başarı: %${Math.round((enDusukPuan/50)*100)})</div></div>`;
+        if(gunSayisi > 0) h += `</table><div class="warn-card">⚠️ <b>ANALİZ:</b> Bu yıl en çok <b>${vakitler[enDusukIdx]}</b> vaktinde zorlanılmış.</div></div>`;
         grid.innerHTML = h; document.getElementById('statModal').style.display = 'block';
     };
 
     window.showHelp = () => {
-        const grid = document.getElementById('calGrid'); document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center;">Kapsamlı Rehber</h3>`;
-        grid.innerHTML = `
-            <div class="help-section"><div class="help-title">Namaz Puanları (Farz)</div><div style="font-size:11px;">🟢 <b>Vaktinde:</b> %30 Başarı<br>🌿 <b>Cemaat:</b> %50 Başarı<br>🟠 <b>Kaza Edildi:</b> %20 Başarı<br>🔴 <b>Kazaya Kaldı:</b> %0 (Kırmızı kart)</div></div>
-            <div class="help-section"><div class="help-title">Sünnet ve Tesbihat</div><div style="font-size:11px;">Her biri tam yapıldığında <b>+%25</b> başarı ekler. Bir vakitten %100 almak için Farz(Vaktinde/Cemaat) + Sünnet + Tesbihat tam olmalıdır.</div></div>
-            <div class="help-section"><div class="help-title">Özel Ameller</div><div style="font-size:11px;">Sayısal veya renkli takip yapabilirsiniz. Arşivlenen ameller yeni günlerde karşınıza çıkmaz ancak eski kayıtlar korunur.</div></div>
-            <div class="help-section"><div class="help-title">Genel ve Yıllık Rapor</div><div style="font-size:11px;">📊 <b>Genel:</b> Tüm vakitleri tek ekranda özetler.<br>📅 <b>Yıllık:</b> Kaza çetelesi ve zorluk analizi sunar.</div></div>
-        `;
+        const grid = document.getElementById('calGrid'); document.getElementById('statTitle').innerHTML = `<h3>Rehber</h3>`;
+        grid.innerHTML = `<div class="help-section"><div class="help-title">Puanlama</div><div style="font-size:11px;">🟢 Vaktinde: %30 | 🌿 Cemaat: %50<br>🟠 Kaza: %20 | 🔴 Kazaya Kaldı: %0<br>Sünnet ve Tesbih: Her biri +%25</div></div>
+        <div class="help-section"><div class="help-title">Arşiv</div><div style="font-size:11px;">Arşivlenen ameller yeni günlerde gizlenir. Sadece geçmişte verisi olan günlerde görünürler.</div></div>`;
         document.getElementById('statModal').style.display = 'block';
     };
 
     window.showStats = (ad, tip, vIdx, bIdx = 0, id = '') => {
         const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span style="font-size:12px;">${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div>`;
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><button class="nav-btn" onclick="window.ayDegis(-1,'${ad}','${tip}',${vIdx},${bIdx},'${id}')">❮</button><span>${ad}</span><button class="nav-btn" onclick="window.ayDegis(1,'${ad}','${tip}',${vIdx},${bIdx},'${id}')">❯</button></div>`;
         let gridHtml = `<div class="calendar-grid">`;
         let son = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         for (let d = 1; d <= son; d++) {
