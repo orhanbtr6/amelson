@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.50</title>
+    <title>Amel Defteri V.21.51</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
@@ -35,7 +35,6 @@
         .progress-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s; }
         
         .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
-        .bar-red { background: var(--red); } .bar-orange { background: var(--orange); } .bar-green { background: var(--dark-green); } .bar-full { background: var(--light-green); }
 
         .ozel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 5px; }
         .ozel-card { background: var(--card); border-radius: 10px; padding: 8px 2px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
@@ -84,7 +83,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.50</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.51</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -119,7 +118,6 @@
     <div class="modal-content">
         <button class="close-x" onclick="closeSettings()">✕</button>
         <h3 style="text-align:center; color:var(--blue); margin-top:0;">Ayarlar</h3>
-        
         <div class="toggle-container">
             <span class="toggle-label">Farkındalık Sinyalleri (⚠/🎨)</span>
             <label class="switch">
@@ -127,7 +125,6 @@
                 <span class="slider"></span>
             </label>
         </div>
-
         <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="exportData()">💾 Verileri Yedekle</button>
         <button class="add-btn" style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.1);" onclick="importData()">📂 Yedekten Geri Yükle</button>
     </div>
@@ -153,6 +150,12 @@
     function getGlobalOzeller() { return JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; }
     function saveGlobalOzeller(l) { localStorage.setItem('amel_global_ozeller', JSON.stringify(l)); }
 
+    function toggleSignals(val) {
+        signalsActive = val;
+        localStorage.setItem('amel_signals_active', val);
+        render();
+    }
+
     function getTrend(vIdx) {
         if(!signalsActive) return { warning: false, lowQuality: false };
         let sunnetEksik = 0, tesbihatYok = 0;
@@ -165,12 +168,6 @@
             }
         }
         return { warning: sunnetEksik >= 3, lowQuality: tesbihatYok >= 3 };
-    }
-
-    function toggleSignals(val) {
-        signalsActive = val;
-        localStorage.setItem('amel_signals_active', val);
-        render();
     }
 
     function veriYukle() {
@@ -250,40 +247,56 @@
         
         let vBasariAdet = [0,0,0,0,0];
         let qualityTrend = [[],[],[],[],[]];
-        
+
+        // PAZARTESİ'DEN BUGÜNE HESAPLAMA
+        let today = new Date();
+        let currentDay = today.getDay(); // 0:Pazar, 1:Pzt...
+        let diff = (currentDay === 0 ? 6 : currentDay - 1); // Pazartesi'den beri kaç gün geçti?
+        let monday = new Date(today);
+        monday.setDate(today.getDate() - diff);
+
         vakitler.forEach((vAd, vIdx) => {
             table += `<tr><td class="v-row-label-full">${vAd.split(" ")[0]}</td>`;
             for (let d = 1; d <= sonGun; d++) {
-                let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
+                let currentLoopDate = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
+                let v = JSON.parse(localStorage.getItem(getLocalKey(currentLoopDate)));
                 let dur = (v && v.vakitler[vIdx]) ? (v.vakitler[vIdx].durumlar[genRaporTipIdx] || 0) : 0;
                 table += `<td class="s${dur}" onclick="window.gitTarih(${d})"></td>`;
                 
                 if(v) { 
                     if(v.vakitler[vIdx].durumlar[0] === 1 || v.vakitler[vIdx].durumlar[0] === 2) vBasariAdet[vIdx]++;
-                    if(d > sonGun - 7) {
-                        let qColor = 'rgba(255,255,255,0.05)';
-                        if(signalsActive) {
-                            let sOk = v.vakitler[vIdx].durumlar[1] > 0;
-                            let tOk = v.vakitler[vIdx].durumlar[2] > 0;
-                            if(sOk && tOk) qColor = 'var(--light-green)';
-                            else if(sOk) qColor = 'var(--orange)';
-                            else if(v.vakitler[vIdx].durumlar[0] > 0) qColor = 'var(--red)';
-                        } else {
-                            if(v.vakitler[vIdx].durumlar[1] > 0 && v.vakitler[vIdx].durumlar[2] > 0) qColor = 'var(--blue)';
-                        }
-                        qualityTrend[vIdx].push(qColor);
+                }
+            }
+            
+            // HAFTALIK KALİTE NOKTALARI (Pazartesi'den Bugüne)
+            for (let i = 0; i <= diff; i++) {
+                let trackDate = new Date(monday);
+                trackDate.setDate(monday.getDate() + i);
+                let vTrack = JSON.parse(localStorage.getItem(getLocalKey(trackDate)));
+                
+                let qColor = 'rgba(255,255,255,0.05)';
+                if(vTrack && vTrack.vakitler[vIdx]) {
+                    if(signalsActive) {
+                        let sOk = vTrack.vakitler[vIdx].durumlar[1] > 0;
+                        let tOk = vTrack.vakitler[vIdx].durumlar[2] > 0;
+                        if(sOk && tOk) qColor = 'var(--light-green)';
+                        else if(sOk) qColor = 'var(--orange)';
+                        else if(vTrack.vakitler[vIdx].durumlar[0] > 0) qColor = 'var(--red)';
+                    } else {
+                        if(vTrack.vakitler[vIdx].durumlar[1] > 0 && vTrack.vakitler[vIdx].durumlar[2] > 0) qColor = 'var(--blue)';
                     }
                 }
+                qualityTrend[vIdx].push(qColor);
             }
             table += `</tr>`;
         });
         
-        let checkup = `<div class="checkup-note">Haftalık Analiz: Bu hafta genel istikrarın <b>${vakitler[vBasariAdet.indexOf(Math.max(...vBasariAdet))].split(" ")[0]}</b> vaktinde en yüksek seviyede. Renkli kalite hattını takip ederek derinliği artırabilirsin.</div>`;
+        let checkup = `<div class="checkup-note">Haftalık Analiz: Bu hafta genel istikrarın <b>${vakitler[vBasariAdet.indexOf(Math.max(...vBasariAdet))].split(" ")[0]}</b> vaktinde en yüksek seviyede.</div>`;
         let analiz = `<table class="stat-modern-table">`;
         vBasariAdet.forEach((adet, i) => {
             let yuzde = Math.round((adet / sonGun) * 100);
             let qDots = qualityTrend[i].map(color => `<div class="q-dot" style="background:${color}"></div>`).join('');
-            analiz += `<tr><td style="width:70px;">${vakitler[i].split(" ")[0]}</td><td><div class="bar-container"><div class="bar-fill" style="width:${yuzde}%"></div></div><div class="quality-line">${qDots}</div></td><td style="width:35px; text-align:right; font-weight:bold; color:var(--light-green);">%${yuzde}</td></tr>`;
+            analiz += `<tr><td style="width:70px;">${vakitler[i].split(" ")[0]}</td><td><div class="bar-container"><div class="bar-fill" style="width:${yuzde}%"></div></div><div class="quality-line" style="width: 70px;">${qDots}</div></td><td style="width:35px; text-align:right; font-weight:bold; color:var(--light-green);">%${yuzde}</td></tr>`;
         });
         grid.innerHTML = checkup + table + `</tbody></table></div>` + analiz + `</table>`;
         document.getElementById('statModal').style.display = 'block';
@@ -296,35 +309,25 @@
             <div class="help-section">
                 <div class="help-title">🌈 Amel Renk Kodları</div>
                 <div class="help-text">
-                    <span class="color-dot s1"></span> <b>Koyu Yeşil:</b> Vaktinde kılındı / Tamamlandı.<br>
-                    <span class="color-dot s2"></span> <b>Açık Yeşil:</b> Cemaatle / Ekstra gayretle (Evvabin vb.).<br>
-                    <span class="color-dot s4"></span> <b>Turuncu:</b> Kaza edildi (Eda hükmünde değil).<br>
-                    <span class="color-dot s3"></span> <b>Kırmızı:</b> Kazaya kaldı / Yapılmadı.
+                    <span class="color-dot s1"></span> <b>Koyu Yeşil:</b> Vaktinde kılındı.<br>
+                    <span class="color-dot s2"></span> <b>Açık Yeşil:</b> Cemaat / Ekstra gayret.<br>
+                    <span class="color-dot s4"></span> <b>Turuncu:</b> Kaza edildi.<br>
+                    <span class="color-dot s3"></span> <b>Kırmızı:</b> Yapılmadı.
                 </div>
             </div>
             <div class="help-section">
-                <div class="help-title">⚠ Farkındalık ve Kalite Sinyalleri</div>
+                <div class="help-title">🎨 Kalite Hattı (Pazartesi Odaklı)</div>
                 <div class="help-text">
-                    • <b>Sarı Ünlem (⚠):</b> Son 7 günün 3'ünde sünnet kaçırılmışsa belirir.<br>
-                    • <b>Soluk İsim:</b> 3 gün üst üste tesbihat yapılmamışsa vakit ismi solar.<br>
-                    • <b>Kalite Hattı (Çizgiler):</b> Genel raporda son 7 günü gösterir:<br>
+                    Genel rapordaki çizgiler <b>bu haftanın Pazartesi gününden</b> başlar:<br>
                     &nbsp;&nbsp; <span style="color:var(--light-green)">● Yeşil:</span> Sünnet + Tesbihat Tam.<br>
                     &nbsp;&nbsp; <span style="color:var(--orange)">● Turuncu:</span> Sadece Sünnet Tam.<br>
-                    &nbsp;&nbsp; <span style="color:var(--red)">● Kırmızı:</span> Her ikisi de eksik.
+                    &nbsp;&nbsp; <span style="color:var(--red)">● Kırmızı:</span> Temel görevler eksik.
                 </div>
             </div>
             <div class="help-section">
-                <div class="help-title">📊 Başarım Hesaplama</div>
+                <div class="help-title">⚙️ Yedekleme</div>
                 <div class="help-text">
-                    Her vakit için <b>%100</b> hedefi şöyledir:<br>
-                    • <b>Farz:</b> %50 (Cemaat/Vaktinde) | <b>Sünnet:</b> %25 | <b>Tesbihat:</b> %25<br>
-                    * Kaza edilen farzlar %20, vaktinde ama ferdi kılınanlar %30 puan verir.
-                </div>
-            </div>
-            <div class="help-section">
-                <div class="help-title">⚙️ Veri Güvenliği ve Yedekleme</div>
-                <div class="help-text">
-                    Verileriniz <b>sadece</b> telefonunuzun hafızasında (Local Storage) tutulur. İnternete yüklenmez. Telefon değiştirirken "Yedekle" butonunu kullanarak JSON dosyanızı almayı unutmayın.
+                    Ayarlar kısmından verilerinizi yedekleyip başka cihazlara aktarabilirsiniz.
                 </div>
             </div>`;
         document.getElementById('statModal').style.display = 'block';
@@ -388,7 +391,7 @@
         }
         let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; border-bottom:1px solid rgba(255,255,255,0.1);"><thead><tr style="color:var(--red);"><th style="text-align:left;">KAZA ÇETELESİ</th><th style="text-align:right;">ADET</th></tr></thead><tbody>`;
         Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
-        h += `</tbody></table><p style="color:var(--blue); font-size:12px; font-weight:bold; margin:10px 0 5px;">YILLIK AMEL TOPLAMLARI</p><table style="width:100%; font-size:11px;">`;
+        h += `</tbody></table><p style="color:var(--blue); font-size:12px; font-weight:bold; margin:10px 0 5px;">YILLIK TOPLAMLAR</p><table style="width:100%; font-size:11px;">`;
         Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].t} ${arsiv[k].tip==='sayi'?'':'G'}</td></tr>`; });
         grid.innerHTML = h + `</table></div>`; document.getElementById('statModal').style.display = 'block';
     };
