@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.49</title>
+    <title>Amel Defteri V.21.50</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
@@ -84,7 +84,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.49</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.50</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -121,7 +121,7 @@
         <h3 style="text-align:center; color:var(--blue); margin-top:0;">Ayarlar</h3>
         
         <div class="toggle-container">
-            <span class="toggle-label">Farkındalık Sinyalleri (⚠)</span>
+            <span class="toggle-label">Farkındalık Sinyalleri (⚠/🎨)</span>
             <label class="switch">
                 <input type="checkbox" id="signalToggle" onchange="toggleSignals(this.checked)">
                 <span class="slider"></span>
@@ -257,18 +257,28 @@
                 let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
                 let dur = (v && v.vakitler[vIdx]) ? (v.vakitler[vIdx].durumlar[genRaporTipIdx] || 0) : 0;
                 table += `<td class="s${dur}" onclick="window.gitTarih(${d})"></td>`;
+                
                 if(v) { 
                     if(v.vakitler[vIdx].durumlar[0] === 1 || v.vakitler[vIdx].durumlar[0] === 2) vBasariAdet[vIdx]++;
                     if(d > sonGun - 7) {
-                        let isQuality = (v.vakitler[vIdx].durumlar[1]>0 && v.vakitler[vIdx].durumlar[2]>0);
-                        qualityTrend[vIdx].push(isQuality ? '#3498db' : 'rgba(255,255,255,0.1)');
+                        let qColor = 'rgba(255,255,255,0.05)';
+                        if(signalsActive) {
+                            let sOk = v.vakitler[vIdx].durumlar[1] > 0;
+                            let tOk = v.vakitler[vIdx].durumlar[2] > 0;
+                            if(sOk && tOk) qColor = 'var(--light-green)';
+                            else if(sOk) qColor = 'var(--orange)';
+                            else if(v.vakitler[vIdx].durumlar[0] > 0) qColor = 'var(--red)';
+                        } else {
+                            if(v.vakitler[vIdx].durumlar[1] > 0 && v.vakitler[vIdx].durumlar[2] > 0) qColor = 'var(--blue)';
+                        }
+                        qualityTrend[vIdx].push(qColor);
                     }
                 }
             }
             table += `</tr>`;
         });
         
-        let checkup = `<div class="checkup-note">Haftalık Analiz: Bu hafta genel istikrarın <b>${vakitler[vBasariAdet.indexOf(Math.max(...vBasariAdet))].split(" ")[0]}</b> vaktinde oldukça yüksek.</div>`;
+        let checkup = `<div class="checkup-note">Haftalık Analiz: Bu hafta genel istikrarın <b>${vakitler[vBasariAdet.indexOf(Math.max(...vBasariAdet))].split(" ")[0]}</b> vaktinde en yüksek seviyede. Renkli kalite hattını takip ederek derinliği artırabilirsin.</div>`;
         let analiz = `<table class="stat-modern-table">`;
         vBasariAdet.forEach((adet, i) => {
             let yuzde = Math.round((adet / sonGun) * 100);
@@ -284,27 +294,37 @@
         document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:var(--blue); margin:0 0 10px 0;">Kapsamlı Amel Rehberi</h3>`;
         grid.innerHTML = `
             <div class="help-section">
-                <div class="help-title">📌 Renklerin Anlamı</div>
+                <div class="help-title">🌈 Amel Renk Kodları</div>
                 <div class="help-text">
                     <span class="color-dot s1"></span> <b>Koyu Yeşil:</b> Vaktinde kılındı / Tamamlandı.<br>
-                    <span class="color-dot s2"></span> <b>Açık Yeşil:</b> Cemaatle / Ekstra gayretle yapıldı.<br>
-                    <span class="color-dot s4"></span> <b>Turuncu:</b> Kaza edildi.<br>
+                    <span class="color-dot s2"></span> <b>Açık Yeşil:</b> Cemaatle / Ekstra gayretle (Evvabin vb.).<br>
+                    <span class="color-dot s4"></span> <b>Turuncu:</b> Kaza edildi (Eda hükmünde değil).<br>
                     <span class="color-dot s3"></span> <b>Kırmızı:</b> Kazaya kaldı / Yapılmadı.
                 </div>
             </div>
             <div class="help-section">
-                <div class="help-title">⚠ Farkındalık Sinyalleri</div>
+                <div class="help-title">⚠ Farkındalık ve Kalite Sinyalleri</div>
                 <div class="help-text">
-                    • <b>Sarı Ünlem (⚠):</b> Son 7 günde 3 ve üzeri sünnet kaçırılmışsa belirir.<br>
-                    • <b>Soluk İsim:</b> Son 3 gün üst üste tesbihat yapılmamışsa vakit ismi solar.<br>
-                    * Bu özelliği ayarlar kısmından kapatabilirsiniz.
+                    • <b>Sarı Ünlem (⚠):</b> Son 7 günün 3'ünde sünnet kaçırılmışsa belirir.<br>
+                    • <b>Soluk İsim:</b> 3 gün üst üste tesbihat yapılmamışsa vakit ismi solar.<br>
+                    • <b>Kalite Hattı (Çizgiler):</b> Genel raporda son 7 günü gösterir:<br>
+                    &nbsp;&nbsp; <span style="color:var(--light-green)">● Yeşil:</span> Sünnet + Tesbihat Tam.<br>
+                    &nbsp;&nbsp; <span style="color:var(--orange)">● Turuncu:</span> Sadece Sünnet Tam.<br>
+                    &nbsp;&nbsp; <span style="color:var(--red)">● Kırmızı:</span> Her ikisi de eksik.
                 </div>
             </div>
             <div class="help-section">
-                <div class="help-title">📊 Analiz ve Trendler</div>
+                <div class="help-title">📊 Başarım Hesaplama</div>
                 <div class="help-text">
-                    • <b>İlerleme Çubuğu:</b> Ay içindeki vaktinde kılma başarınızdır.<br>
-                    • <b>Kalite Hattı (Mavi Noktalar):</b> Çubuk altındaki noktalar son 7 günün Sünnet ve Tesbihat birlikteliğini gösterir.
+                    Her vakit için <b>%100</b> hedefi şöyledir:<br>
+                    • <b>Farz:</b> %50 (Cemaat/Vaktinde) | <b>Sünnet:</b> %25 | <b>Tesbihat:</b> %25<br>
+                    * Kaza edilen farzlar %20, vaktinde ama ferdi kılınanlar %30 puan verir.
+                </div>
+            </div>
+            <div class="help-section">
+                <div class="help-title">⚙️ Veri Güvenliği ve Yedekleme</div>
+                <div class="help-text">
+                    Verileriniz <b>sadece</b> telefonunuzun hafızasında (Local Storage) tutulur. İnternete yüklenmez. Telefon değiştirirken "Yedekle" butonunu kullanarak JSON dosyanızı almayı unutmayın.
                 </div>
             </div>`;
         document.getElementById('statModal').style.display = 'block';
