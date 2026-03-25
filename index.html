@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.22.15</title>
+    <title>Amel Defteri V.22.17</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
@@ -23,14 +23,13 @@
         .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); position: relative; cursor: pointer; transition: all 0.3s ease; }
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
         
-        /* Dinamik Renk Sınıfları */
         .vakit-success { background: var(--dark-green) !important; border-color: #fff !important; }
         .vakit-soft { background: var(--light-green) !important; border-color: #fff !important; color: #000 !important; }
         .vakit-soft .vakit-ad { color: #000 !important; }
         .vakit-danger { background: var(--red) !important; border-color: #fff !important; }
         .vakit-warn { background: var(--orange) !important; border-color: #fff !important; }
 
-        .warning-blink { position: absolute; top: -8px; right: -5px; font-size: 14px; animation: blink 0.8s infinite; }
+        .warning-blink { position: absolute; top: -8px; right: -5px; font-size: 14px; animation: blink 0.8s infinite; cursor: help; z-index: 5; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
 
         .circles-row { display: flex; gap: 8px; align-items: center; }
@@ -67,7 +66,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.15</span>
+        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.17</span>
     </div>
     <div class="nav-header">
         <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -130,20 +129,37 @@
     function getGlobalOzeller() { return JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; }
     function toggleSignals(val) { signalsActive = val; localStorage.setItem('amel_signals_active', val); render(); }
 
-    function checkWarning(vIdx) {
-        if(!signalsActive) return false;
-        let fStreak = 0, sStreak = 0, tStreak = 0;
+    function getWarningData(vIdx) {
+        if(!signalsActive) return null;
+        let streaks = [0, 0, 0]; // Farz, Sünnet, Tesbihat
         for(let i=1; i<=3; i++) {
             let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
             let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
             if(val && val.vakitler[vIdx]) {
                 const dur = val.vakitler[vIdx].durumlar;
-                if(dur[0] === 0 || dur[0] === 3) fStreak++;
-                if(dur[1] === 0) sStreak++;
-                if(dur[2] === 0) tStreak++;
-            } else { fStreak++; sStreak++; tStreak++; }
+                if(dur[0] === 0 || dur[0] === 3) streaks[0]++;
+                if(dur[1] === 0) streaks[1]++;
+                if(dur[2] === 0) streaks[2]++;
+            } else { streaks[0]++; streaks[1]++; streaks[2]++; }
         }
-        return (fStreak === 3 || sStreak === 3 || tStreak === 3);
+        return (streaks[0] >= 3 || streaks[1] >= 3 || streaks[2] >= 3) ? streaks : null;
+    }
+
+    function showWarningDetail(e, vIdx) {
+        e.stopPropagation(); // Kutuya tıklamayı engelle
+        const data = getWarningData(vIdx);
+        if(!data) return;
+        
+        let msg = `<div style="text-align:left; padding:10px; font-size:13px; line-height:1.8;">`;
+        msg += `<div style="color:var(--orange); font-weight:bold; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:10px; padding-bottom:5px;">⚠️ SON 3 GÜN ANALİZİ</div>`;
+        if(data[0] >= 3) msg += `❌ <b style="color:var(--red)">Farz:</b> 3 gündür aksıyor.<br>`;
+        if(data[1] >= 3) msg += `❌ <b style="color:var(--orange)">Sünnet:</b> 3 gündür boş geçiliyor.<br>`;
+        if(data[2] >= 3) msg += `❌ <b style="color:var(--blue)">Tesbihat:</b> 3 gündür yapılmıyor.<br>`;
+        msg += `<p style="font-size:10px; opacity:0.6; margin-top:10px;">*Süreklilik kalp huzuru için önemlidir.</p></div>`;
+        
+        document.getElementById('statTitle').innerHTML = `<b>${vakitler[vIdx]}</b>`;
+        document.getElementById('calGrid').innerHTML = msg;
+        document.getElementById('statModal').style.display = 'block';
     }
 
     function veriYukle() {
@@ -169,23 +185,20 @@
         const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
             let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
-            
-            // Puanlama Mantığı (Tesbihat Kırmızı ise %0)
             if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
-            if (s > 0) p += 25; 
-            if (t === 1 || t === 2) p += 25; // Sadece Yeşil veya Açık Yeşil ise %25
+            if (s > 0) p += 25; if (t === 1 || t === 2) p += 25;
 
             let anyInput = (f > 0 || s > 0 || t > 0);
-            let badge = anyInput ? (p <= 30 ? "EKSİK" : (p <= 80 ? "UYGUN" : (p <= 90 ? "TAMAMLANDI" : "BAŞARILI"))) : "BEKLEMEDE";
             let bCol = anyInput ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)";
-            let warningHTML = checkWarning(vIdx) ? `<span class="warning-blink">⚠️</span>` : '';
+            
+            let wData = getWarningData(vIdx);
+            let warningHTML = wData ? `<span class="warning-blink" onclick="showWarningDetail(event, ${vIdx})">⚠️</span>` : '';
 
-            // Dinamik Kutu Rengi Mantığı
             let boxClass = "";
-            if (f === 1 && s > 0 && (t === 1 || t === 2)) boxClass = "vakit-success"; // Hepsi Yeşil
-            else if (f === 2) boxClass = "vakit-soft"; // Cemaat (Soft Yeşil)
-            else if (f === 3) boxClass = "vakit-danger"; // Kaza (Kırmızı)
-            else if (f === 4) boxClass = "vakit-warn"; // Mazeret (Turuncu)
+            if (f === 1 && s > 0 && (t === 1 || t === 2)) boxClass = "vakit-success"; 
+            else if (f === 2) boxClass = "vakit-soft"; 
+            else if (f === 3) boxClass = "vakit-danger"; 
+            else if (f === 4) boxClass = "vakit-warn"; 
 
             vDiv.innerHTML += `<div class="habit-card">
                 <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
@@ -198,7 +211,7 @@
                 <div class="progress-zone">
                     <div style="font-size:11px; font-weight:bold;">%${p}</div>
                     <div class="progress-bg"><div class="progress-bar" style="width:${p}%; background:${bCol}"></div></div>
-                    <div class="status-badge" style="color:${bCol}">${badge}</div>
+                    <div class="status-badge" style="color:${bCol}">${anyInput ? (p <= 30 ? "EKSİK" : (p <= 80 ? "UYGUN" : (p <= 90 ? "TAMAMLANDI" : "BAŞARILI"))) : "BEKLEMEDE"}</div>
                 </div>
             </div>`;
         });
@@ -218,14 +231,12 @@
         let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         let ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         let baslikAd = (tip === 'vakit' ? vakitler[id] : (tip === 'vakit_sub' ? vakitler[id].split(" ")[0] + " - " + basliklar[subIdx] : id));
-
         document.getElementById('statTitle').innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <button class="nav-btn" onclick="window.heatmapNav(-1)">❮</button>
                 <div style="text-align:center"><div style="font-size:10px; opacity:0.7">${ayYilStr}</div><div style="font-size:14px">${baslikAd}</div></div>
                 <button class="nav-btn" onclick="window.heatmapNav(1)">❯</button>
             </div>`;
-
         let h = `<div class="genel-wrapper"><table class="genel-table heatmap-table"><tr>`;
         for(let d=1; d<=sonGun; d++) {
             let curD = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d);
@@ -261,24 +272,7 @@
             }
             table += `</tr>`;
         });
-        let today = new Date(); let dayOfW = today.getDay(); let diff = today.getDate() - dayOfW + (dayOfW === 0 ? -6 : 1);
-        let monday = new Date(today.setDate(diff)); let qualityTrend = [[],[],[],[],[]];
-        vakitler.forEach((v, vIdx) => {
-            for (let i = 0; i < 7; i++) {
-                let d = new Date(monday); d.setDate(monday.getDate() + i);
-                let vT = JSON.parse(localStorage.getItem(getLocalKey(d)));
-                let q = 'rgba(255,255,255,0.05)';
-                if(vT && vT.vakitler[vIdx]) {
-                    if(vT.vakitler[vIdx].durumlar[1] > 0 && vT.vakitler[vIdx].durumlar[2] > 0) q = 'var(--light-green)';
-                    else if(vT.vakitler[vIdx].durumlar[1] > 0) q = 'var(--orange)';
-                    else if(vT.vakitler[vIdx].durumlar[0] > 0) q = 'var(--red)';
-                }
-                qualityTrend[vIdx].push(q);
-            }
-        });
-        let analiz = `<div style="margin-top:15px; font-size:11px;"><b>Haftalık Kalite:</b>`;
-        vakitler.forEach((v, i) => { analiz += `<div style="margin:8px 0;">${v.split(" ")[0]} <div class="quality-line">${qualityTrend[i].map(c => `<div class="q-dot" style="background:${c}"></div>`).join('')}</div></div>`; });
-        grid.innerHTML = table + `</tbody></table></div>` + analiz + `</div>`;
+        grid.innerHTML = table + `</tbody></table></div>`;
         document.getElementById('statModal').style.display = 'block';
     };
 
@@ -303,10 +297,10 @@
     window.showHelp = () => {
         const grid = document.getElementById('calGrid'); document.getElementById('statTitle').innerHTML = `<b>DETAYLI REHBER</b>`;
         grid.innerHTML = `<div style="font-size:12px; line-height:1.6; opacity:0.8;">
-            <p><b style="color:var(--orange)">⚠️ Uyarı:</b> 3 gün boşlukta yanar.</p>
-            <p><b style="color:var(--light-green)">● Vakit İsimleri:</b> Farz rengine ve genel başarıya göre renk değiştirir.</p>
-            <p><b style="color:var(--blue)">● Cemaat:</b> Açık Yeşil olduğunda isim kutusu Soft Yeşil yanar.</p>
-            <p><b style="color:var(--a5d3ff)">📊 Takvim:</b> İsimlere veya Farz/Sünnet/Tesbihat yazılarına tıklayarak geçmişi görebilirsiniz.</p>
+            <p><b style="color:var(--orange)">⚠️ Uyarı:</b> Farz, Sünnet veya Tesbihat'tan herhangi biri 3 gün üst üste boş kalırsa yanar. Üzerine tıklayarak detayı görebilirsiniz.</p>
+            <p><b style="color:var(--light-green)">● Başarı:</b> %0-30 Eksik, %31-80 Uygun, %81-90 Tamamlandı, %100 Başarılı.</p>
+            <p><b style="color:var(--blue)">● Cemaat:</b> Farzı cemaatle kılmak %50 tam puan verir.</p>
+            <p><b style="color:var(--a5d3ff)">📊 Detay:</b> Vakit veya Amel isimlerine tıklayarak aylık sayısal dökümü görebilirsiniz.</p>
         </div>`;
         document.getElementById('statModal').style.display = 'block';
     };
