@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.21.46</title>
+    <title>Amel Defteri V.21.47</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
@@ -14,7 +14,6 @@
         .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
         .version-tag { font-size: 9px; opacity: 0.4; vertical-align: super; margin-left: 4px; }
         
-        /* Tarih Bölümü Düzeltmesi */
         .nav-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 8px 10px; border-radius: 20px; margin-bottom: 8px; }
         .date-nav { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
         .date-display-box { text-align: center; cursor: pointer; padding: 4px 10px; border-radius: 12px; position: relative; background: rgba(255,255,255,0.05); min-width: 110px; display: flex; flex-direction: column; align-items: center; }
@@ -22,10 +21,12 @@
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 14px; border-radius: 12px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
         .info-btn { background: var(--blue); width: 32px; height: 32px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
         
-        /* Vakit Kutuları */
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; gap: 5px; }
-        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); transition: 0.3s; }
+        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); transition: 0.3s; position: relative; }
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
+        .warning-icon { color: var(--orange); font-size: 10px; margin-left: 2px; }
+        .low-quality { opacity: 0.4; filter: grayscale(1); }
+        
         .circles-row { display: flex; gap: 8px; align-items: center; }
         .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; margin: auto; }
         .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; cursor: pointer; display: block; }
@@ -33,12 +34,7 @@
         .progress-bg { background: rgba(255,255,255,0.1); height: 5px; border-radius: 10px; overflow: hidden; margin-top: 2px; }
         .progress-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s; }
         
-        /* Dinamik Durum Renkleri */
-        .s0 { background: rgba(255,255,255,0.05); } 
-        .s1 { background: var(--dark-green); } 
-        .s2 { background: var(--light-green); } 
-        .s3 { background: var(--red); } 
-        .s4 { background: var(--orange); }
+        .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
         .bar-red { background: var(--red); } .bar-orange { background: var(--orange); } .bar-green { background: var(--dark-green); } .bar-full { background: var(--light-green); }
 
         .ozel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 5px; }
@@ -46,7 +42,6 @@
         .ozel-card b { font-size: 9px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;}
         .ozel-active { background: rgba(144, 238, 144, 0.15) !important; border-color: rgba(144, 238, 144, 0.4) !important; }
 
-        /* Rapor Paneli & İstatistik */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 480px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
         .close-x { position: absolute; top: 5px; right: 5px; background: #e74c3c; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; }
@@ -59,15 +54,13 @@
         .stat-modern-table { width: 100%; margin-top: 15px; border-collapse: collapse; font-size: 11px; }
         .stat-modern-table tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
         .stat-modern-table td { padding: 8px 4px; }
-        .bar-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; flex: 1; margin: 0 10px; }
+        .bar-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; flex: 1; margin: 0 10px; position: relative; }
         .bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--light-green)); border-radius: 4px; transition: width 0.5s; }
+        .quality-line { display: flex; gap: 2px; margin-top: 3px; height: 3px; width: 100%; }
+        .q-dot { flex: 1; border-radius: 1px; height: 100%; }
+        .checkup-note { background: rgba(165,211,255,0.1); border: 1px dashed var(--blue); padding: 10px; border-radius: 10px; font-size: 11px; margin-bottom: 15px; color: #a5d3ff; line-height: 1.4; }
 
-        /* Kapsamlı Bilgi Kartları */
         .help-section { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid var(--blue); }
-        .help-title { color: var(--blue); font-weight: bold; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
-        .help-text { font-size: 11px; line-height: 1.5; color: #ccc; }
-        .color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
         .add-btn { background: var(--dark-green); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
@@ -78,7 +71,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.46</span>
+        <span class="main-title">Amel Defteri</span><span class="version-tag">V.21.47</span>
     </div>
     <div class="nav-header">
         <div class="date-nav">
@@ -137,6 +130,19 @@
     function getGlobalOzeller() { return JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; }
     function saveGlobalOzeller(l) { localStorage.setItem('amel_global_ozeller', JSON.stringify(l)); }
 
+    function getTrend(vIdx) {
+        let sunnetEksik = 0, tesbihatYok = 0;
+        for (let i = 0; i < 7; i++) {
+            let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
+            let v = JSON.parse(localStorage.getItem(getLocalKey(d)));
+            if (v && v.vakitler[vIdx]) {
+                if (v.vakitler[vIdx].durumlar[1] === 0 || v.vakitler[vIdx].durumlar[1] === 3) sunnetEksik++;
+                if (i < 3 && (v.vakitler[vIdx].durumlar[2] === 0 || v.vakitler[vIdx].durumlar[2] === 3)) tesbihatYok++;
+            }
+        }
+        return { warning: sunnetEksik >= 3, lowQuality: tesbihatYok >= 3 };
+    }
+
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
@@ -173,20 +179,23 @@
         
         const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
-            let percent = 0; 
-            const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
-            
+            let percent = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
             if (f === 1) percent += 30; else if (f === 2) percent += 50; else if (f === 4) percent += 20;
             if (s > 0) percent += 25; if (t > 0) percent += 25;
             
-            // Dinamik Vakit Başlık Rengi
+            const trend = getTrend(vIdx);
             let boxClass = "";
-            if (f === 3) boxClass = "s3"; // Farz Kırmızı ise Başlık Kırmızı
-            else if ((f===1||f===2) && (s===1||s===2) && (t===1||t===2)) boxClass = "s1"; // Üçü de yeşilse Koyu Yeşil
+            if (f === 3) boxClass = "s3"; 
+            else if ((f===1||f===2) && (s===1||s===2) && (t===1||t===2)) boxClass = "s1";
 
             let barColor = percent >= 100 ? "bar-full" : (percent > 50 ? "bar-green" : (percent >= 26 ? "bar-orange" : "bar-red"));
             
-            let row = `<div class="habit-card"><div class="vakit-isim-box ${boxClass}"><span class="vakit-ad">${vakitler[vIdx]}</span></div><div class="circles-row">`;
+            let row = `<div class="habit-card">
+                <div class="vakit-isim-box ${boxClass} ${trend.lowQuality ? 'low-quality' : ''}">
+                    <span class="vakit-ad">${vakitler[vIdx]}</span>
+                    ${trend.warning ? '<span class="warning-icon">⚠</span>' : ''}
+                </div>
+                <div class="circles-row">`;
             basliklar.forEach((b, bIdx) => { row += `<div style="text-align:center"><div class="circle s${v.durumlar[bIdx]}" onclick="window.degis(${vIdx}, ${bIdx}, 'vakit')"></div><span class="label-text" onclick="window.showStats('${vakitler[vIdx]} ${b}', 'vakit', ${vIdx}, ${bIdx})">${b}</span></div>`; });
             vDiv.innerHTML += row + `</div><div class="progress-zone"><div class="progress-percent">${percent}%</div><div class="progress-bg"><div class="progress-bar ${barColor}" style="width: ${percent}%;"></div></div><div class="progress-label">Başarım</div></div></div>`;
         });
@@ -210,59 +219,50 @@
         table += `</tr></thead><tbody>`;
         
         let vBasariAdet = [0,0,0,0,0];
+        let sunnetTrend = [[],[],[],[],[]];
+        
         vakitler.forEach((vAd, vIdx) => {
             table += `<tr><td class="v-row-label-full">${vAd.split(" ")[0]}</td>`;
             for (let d = 1; d <= sonGun; d++) {
                 let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
                 let dur = (v && v.vakitler[vIdx]) ? (v.vakitler[vIdx].durumlar[genRaporTipIdx] || 0) : 0;
                 table += `<td class="s${dur}" onclick="window.gitTarih(${d})"></td>`;
-                if(v) { let f = v.vakitler[vIdx].durumlar[0]; if(f === 1 || f === 2) vBasariAdet[vIdx]++; }
+                if(v) { 
+                    if(v.vakitler[vIdx].durumlar[0] === 1 || v.vakitler[vIdx].durumlar[0] === 2) vBasariAdet[vIdx]++;
+                    // Son 7 günlük kalite takibi için
+                    if(d > sonGun - 7) sunnetTrend[vIdx].push((v.vakitler[vIdx].durumlar[1]>0 && v.vakitler[vIdx].durumlar[2]>0) ? 1 : 0);
+                }
             }
             table += `</tr>`;
         });
         
+        let checkup = `<div class="checkup-note">Haftalık Analiz: Bu hafta sünnet ve tesbihatlarda en istikrarlı namazın <b>${vakitler[vBasariAdet.indexOf(Math.max(...vBasariAdet))].split(" ")[0]}</b> gibi görünüyor.</div>`;
+
         let analiz = `<table class="stat-modern-table">`;
         vBasariAdet.forEach((adet, i) => {
             let yuzde = Math.round((adet / sonGun) * 100);
-            analiz += `<tr><td style="width:70px;">${vakitler[i].split(" ")[0]}</td><td><div class="bar-container"><div class="bar-fill" style="width:${yuzde}%"></div></div></td><td style="width:35px; text-align:right; font-weight:bold; color:var(--light-green);">%${yuzde}</td></tr>`;
+            let qDots = sunnetTrend[i].map(q => `<div class="q-dot" style="background:${q?'var(--blue)':'rgba(255,255,255,0.1)'}"></div>`).join('');
+            analiz += `<tr><td style="width:70px;">${vakitler[i].split(" ")[0]}</td><td><div class="bar-container"><div class="bar-fill" style="width:${yuzde}%"></div></div><div class="quality-line">${qDots}</div></td><td style="width:35px; text-align:right; font-weight:bold; color:var(--light-green);">%${yuzde}</td></tr>`;
         });
-        grid.innerHTML = table + `</tbody></table></div>` + analiz + `</table>`;
+        grid.innerHTML = checkup + table + `</tbody></table></div>` + analiz + `</table>`;
         document.getElementById('statModal').style.display = 'block';
     };
 
     window.showHelp = () => {
         const grid = document.getElementById('calGrid');
-        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:var(--blue); margin:0 0 10px 0;">Kapsamlı Rehber</h3>`;
+        document.getElementById('statTitle').innerHTML = `<h3 style="text-align:center; color:var(--blue); margin:0 0 10px 0;">Amel Rehberi</h3>`;
         grid.innerHTML = `
             <div class="help-section">
-                <div class="help-title">📌 Renklerin Anlamı</div>
+                <div class="help-title">⚠ Farkındalık Sinyalleri</div>
                 <div class="help-text">
-                    <span class="color-dot s1"></span> <b>Koyu Yeşil:</b> Vaktinde kılındı / Tamam.<br>
-                    <span class="color-dot s2"></span> <b>Açık Yeşil:</b> Cemaatle / Fazlasıyla yapıldı.<br>
-                    <span class="color-dot s4"></span> <b>Turuncu:</b> Kaza edildi.<br>
-                    <span class="color-dot s3"></span> <b>Kırmızı:</b> Kazaya kaldı / Yapılmadı.
+                    • <b>Sarı Ünlem:</b> Son 7 günde 3 sünnet kaçırılmış demektir.<br>
+                    • <b>Soluk İsim:</b> Son 3 gün tesbihat yapılmamış demektir.
                 </div>
             </div>
             <div class="help-section">
-                <div class="help-title">⚡ Akıllı Vakit Başlığı</div>
+                <div class="help-title">📊 Kalite Hattı</div>
                 <div class="help-text">
-                    • Farz, Sünnet ve Tesbihat'ın <b>hepsi yeşilse</b> vakit ismi <b style="color:var(--dark-green)">YEŞİL</b> yanar.<br>
-                    • Farz namaz <b>kırmızıysa</b> vakit ismi direkt <b style="color:var(--red)">KIRMIZI</b> olur.
-                </div>
-            </div>
-            <div class="help-section">
-                <div class="help-title">📊 Başarı Puanlama</div>
-                <div class="help-text">
-                    • <b>Farz:</b> Vaktinde %30, Cemaat %50.<br>
-                    • <b>Sünnet:</b> +%25 başarı.<br>
-                    • <b>Tesbihat:</b> +%25 başarı.<br>
-                    Yıllık özette toplam amel adetlerini görebilirsiniz.
-                </div>
-            </div>
-            <div class="help-section">
-                <div class="help-title">⚙️ Veri & Yedekleme</div>
-                <div class="help-text">
-                    Ayarlar kısmından verilerinizi <b>JSON</b> dosyası olarak indirebilir, telefon değiştirince geri yükleyebilirsiniz.
+                    Genel raporda çubukların altındaki noktalar son 7 günün sünnet+tesbihat birliğini (Kalite) temsil eder.
                 </div>
             </div>`;
         document.getElementById('statModal').style.display = 'block';
