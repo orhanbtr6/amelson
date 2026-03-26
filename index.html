@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.22.20</title>
+    <title>Amel Defteri V.22.21</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
@@ -25,7 +25,6 @@
         
         .vakit-success { background: var(--dark-green) !important; border-color: #fff !important; }
         .vakit-soft { background: var(--light-green) !important; border-color: #fff !important; color: #000 !important; }
-        .vakit-soft .vakit-ad { color: #000 !important; }
         .vakit-danger { background: var(--red) !important; border-color: #fff !important; }
         .vakit-warn { background: var(--orange) !important; border-color: #fff !important; }
 
@@ -69,7 +68,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.20</span>
+        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.21</span>
     </div>
     <div class="nav-header">
         <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -132,16 +131,22 @@
     function getGlobalOzeller() { return JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; }
     function toggleSignals(val) { signalsActive = val; localStorage.setItem('amel_signals_active', val); render(); }
 
-    // NAMAZ UYARISI - EĞER BUGÜN YAPILDIYSA UYARI KALKAR
-    function getWarningData(vIdx) {
-        if(!signalsActive) return null;
-        
-        // Önce BUGÜN yapılmış mı ona bak:
-        const bugunFarz = gunlukVeriler.vakitler[vIdx].durumlar[0];
-        const bugunSunnet = gunlukVeriler.vakitler[vIdx].durumlar[1];
-        const bugunTesbihat = gunlukVeriler.vakitler[vIdx].durumlar[2];
+    // ZAMAN KONTROLÜ: Gelecek günler için uyarı verilmez.
+    function isFuture() {
+        let today = new Date();
+        today.setHours(0,0,0,0);
+        let check = new Date(seciliTarih);
+        check.setHours(0,0,0,0);
+        return check > today;
+    }
 
+    // NAMAZ UYARISI - SPESİFİK VE GELECEK KORUMALI
+    function getWarningData(vIdx) {
+        if(!signalsActive || isFuture()) return null;
+        
+        const bugunDurum = gunlukVeriler.vakitler[vIdx].durumlar;
         let streaks = [0, 0, 0];
+        
         for(let i=1; i<=3; i++) {
             let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
             let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
@@ -153,20 +158,18 @@
             } else { streaks[0]++; streaks[1]++; streaks[2]++; }
         }
 
-        // Koşul: 3 gün aksamış OLACAK VE bugün hala boş (0) olacak.
-        let fWarn = (streaks[0] >= 3 && (bugunFarz === 0 || bugunFarz === 3));
-        let sWarn = (streaks[1] >= 3 && bugunSunnet === 0);
-        let tWarn = (streaks[2] >= 3 && bugunTesbihat === 0);
+        let fWarn = (streaks[0] >= 3 && (bugunDurum[0] === 0 || bugunDurum[0] === 3));
+        let sWarn = (streaks[1] >= 3 && bugunDurum[1] === 0);
+        let tWarn = (streaks[2] >= 3 && bugunDurum[2] === 0);
 
-        return (fWarn || sWarn || tWarn) ? streaks : null;
+        return (fWarn || sWarn || tWarn) ? {streaks, fWarn, sWarn, tWarn} : null;
     }
 
-    // ÖZEL AMEL UYARISI - EĞER BUGÜN VERİ GİRİLDİYSE UYARI KALKAR
+    // ÖZEL AMEL UYARISI - SPESİFİK VE GELECEK KORUMALI
     function getOzelWarning(ozelIdx) {
-        if(!signalsActive) return false;
+        if(!signalsActive || isFuture()) return false;
         
         const ozelBugun = gunlukVeriler.ozeller[ozelIdx];
-        // Bugün yapıldıysa (durum 0 değilse veya boş değilse) uyarıyı doğrudan kapat
         if(ozelBugun.durum != 0 && ozelBugun.durum !== "") return false;
 
         let count = 0;
@@ -185,9 +188,11 @@
         e.stopPropagation();
         const data = getWarningData(vIdx);
         if(!data) return;
-        let msg = `<div style="text-align:left; padding:10px; font-size:13px; line-height:1.8;"><div style="color:var(--orange); font-weight:bold; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:10px; padding-bottom:5px;">⚠️ SON 3 GÜN ANALİZİ</div>`;
-        msg += `<p>Geçmiş 3 günde aksama tespit edildi. Bugün işaretleme yaparak uyarıyı kaldırabilirsin.</p>`;
-        msg += `<p style="font-size:10px; opacity:0.6; margin-top:10px;">*Süreklilik kalp huzuru için önemlidir.</p></div>`;
+        let msg = `<div style="text-align:left; padding:10px; font-size:13px; line-height:1.8;"><div style="color:var(--orange); font-weight:bold; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:10px; padding-bottom:5px;">⚠️ DİKKAT: ${vakitler[vIdx].toUpperCase()}</div>`;
+        if(data.fWarn) msg += `❌ <b style="color:var(--red)">Farz:</b> 3 gündür aksıyor.<br>`;
+        if(data.sWarn) msg += `❌ <b style="color:var(--orange)">Sünnet:</b> 3 gündür boş geçiliyor.<br>`;
+        if(data.tWarn) msg += `❌ <b style="color:var(--blue)">Tesbihat:</b> 3 gündür yapılmıyor.<br>`;
+        msg += `<p style="font-size:11px; margin-top:10px; border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px;">Bugün işaretleme yaparak sürekliliği sağlayabilirsin.</p></div>`;
         document.getElementById('statTitle').innerHTML = `<b>${vakitler[vIdx]}</b>`;
         document.getElementById('calGrid').innerHTML = msg;
         document.getElementById('statModal').style.display = 'block';
@@ -195,8 +200,8 @@
 
     function showOzelWarningDetail(e, ozelAd) {
         e.stopPropagation();
-        let msg = `<div style="text-align:left; padding:10px; font-size:13px; line-height:1.8;"><div style="color:var(--orange); font-weight:bold; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:10px; padding-bottom:5px;">⚠️ DİKKAT</div>
-        <p><b>${ozelAd}</b> ameli son 2 gündür boş geçilmiş. Bugün veri girerek bu uyarıyı silebilirsin.</p></div>`;
+        let msg = `<div style="text-align:left; padding:10px; font-size:13px; line-height:1.8;"><div style="color:var(--orange); font-weight:bold; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:10px; padding-bottom:5px;">⚠️ DİKKAT: ${ozelAd.toUpperCase()}</div>
+        <p>Bu amel son 2 gündür yapılmamış görünüyor. Bugün veri girerek sürekliliği koruyabilirsin.</p></div>`;
         document.getElementById('statTitle').innerHTML = `<b>${ozelAd}</b>`;
         document.getElementById('calGrid').innerHTML = msg;
         document.getElementById('statModal').style.display = 'block';
@@ -349,10 +354,10 @@
     window.showHelp = () => {
         const grid = document.getElementById('calGrid'); document.getElementById('statTitle').innerHTML = `<b>DETAYLI REHBER</b>`;
         grid.innerHTML = `<div style="font-size:12px; line-height:1.6; opacity:0.8;">
-            <p><b style="color:var(--orange)">⚠️ Uyarılar:</b> Namazlar için 3 gün, özel ameller için 2 gün aksama olursa yanar. **Bugün işaretleme yaparsanız uyarı anında kalkar.**</p>
+            <p><b style="color:var(--orange)">⚠️ Uyarılar:</b> Namazlar için 3 gün, ameller için 2 gün aksama olursa **sadece bugün ve geçmişte** yanar. Bugün veri girdiğinde söner.</p>
             <p><b style="color:var(--light-green)">● Başarı:</b> %0-30 Eksik, %31-80 Uygun, %81-90 Tamamlandı, %100 Başarılı.</p>
             <p><b style="color:var(--blue)">● Cemaat:</b> Farzı cemaatle kılmak %50 tam puan verir.</p>
-            <p><b style="color:var(--a5d3ff)">📊 Detay:</b> Vakit veya Amel isimlerine tıklayarak aylık sayısal dökümü görebilirsiniz.</p>
+            <p><b style="color:var(--a5d3ff)">📊 Detay:</b> Vakit veya Amel isimlerine tıklayarak aylık dökümü görebilirsiniz.</p>
         </div>`;
         document.getElementById('statModal').style.display = 'block';
     };
