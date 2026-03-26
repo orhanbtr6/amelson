@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.22.26</title>
+    <title>Amel Defteri V.22.27</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
@@ -20,9 +20,12 @@
         .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; }
         
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; gap: 5px; }
-        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); cursor: pointer; }
+        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); cursor: pointer; position: relative; }
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
         
+        .warning-blink { position: absolute; top: -8px; right: -5px; font-size: 14px; animation: blink 0.8s infinite; cursor: help; z-index: 5; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+
         .vakit-success { background: var(--dark-green) !important; border-color: #fff !important; }
         .vakit-soft { background: var(--light-green) !important; border-color: #fff !important; color: #000 !important; }
         .vakit-danger { background: var(--red) !important; border-color: #fff !important; }
@@ -52,14 +55,13 @@
         .close-x { position: absolute; top: 10px; right: 10px; background: var(--red); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
-        .arsiv-link { font-size: 8px; color: var(--red); opacity: 0.6; cursor: pointer; text-decoration: underline; margin-top: 4px; display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.26</span>
+        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.27</span>
     </div>
     
     <div class="nav-header">
@@ -87,15 +89,6 @@
     </div>
 </div>
 
-<div id="settingsModal" class="modal">
-    <div class="modal-content">
-        <button class="close-x" onclick="closeSettings()">✕</button>
-        <h3 style="text-align:center; color:var(--blue);">Ayarlar</h3>
-        <button class="nav-btn" style="width:100%; margin-bottom:10px;" onclick="exportData()">💾 Yedekle</button>
-        <button class="nav-btn" style="width:100%;" onclick="importData()">📂 Geri Yükle</button>
-    </div>
-</div>
-
 <div class="footer">
     <input type="text" id="habInp" placeholder="Yeni amel/görev...">
     <button class="nav-btn" style="background:var(--dark-green); font-weight:bold;" onclick="yeniEkle()">EKLE</button>
@@ -111,6 +104,37 @@
     
     function getLocalKey(t) { return `amel_${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
     function getGlobalOzeller() { return JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; }
+
+    function getWarningData(vIdx) {
+        let streaks = [0, 0, 0];
+        for(let i=1; i<=3; i++) {
+            let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
+            let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
+            if(val && val.vakitler[vIdx]) {
+                const dur = val.vakitler[vIdx].durumlar;
+                if(dur[0] === 0 || dur[0] === 3) streaks[0]++;
+                if(dur[1] === 0) streaks[1]++;
+                if(dur[2] === 0) streaks[2]++;
+            } else { streaks[0]++; streaks[1]++; streaks[2]++; }
+        }
+        let fWarn = (streaks[0] >= 3 && (gunlukVeriler.vakitler[vIdx].durumlar[0] === 0 || gunlukVeriler.vakitler[vIdx].durumlar[0] === 3));
+        return (fWarn || streaks[1]>=3 || streaks[2]>=3) ? {fWarn, sWarn:streaks[1]>=3, tWarn:streaks[2]>=3} : null;
+    }
+
+    function getOzelWarning(ozelIdx) {
+        const ozelBugun = gunlukVeriler.ozeller[ozelIdx];
+        if(ozelBugun.durum != 0 && ozelBugun.durum !== "") return false;
+        let count = 0;
+        for(let i=1; i<=2; i++) {
+            let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
+            let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
+            if(val && val.ozeller) {
+                let o = val.ozeller.find(x => x.ad === ozelBugun.ad);
+                if(!o || o.durum == 0 || o.durum === "") count++;
+            } else count++;
+        }
+        return count >= 2;
+    }
 
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
@@ -138,7 +162,6 @@
             
             let statusText = "BEKLEMEDE", statusColor = "rgba(255,255,255,0.4)";
             if(f > 0 || s > 0 || t > 0) {
-                // Kural: Farz 0 (Boş), 3 (Kaza) veya 4 (Diğer turuncu) ise direkt DİKKAT
                 if(f === 0 || f === 3 || f === 4) { 
                     statusText = "DİKKAT"; statusColor = (f === 0) ? "var(--red)" : "var(--orange)";
                 } else {
@@ -148,6 +171,9 @@
                 }
             }
             
+            let w = getWarningData(vIdx);
+            let warnIcon = w ? `<span class="warning-blink" onclick="alert('⚠️ DİKKAT: ${vakitler[vIdx]} son 3 gündür aksıyor!')">⚠️</span>` : '';
+            
             let boxClass = "";
             if (f === 1 && s > 0 && t > 0) boxClass = "vakit-success"; 
             else if (f === 2) boxClass = "vakit-soft"; 
@@ -156,7 +182,7 @@
 
             vDiv.innerHTML += `<div class="habit-card">
                 <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
-                    <span class="vakit-ad">${vakitler[vIdx]}</span>
+                    ${warnIcon}<span class="vakit-ad">${vakitler[vIdx]}</span>
                 </div>
                 <div class="circles-row">
                     ${basliklar.map((b, bI) => `<div style="text-align:center"><div class="circle s${v.durumlar[bI]}" onclick="window.degis(${vIdx}, ${bI}, 'vakit')"></div><span class="label-text" onclick="window.showHeatmap(${vIdx}, 'sub', ${bI})">${b}</span></div>`).join('')}
@@ -172,9 +198,8 @@
         const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum||""}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-            oDiv.innerHTML += `<div class="ozel-card">
-                <b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span>
-            </div>`;
+            let ow = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;">⚠️</span>` : '';
+            oDiv.innerHTML += `<div class="ozel-card">${ow}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}</div>`;
         });
     }
 
@@ -263,13 +288,8 @@
     window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
     window.tarihSec = (v) => { if(v) { seciliTarih = new Date(v); raporTarih = new Date(seciliTarih); veriYukle(); } };
     window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; };
-    window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
-    window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v; render(); };
     window.gitBugun = () => { seciliTarih = new Date(); raporTarih = new Date(); veriYukle(); };
-    window.arsivle = (id) => { if(!confirm("Arşivlensin mi?")) return; let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) { g[idx].arsiv = true; localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); veriYukle(); } };
-    window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
-    window.importData = () => { let i = document.createElement('input'); i.type='file'; i.onchange=e=>{ let fr=new FileReader(); fr.onload=()=>{ let d=JSON.parse(fr.result); Object.keys(d).forEach(k=>localStorage.setItem(k,d[k])); location.reload(); }; fr.readAsText(e.target.files[0]); }; i.click(); };
     
     veriYukle();
 </script>
