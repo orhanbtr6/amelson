@@ -62,6 +62,11 @@
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
         .arsiv-link { font-size: 8px; color: var(--red); opacity: 0.6; cursor: pointer; text-decoration: underline; margin-top: 4px; display: block; }
+
+        /* Modern Tip Seçim Paneli */
+        .type-select-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .type-btn { padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-weight: bold; text-align: center; transition: all 0.2s; }
+        .type-btn:hover { background: var(--blue); }
     </style>
 </head>
 <body>
@@ -96,6 +101,18 @@
     </div>
 </div>
 
+<div id="typeModal" class="modal">
+    <div class="modal-content">
+        <button class="close-x" onclick="document.getElementById('typeModal').style.display='none'">✕</button>
+        <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Tipi Seçin</h3>
+        <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
+        <div class="type-select-btns">
+            <div class="type-btn" onclick="finalEkle('renk')">🔵 Renk Bazlı (Daire)</div>
+            <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
+        </div>
+    </div>
+</div>
+
 <div id="settingsModal" class="modal">
     <div class="modal-content">
         <button class="close-x" onclick="closeSettings()">✕</button>
@@ -122,6 +139,7 @@
     let raporTarih = new Date();
     let gunlukVeriler = {};
     let signalsActive = localStorage.getItem('amel_signals_active') !== 'false';
+    let pendingName = "";
     
     let currentHeatmapId = null;
     let currentHeatmapType = null;
@@ -167,33 +185,10 @@
             let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
             if(val && val.ozeller) {
                 let o = val.ozeller.find(x => x.ad === ozelBugun.ad);
-                if(!o || o.durum == 0 || o.durum === "") count++;
+                if(!o || o.durum == 0 || o.durum === "" || o.durum === 0) count++;
             } else { count++; }
         }
         return count >= 2;
-    }
-
-    function showWarningDetail(e, vIdx) {
-        e.stopPropagation();
-        const data = getWarningData(vIdx);
-        if(!data) return;
-        let msg = `<div style="text-align:left; padding:10px; font-size:13px; line-height:1.8;"><div style="color:var(--orange); font-weight:bold; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:10px; padding-bottom:5px;">⚠️ DİKKAT: ${vakitler[vIdx].toUpperCase()}</div>`;
-        if(data.fWarn) msg += `❌ <b style="color:var(--red)">Farz:</b> 3 gündür aksıyor.<br>`;
-        if(data.sWarn) msg += `❌ <b style="color:var(--orange)">Sünnet:</b> 3 gündür boş geçiliyor.<br>`;
-        if(data.tWarn) msg += `❌ <b style="color:var(--blue)">Tesbihat:</b> 3 gündür yapılmıyor.<br>`;
-        msg += `<p style="font-size:11px; margin-top:10px; border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px;">Bugün işaretleme yaparak sürekliliği sağlayabilirsin.</p></div>`;
-        document.getElementById('statTitle').innerHTML = `<b>${vakitler[vIdx]}</b>`;
-        document.getElementById('calGrid').innerHTML = msg;
-        document.getElementById('statModal').style.display = 'block';
-    }
-
-    function showOzelWarningDetail(e, ozelAd) {
-        e.stopPropagation();
-        let msg = `<div style="text-align:left; padding:10px; font-size:13px; line-height:1.8;"><div style="color:var(--orange); font-weight:bold; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:10px; padding-bottom:5px;">⚠️ DİKKAT: ${ozelAd.toUpperCase()}</div>
-        <p>Bu amel son 2 gündür yapılmamış görünüyor. Bugün veri girerek sürekliliği koruyabilirsin.</p></div>`;
-        document.getElementById('statTitle').innerHTML = `<b>${ozelAd}</b>`;
-        document.getElementById('calGrid').innerHTML = msg;
-        document.getElementById('statModal').style.display = 'block';
     }
 
     function veriYukle() {
@@ -203,18 +198,16 @@
         
         if (kaydedilmis) {
             gunlukVeriler = kaydedilmis;
-            // Gün içindeki amelleri globale göre temizle (arsivlenmiş olanlar gitsin)
             gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.id === o.id));
-            // Globalde olup günde olmayanları ekle (yeni eklenenler gelsin)
             globalListe.forEach(g => {
                 if(!gunlukVeriler.ozeller.some(o => o.id === g.id)) {
-                    gunlukVeriler.ozeller.push({...g, durum: 0});
+                    gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)});
                 }
             });
         } else {
             gunlukVeriler = { 
                 vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
-                ozeller: globalListe.map(g => ({ ...g, durum: 0 })) 
+                ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
             };
         }
         render();
@@ -263,7 +256,7 @@
 
         const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
-            let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum||""}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
+            let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum === 0 ? "" : o.durum}" placeholder="-" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
             let oWarn = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="showOzelWarningDetail(event, '${o.ad}')">⚠️</span>` : '';
             oDiv.innerHTML += `<div class="ozel-card">
                 ${oWarn}
@@ -273,29 +266,21 @@
     }
 
     window.yeniEkle = () => { 
-        const ad = document.getElementById('habInp').value; 
-        if(!ad) return; 
+        pendingName = document.getElementById('habInp').value; 
+        if(!pendingName) return; 
+        document.getElementById('pendingAmelAd').innerText = `"${pendingName}" için tip seçiniz:`;
+        document.getElementById('typeModal').style.display = 'block';
+    };
+
+    window.finalEkle = (tip) => {
         let g = getGlobalOzeller(); 
-        const yeniAmel = { id: 'id_'+Date.now(), ad, tip: confirm("Rakam girilecek bir amel mi?")?'sayi':'renk' };
+        const yeniAmel = { id: 'id_'+Date.now(), ad: pendingName, tip: tip };
         g.push(yeniAmel); 
         localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); 
         document.getElementById('habInp').value=""; 
-        // Anlık güne de ekle
-        gunlukVeriler.ozeller.push({...yeniAmel, durum: 0});
+        gunlukVeriler.ozeller.push({...yeniAmel, durum: (tip === 'sayi' ? "" : 0)});
+        document.getElementById('typeModal').style.display = 'none';
         render(); 
-    };
-
-    window.arsivle = (id) => { 
-        if(!confirm("Arşivlensin mi?")) return; 
-        let g = getGlobalOzeller(); 
-        let idx = g.findIndex(x => x.id === id); 
-        if(idx > -1) { 
-            g[idx].arsiv = true; 
-            localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); 
-            // Mevcut günden de hemen kaldır
-            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => o.id !== id);
-            render(); 
-        } 
     };
 
     window.showHeatmap = (id, tip, subIdx = null) => {
@@ -312,7 +297,13 @@
             if(val) {
                 if(tip === 'vakit') c = `s${val.vakitler[id].durumlar[0]}`;
                 else if(tip === 'vakit_sub') c = `s${val.vakitler[id].durumlar[subIdx]}`;
-                else { let o = val.ozeller.find(x => x.ad === id); if(o) { c = o.tip === 'sayi' ? (o.durum > 0 ? 's1' : 's0') : `s${o.durum}`; txt = o.tip === 'sayi' ? o.durum : ""; } }
+                else { 
+                    let o = val.ozeller.find(x => x.ad === id); 
+                    if(o) { 
+                        c = o.tip === 'sayi' ? (o.durum > 0 ? 's1' : 's0') : `s${o.durum}`; 
+                        txt = (o.tip === 'sayi' && o.durum !== "" && o.durum !== 0) ? o.durum : ""; 
+                    } 
+                }
             }
             h += `<td class="${c}"><span class="day-num">${d}</span>${txt}</td>`;
             if(d % 7 === 0) h += `</tr><tr>`;
@@ -339,25 +330,7 @@
             }
             table += `</tr>`;
         });
-        
-        let today = new Date(); let dayOfW = today.getDay(); let diff = today.getDate() - dayOfW + (dayOfW === 0 ? -6 : 1);
-        let monday = new Date(today.setDate(diff)); let qualityTrend = [[],[],[],[],[]];
-        vakitler.forEach((v, vIdx) => {
-            for (let i = 0; i < 7; i++) {
-                let d = new Date(monday); d.setDate(monday.getDate() + i);
-                let vT = JSON.parse(localStorage.getItem(getLocalKey(d)));
-                let q = 'rgba(255,255,255,0.05)';
-                if(vT && vT.vakitler[vIdx]) {
-                    if(vT.vakitler[vIdx].durumlar[1] > 0 && vT.vakitler[vIdx].durumlar[2] > 0) q = 'var(--light-green)';
-                    else if(vT.vakitler[vIdx].durumlar[1] > 0) q = 'var(--orange)';
-                    else if(vT.vakitler[vIdx].durumlar[0] > 0) q = 'var(--red)';
-                }
-                qualityTrend[vIdx].push(q);
-            }
-        });
-        let analiz = `<div style="margin-top:15px; font-size:11px;"><b>Haftalık Kalite:</b>`;
-        vakitler.forEach((v, i) => { analiz += `<div style="margin:8px 0;">${v.split(" ")[0]} <div class="quality-line">${qualityTrend[i].map(c => `<div class="q-dot" style="background:${c}"></div>`).join('')}</div></div>`; });
-        grid.innerHTML = table + `</tbody></table></div>` + analiz + `</div>`;
+        grid.innerHTML = table + `</tbody></table></div>`;
         document.getElementById('statModal').style.display = 'block';
     };
 
@@ -400,13 +373,14 @@
         } render();
     };
 
+    window.arsivle = (id) => { if(!confirm("Arşivlensin mi?")) return; let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) { g[idx].arsiv = true; localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => o.id !== id); render(); } };
     window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
     window.ayRaporuDegis = (n) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showGeneralReport(); };
     window.tarihSec = (v) => { if(v) { seciliTarih = new Date(v); raporTarih = new Date(seciliTarih); veriYukle(); } };
     window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; raporTarih = new Date(seciliTarih); };
     window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
-    window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v; render(); };
+    window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v === "" ? "" : parseFloat(v); render(); };
     window.gitBugun = () => { seciliTarih = new Date(); raporTarih = new Date(); veriYukle(); };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { let i = document.createElement('input'); i.type='file'; i.onchange=e=>{ let fr=new FileReader(); fr.onload=()=>{ let d=JSON.parse(fr.result); Object.keys(d).forEach(k=>localStorage.setItem(k,d[k])); location.reload(); }; fr.readAsText(e.target.files[0]); }; i.click(); };
