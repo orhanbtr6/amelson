@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.22.25</title>
+    <title>Amel Defteri V.22.26</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; }
         * { box-sizing: border-box; }
@@ -20,7 +20,7 @@
         .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; }
         
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; gap: 5px; }
-        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.3s ease; }
+        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); cursor: pointer; }
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
         
         .vakit-success { background: var(--dark-green) !important; border-color: #fff !important; }
@@ -30,7 +30,7 @@
 
         .circles-row { display: flex; gap: 8px; align-items: center; }
         .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
-        .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; display: block; text-align: center; cursor: pointer; }
+        .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; display: block; text-align: center; }
         
         .progress-zone { width: 85px; text-align: center; margin-left: 5px; }
         .progress-bg { background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; overflow: hidden; margin: 4px 0; }
@@ -41,7 +41,7 @@
 
         .genel-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; background: rgba(0,0,0,0.4); padding: 5px; }
         .genel-table { border-collapse: separate; border-spacing: 2px; width: 100%; table-layout: fixed; }
-        .genel-table td { height: 16px; border-radius: 2px; text-align: center; font-size: 9px; position: relative; }
+        .genel-table td { height: 16px; border-radius: 2px; text-align: center; font-size: 9px; }
         .v-row-label { font-size: 9px; font-weight: bold; position: sticky; left: 0; background: #082d42; width: 45px !important; }
 
         .ozel-card { background: var(--card); padding: 10px 4px; border-radius: 10px; text-align: center; position: relative; }
@@ -59,7 +59,7 @@
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.25</span>
+        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.26</span>
     </div>
     
     <div class="nav-header">
@@ -115,12 +115,11 @@
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
-        const globalListe = getGlobalOzeller();
         if (kaydedilmis) gunlukVeriler = kaydedilmis;
         else {
             gunlukVeriler = { 
                 vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
-                ozeller: globalListe.filter(g => !g.arsiv).map(g => ({ ...g, durum: 0 })) 
+                ozeller: getGlobalOzeller().filter(g => !g.arsiv).map(g => ({ ...g, durum: 0 })) 
             };
         }
         render();
@@ -137,24 +136,20 @@
             if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
             if (s > 0) p += 25; if (t === 1 || t === 2) p += 25;
             
-            let anyInput = (f > 0 || s > 0 || t > 0);
             let statusText = "BEKLEMEDE", statusColor = "rgba(255,255,255,0.4)";
-            
-            if(anyInput) {
-                // Farz 0 (Boş), 3 (Kaza) veya 4 (Diğer turuncu) ise direkt DİKKAT
+            if(f > 0 || s > 0 || t > 0) {
+                // Kural: Farz 0 (Boş), 3 (Kaza) veya 4 (Diğer turuncu) ise direkt DİKKAT
                 if(f === 0 || f === 3 || f === 4) { 
-                    statusText = "DİKKAT"; 
-                    statusColor = (f === 0) ? "var(--red)" : "var(--orange)";
+                    statusText = "DİKKAT"; statusColor = (f === 0) ? "var(--red)" : "var(--orange)";
                 } else {
                     if (p <= 30) { statusText = "EKSİK"; statusColor = "var(--red)"; }
                     else if (p <= 80) { statusText = "TAMAM"; statusColor = "var(--light-green)"; }
-                    else if (p <= 99) { statusText = "TAMAMLANDI"; statusColor = "var(--dark-green)"; }
                     else { statusText = "BAŞARILI"; statusColor = "var(--dark-green)"; }
                 }
             }
             
             let boxClass = "";
-            if (f === 1 && s > 0 && (t === 1 || t === 2)) boxClass = "vakit-success"; 
+            if (f === 1 && s > 0 && t > 0) boxClass = "vakit-success"; 
             else if (f === 2) boxClass = "vakit-soft"; 
             else if (f === 3) boxClass = "vakit-danger"; 
             else if (f === 4) boxClass = "vakit-warn"; 
