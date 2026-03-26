@@ -132,19 +132,15 @@
     function toggleSignals(val) { signalsActive = val; localStorage.setItem('amel_signals_active', val); render(); }
 
     function isFuture() {
-        let today = new Date();
-        today.setHours(0,0,0,0);
-        let check = new Date(seciliTarih);
-        check.setHours(0,0,0,0);
+        let today = new Date(); today.setHours(0,0,0,0);
+        let check = new Date(seciliTarih); check.setHours(0,0,0,0);
         return check > today;
     }
 
     function getWarningData(vIdx) {
         if(!signalsActive || isFuture()) return null;
-        
         const bugunDurum = gunlukVeriler.vakitler[vIdx].durumlar;
         let streaks = [0, 0, 0];
-        
         for(let i=1; i<=3; i++) {
             let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
             let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
@@ -155,20 +151,16 @@
                 if(dur[2] === 0) streaks[2]++;
             } else { streaks[0]++; streaks[1]++; streaks[2]++; }
         }
-
         let fWarn = (streaks[0] >= 3 && (bugunDurum[0] === 0 || bugunDurum[0] === 3));
         let sWarn = (streaks[1] >= 3 && bugunDurum[1] === 0);
         let tWarn = (streaks[2] >= 3 && bugunDurum[2] === 0);
-
         return (fWarn || sWarn || tWarn) ? {streaks, fWarn, sWarn, tWarn} : null;
     }
 
     function getOzelWarning(ozelIdx) {
         if(!signalsActive || isFuture()) return false;
-        
         const ozelBugun = gunlukVeriler.ozeller[ozelIdx];
-        if(ozelBugun.durum != 0 && ozelBugun.durum !== "") return false;
-
+        if(!ozelBugun || (ozelBugun.durum != 0 && ozelBugun.durum !== "")) return false;
         let count = 0;
         for(let i=1; i<=2; i++) {
             let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
@@ -207,12 +199,22 @@
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
-        const globalListe = getGlobalOzeller();
-        if (kaydedilmis) gunlukVeriler = kaydedilmis;
-        else {
+        const globalListe = getGlobalOzeller().filter(g => !g.arsiv);
+        
+        if (kaydedilmis) {
+            gunlukVeriler = kaydedilmis;
+            // Gün içindeki amelleri globale göre temizle (arsivlenmiş olanlar gitsin)
+            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.id === o.id));
+            // Globalde olup günde olmayanları ekle (yeni eklenenler gelsin)
+            globalListe.forEach(g => {
+                if(!gunlukVeriler.ozeller.some(o => o.id === g.id)) {
+                    gunlukVeriler.ozeller.push({...g, durum: 0});
+                }
+            });
+        } else {
             gunlukVeriler = { 
                 vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
-                ozeller: globalListe.filter(g => !g.arsiv).map(g => ({ ...g, durum: 0 })) 
+                ozeller: globalListe.map(g => ({ ...g, durum: 0 })) 
             };
         }
         render();
@@ -227,32 +229,22 @@
         
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
             let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
-            
-            // Puanlama: Farz(1)=30, Farz(2)=50, Farz(4)=20, Sünnet=25, Tesbihat=25
             if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
             if (s > 0) p += 25; if (t === 1 || t === 2) p += 25;
 
             let anyInput = (f > 0 || s > 0 || t > 0);
-            
-            // Farz turuncu (4) kontrolü
-            let bCol;
-            let statusText;
-            if (f === 4) { 
-                bCol = "var(--orange)";
-                statusText = "DİKKAT";
-            } else {
+            let bCol; let statusText;
+            if (f === 4) { bCol = "var(--orange)"; statusText = "DİKKAT"; } 
+            else {
                 bCol = anyInput ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)";
                 statusText = anyInput ? (p <= 30 ? "EKSİK" : (p <= 80 ? "UYGUN" : (p <= 90 ? "TAMAMLANDI" : "BAŞARILI"))) : "BEKLEMEDE";
             }
             
             let wData = getWarningData(vIdx);
             let warningHTML = wData ? `<span class="warning-blink" onclick="showWarningDetail(event, ${vIdx})">⚠️</span>` : '';
-            
             let boxClass = "";
             if (f === 1 && s > 0 && (t === 1 || t === 2)) boxClass = "vakit-success"; 
-            else if (f === 2) boxClass = "vakit-soft"; 
-            else if (f === 3) boxClass = "vakit-danger"; 
-            else if (f === 4) boxClass = "vakit-warn"; 
+            else if (f === 2) boxClass = "vakit-soft"; else if (f === 3) boxClass = "vakit-danger"; else if (f === 4) boxClass = "vakit-warn"; 
 
             vDiv.innerHTML += `<div class="habit-card">
                 <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
@@ -279,6 +271,32 @@
             </div>`;
         });
     }
+
+    window.yeniEkle = () => { 
+        const ad = document.getElementById('habInp').value; 
+        if(!ad) return; 
+        let g = getGlobalOzeller(); 
+        const yeniAmel = { id: 'id_'+Date.now(), ad, tip: confirm("Rakam girilecek bir amel mi?")?'sayi':'renk' };
+        g.push(yeniAmel); 
+        localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); 
+        document.getElementById('habInp').value=""; 
+        // Anlık güne de ekle
+        gunlukVeriler.ozeller.push({...yeniAmel, durum: 0});
+        render(); 
+    };
+
+    window.arsivle = (id) => { 
+        if(!confirm("Arşivlensin mi?")) return; 
+        let g = getGlobalOzeller(); 
+        let idx = g.findIndex(x => x.id === id); 
+        if(idx > -1) { 
+            g[idx].arsiv = true; 
+            localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); 
+            // Mevcut günden de hemen kaldır
+            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => o.id !== id);
+            render(); 
+        } 
+    };
 
     window.showHeatmap = (id, tip, subIdx = null) => {
         currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
@@ -364,11 +382,9 @@
     window.showHelp = () => {
         const grid = document.getElementById('calGrid'); document.getElementById('statTitle').innerHTML = `<b>DETAYLI REHBER</b>`;
         grid.innerHTML = `<div style="font-size:12px; line-height:1.6; opacity:0.8;">
-            <p><b style="color:var(--orange)">⚠️ Uyarılar:</b> Namazlar için 3 gün, ameller için 2 gün aksama olursa **sadece bugün ve geçmişte** yanar. Bugün veri girdiğinde söner.</p>
+            <p><b style="color:var(--orange)">⚠️ Uyarılar:</b> Namazlar için 3 gün, ameller için 2 gün aksama olursa **sadece bugün ve geçmişte** yanar.</p>
             <p><b style="color:var(--light-green)">● Başarı:</b> %0-30 Eksik, %31-80 Uygun, %81-90 Tamamlandı, %100 Başarılı.</p>
-            <p><b style="color:var(--orange)">● Dikkat:</b> Farz ibadeti "Vaktinde/Yetişti" (Turuncu) işaretlenirse başarı durumu puan ne olursa olsun DİKKAT yazar.</p>
-            <p><b style="color:var(--blue)">● Cemaat:</b> Farzı cemaatle kılmak %50 tam puan verir.</p>
-            <p><b style="color:var(--a5d3ff)">📊 Detay:</b> Vakit veya Amel isimlerine tıklayarak aylık dökümü görebilirsiniz.</p>
+            <p><b style="color:var(--orange)">● Dikkat:</b> Farz ibadeti "Vaktinde/Yetişti" işaretlenirse puan ne olursa olsun DİKKAT yazar.</p>
         </div>`;
         document.getElementById('statModal').style.display = 'block';
     };
@@ -384,7 +400,6 @@
         } render();
     };
 
-    window.yeniEkle = () => { const ad = document.getElementById('habInp').value; if(!ad) return; let g = getGlobalOzeller(); g.push({ id: 'id_'+Date.now(), ad, tip: confirm("Rakam girilecek bir amel mi?")?'sayi':'renk' }); localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); document.getElementById('habInp').value=""; veriYukle(); };
     window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
     window.ayRaporuDegis = (n) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showGeneralReport(); };
     window.tarihSec = (v) => { if(v) { seciliTarih = new Date(v); raporTarih = new Date(seciliTarih); veriYukle(); } };
@@ -393,7 +408,6 @@
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v; render(); };
     window.gitBugun = () => { seciliTarih = new Date(); raporTarih = new Date(); veriYukle(); };
-    window.arsivle = (id) => { if(!confirm("Arşivlensin mi?")) return; let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) { g[idx].arsiv = true; localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); veriYukle(); } };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { let i = document.createElement('input'); i.type='file'; i.onchange=e=>{ let fr=new FileReader(); fr.onload=()=>{ let d=JSON.parse(fr.result); Object.keys(d).forEach(k=>localStorage.setItem(k,d[k])); location.reload(); }; fr.readAsText(e.target.files[0]); }; i.click(); };
     
