@@ -63,7 +63,6 @@
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
         .arsiv-link { font-size: 8px; color: var(--red); opacity: 0.6; cursor: pointer; text-decoration: underline; margin-top: 4px; display: block; }
 
-        /* Modern Tip Seçim Paneli */
         .type-select-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         .type-btn { padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-weight: bold; text-align: center; transition: all 0.2s; }
         .type-btn:hover { background: var(--blue); }
@@ -318,6 +317,7 @@
         const grid = document.getElementById('calGrid');
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
+        
         let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
         let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label-full">Vakit</th>`;
         for (let d = 1; d <= sonGun; d++) table += `<th style="font-size:7px;">${d}</th>`;
@@ -330,7 +330,30 @@
             }
             table += `</tr>`;
         });
-        grid.innerHTML = table + `</tbody></table></div>`;
+        table += `</tbody></table></div>`;
+
+        // Haftalık Kalite Çubukları (İlerleme çubukları dediğiniz kısım)
+        let today = new Date(); let dayOfW = today.getDay(); let diff = today.getDate() - dayOfW + (dayOfW === 0 ? -6 : 1);
+        let monday = new Date(today.setDate(diff)); let qualityTrend = [[],[],[],[],[]];
+        vakitler.forEach((v, vIdx) => {
+            for (let i = 0; i < 7; i++) {
+                let d = new Date(monday); d.setDate(monday.getDate() + i);
+                let vT = JSON.parse(localStorage.getItem(getLocalKey(d)));
+                let q = 'rgba(255,255,255,0.05)';
+                if(vT && vT.vakitler[vIdx]) {
+                    if(vT.vakitler[vIdx].durumlar[1] > 0 && vT.vakitler[vIdx].durumlar[2] > 0) q = 'var(--light-green)';
+                    else if(vT.vakitler[vIdx].durumlar[1] > 0) q = 'var(--orange)';
+                    else if(vT.vakitler[vIdx].durumlar[0] > 0) q = 'var(--red)';
+                }
+                qualityTrend[vIdx].push(q);
+            }
+        });
+        let analiz = `<div style="margin-top:15px; font-size:11px;"><b>Haftalık Vakit Kalitesi:</b>`;
+        vakitler.forEach((v, i) => { 
+            analiz += `<div style="margin:8px 0;">${v.split(" ")[0]} <div class="quality-line">${qualityTrend[i].map(c => `<div class="q-dot" style="background:${c}"></div>`).join('')}</div></div>`; 
+        });
+        
+        grid.innerHTML = table + analiz + `</div>`;
         document.getElementById('statModal').style.display = 'block';
     };
 
@@ -355,9 +378,16 @@
     window.showHelp = () => {
         const grid = document.getElementById('calGrid'); document.getElementById('statTitle').innerHTML = `<b>DETAYLI REHBER</b>`;
         grid.innerHTML = `<div style="font-size:12px; line-height:1.6; opacity:0.8;">
-            <p><b style="color:var(--orange)">⚠️ Uyarılar:</b> Namazlar için 3 gün, ameller için 2 gün aksama olursa **sadece bugün ve geçmişte** yanar.</p>
-            <p><b style="color:var(--light-green)">● Başarı:</b> %0-30 Eksik, %31-80 Uygun, %81-90 Tamamlandı, %100 Başarılı.</p>
-            <p><b style="color:var(--orange)">● Dikkat:</b> Farz ibadeti "Vaktinde/Yetişti" işaretlenirse puan ne olursa olsun DİKKAT yazar.</p>
+            <p><b style="color:var(--orange)">⚠️ Uyarılar:</b> Namazlar için 3 gün, ameller için 2 gün aksama olursa **sadece bugün ve geçmişte** yanar. Gelecekte yanmaz.</p>
+            <p><b style="color:var(--light-green)">● İlerleme Puanları:</b><br>
+               - Farz: %30 (Kaza: %0, Yetişti: %20)<br>
+               - Sünnet: %25 | Tesbihat: %25<br>
+               - %0-30: Eksik, %31-80: Uygun, %81-99: Tamamlandı, %100: Başarılı.</p>
+            <p><b style="color:var(--orange)">● Dikkat Durumu:</b> Farz ibadeti "Vaktinde/Yetişti" işaretlenirse (Sarı), puan %100 olsa bile durum DİKKAT yazar.</p>
+            <p><b style="color:var(--blue)">📊 Haftalık Kalite:</b><br>
+               - <span style="color:var(--red)">Kırmızı:</span> Sadece Farz<br>
+               - <span style="color:var(--orange)">Turuncu:</span> Farz + Sünnet<br>
+               - <span style="color:var(--light-green)">Yeşil:</span> Farz + Sünnet + Tesbihat</p>
         </div>`;
         document.getElementById('statModal').style.display = 'block';
     };
