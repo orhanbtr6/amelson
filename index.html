@@ -131,7 +131,6 @@
     function getGlobalOzeller() { return JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; }
     function toggleSignals(val) { signalsActive = val; localStorage.setItem('amel_signals_active', val); render(); }
 
-    // ZAMAN KONTROLÜ: Gelecek günler için uyarı verilmez.
     function isFuture() {
         let today = new Date();
         today.setHours(0,0,0,0);
@@ -140,7 +139,6 @@
         return check > today;
     }
 
-    // NAMAZ UYARISI - SPESİFİK VE GELECEK KORUMALI
     function getWarningData(vIdx) {
         if(!signalsActive || isFuture()) return null;
         
@@ -165,7 +163,6 @@
         return (fWarn || sWarn || tWarn) ? {streaks, fWarn, sWarn, tWarn} : null;
     }
 
-    // ÖZEL AMEL UYARISI - SPESİFİK VE GELECEK KORUMALI
     function getOzelWarning(ozelIdx) {
         if(!signalsActive || isFuture()) return false;
         
@@ -227,12 +224,26 @@
         document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
         document.getElementById('signalToggle').checked = signalsActive;
         const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
+        
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
             let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
+            
+            // Puanlama: Farz(1)=30, Farz(2)=50, Farz(4)=20, Sünnet=25, Tesbihat=25
             if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
             if (s > 0) p += 25; if (t === 1 || t === 2) p += 25;
+
             let anyInput = (f > 0 || s > 0 || t > 0);
-            let bCol = anyInput ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)";
+            
+            // Farz turuncu (4) kontrolü
+            let bCol;
+            let statusText;
+            if (f === 4) { 
+                bCol = "var(--orange)";
+                statusText = "DİKKAT";
+            } else {
+                bCol = anyInput ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)";
+                statusText = anyInput ? (p <= 30 ? "EKSİK" : (p <= 80 ? "UYGUN" : (p <= 90 ? "TAMAMLANDI" : "BAŞARILI"))) : "BEKLEMEDE";
+            }
             
             let wData = getWarningData(vIdx);
             let warningHTML = wData ? `<span class="warning-blink" onclick="showWarningDetail(event, ${vIdx})">⚠️</span>` : '';
@@ -242,6 +253,7 @@
             else if (f === 2) boxClass = "vakit-soft"; 
             else if (f === 3) boxClass = "vakit-danger"; 
             else if (f === 4) boxClass = "vakit-warn"; 
+
             vDiv.innerHTML += `<div class="habit-card">
                 <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
                     ${warningHTML}<span class="vakit-ad">${vakitler[vIdx]}</span>
@@ -252,16 +264,15 @@
                 <div class="progress-zone">
                     <div style="font-size:11px; font-weight:bold;">%${p}</div>
                     <div class="progress-bg"><div class="progress-bar" style="width:${p}%; background:${bCol}"></div></div>
-                    <div class="status-badge" style="color:${bCol}">${anyInput ? (p <= 30 ? "EKSİK" : (p <= 80 ? "UYGUN" : (p <= 90 ? "TAMAMLANDI" : "BAŞARILI"))) : "BEKLEMEDE"}</div>
+                    <div class="status-badge" style="color:${bCol}">${statusText}</div>
                 </div>
             </div>`;
         });
+
         const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum||""}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-            
             let oWarn = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="showOzelWarningDetail(event, '${o.ad}')">⚠️</span>` : '';
-            
             oDiv.innerHTML += `<div class="ozel-card">
                 ${oWarn}
                 <b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span>
@@ -328,7 +339,6 @@
         });
         let analiz = `<div style="margin-top:15px; font-size:11px;"><b>Haftalık Kalite:</b>`;
         vakitler.forEach((v, i) => { analiz += `<div style="margin:8px 0;">${v.split(" ")[0]} <div class="quality-line">${qualityTrend[i].map(c => `<div class="q-dot" style="background:${c}"></div>`).join('')}</div></div>`; });
-        
         grid.innerHTML = table + `</tbody></table></div>` + analiz + `</div>`;
         document.getElementById('statModal').style.display = 'block';
     };
@@ -356,6 +366,7 @@
         grid.innerHTML = `<div style="font-size:12px; line-height:1.6; opacity:0.8;">
             <p><b style="color:var(--orange)">⚠️ Uyarılar:</b> Namazlar için 3 gün, ameller için 2 gün aksama olursa **sadece bugün ve geçmişte** yanar. Bugün veri girdiğinde söner.</p>
             <p><b style="color:var(--light-green)">● Başarı:</b> %0-30 Eksik, %31-80 Uygun, %81-90 Tamamlandı, %100 Başarılı.</p>
+            <p><b style="color:var(--orange)">● Dikkat:</b> Farz ibadeti "Vaktinde/Yetişti" (Turuncu) işaretlenirse başarı durumu puan ne olursa olsun DİKKAT yazar.</p>
             <p><b style="color:var(--blue)">● Cemaat:</b> Farzı cemaatle kılmak %50 tam puan verir.</p>
             <p><b style="color:var(--a5d3ff)">📊 Detay:</b> Vakit veya Amel isimlerine tıklayarak aylık dökümü görebilirsiniz.</p>
         </div>`;
