@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.22.23</title>
+    <title>Amel Defteri V.22.24</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; --today-border: #666666; }
         * { box-sizing: border-box; }
@@ -48,19 +48,18 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 480px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
         .close-x { position: absolute; top: 10px; right: 10px; background: var(--red); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
+        .close-btn-bottom { display: block; width: 100%; padding: 12px; margin-top: 20px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
         .arsiv-link { font-size: 8px; color: var(--red); opacity: 0.6; cursor: pointer; text-decoration: underline; margin-top: 4px; display: block; }
-        .type-select-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        .type-btn { padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-weight: bold; text-align: center; transition: all 0.2s; }
-        .type-btn:hover { background: var(--blue); }
+        .type-btn { padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-weight: bold; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.23</span>
+        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.24</span>
     </div>
     <div class="nav-header">
         <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -85,6 +84,7 @@
         <button class="close-x" onclick="closeModal()">✕</button>
         <div id="statTitle" style="text-align:center; font-weight:bold; margin-bottom:15px; color:#a5d3ff; text-transform:uppercase;"></div>
         <div id="calGrid"></div>
+        <button class="close-btn-bottom" onclick="closeModal()">Pencereyi Kapat</button>
     </div>
 </div>
 
@@ -93,10 +93,8 @@
         <button class="close-x" onclick="document.getElementById('typeModal').style.display='none'">✕</button>
         <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Tipi Seçin</h3>
         <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
-        <div class="type-select-btns">
-            <div class="type-btn" onclick="finalEkle('renk')">🔵 Renk Bazlı (Daire)</div>
-            <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
-        </div>
+        <div class="type-btn" onclick="finalEkle('renk')">🔵 Renk Bazlı (Daire)</div>
+        <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
     </div>
 </div>
 
@@ -110,6 +108,7 @@
         </div>
         <button class="nav-btn" style="width:100%; margin-bottom:10px;" onclick="exportData()">💾 Yedekle</button>
         <button class="nav-btn" style="width:100%;" onclick="importData()">📂 Geri Yükle</button>
+        <button class="close-btn-bottom" onclick="closeSettings()">Kapat</button>
     </div>
 </div>
 
@@ -157,21 +156,31 @@
         return (fWarn || sWarn || tWarn) ? {streaks, fWarn, sWarn, tWarn} : null;
     }
 
-    function getOzelWarning(ozelIdx) {
-        if(!signalsActive || isFuture()) return false;
-        const ozelBugun = gunlukVeriler.ozeller[ozelIdx];
-        if(!ozelBugun || (ozelBugun.durum != 0 && ozelBugun.durum !== "")) return false;
-        let count = 0;
-        for(let i=1; i<=2; i++) {
-            let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
-            let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
-            if(val && val.ozeller) {
-                let o = val.ozeller.find(x => x.ad === ozelBugun.ad);
-                if(!o || o.durum == 0 || o.durum === "" || o.durum === 0) count++;
-            } else { count++; }
-        }
-        return count >= 2;
-    }
+    window.showWarningDetail = (e, vIdx) => {
+        e.stopPropagation();
+        const w = getWarningData(vIdx);
+        if(!w) return;
+        const grid = document.getElementById('calGrid');
+        document.getElementById('statTitle').innerHTML = `⚠️ FARKINDALIK ANALİZİ<br><small>${vakitler[vIdx]}</small>`;
+        grid.innerHTML = `<div style="padding:15px; font-size:13px; line-height:1.8;">
+            ${w.fWarn ? `<p>🔴 <b>Farz:</b> Son 3 gündür aksama var!</p>` : ''}
+            ${w.sWarn ? `<p>🟠 <b>Sünnet:</b> Son 3 gündür boş geçildi.</p>` : ''}
+            ${w.tWarn ? `<p>🟡 <b>Tesbihat:</b> 3 gündür yapılmadı.</p>` : ''}
+            <p style="margin-top:10px; opacity:0.6; font-size:11px;">* İstikrarı korumak için küçük adımlar önemlidir hocam.</p>
+        </div>`;
+        document.getElementById('statModal').style.display = 'block';
+    };
+
+    window.showOzelWarningDetail = (e, ad) => {
+        e.stopPropagation();
+        const grid = document.getElementById('calGrid');
+        document.getElementById('statTitle').innerHTML = `⚠️ FARKINDALIK ANALİZİ`;
+        grid.innerHTML = `<div style="padding:15px; font-size:13px;">
+            <p>🔵 <b>${ad}:</b> Son 2 gündür bu ameli gerçekleştirmediniz.</p>
+            <p style="margin-top:10px; opacity:0.6; font-size:11px;">Devamlılık başarının anahtarıdır.</p>
+        </div>`;
+        document.getElementById('statModal').style.display = 'block';
+    };
 
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
@@ -191,6 +200,7 @@
         localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
         document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
         document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
+        document.getElementById('signalToggle').checked = signalsActive;
         const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
             let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
@@ -204,7 +214,7 @@
             let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
             vDiv.innerHTML += `<div class="habit-card">
                 <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
-                    ${wData ? `<span class="warning-blink">⚠️</span>` : ''}<span class="vakit-ad">${vakitler[vIdx]}</span>
+                    ${wData ? `<span class="warning-blink" onclick="window.showWarningDetail(event, ${vIdx})">⚠️</span>` : ''}<span class="vakit-ad">${vakitler[vIdx]}</span>
                 </div>
                 <div class="circles-row">
                     ${basliklar.map((b, bI) => `<div style="text-align:center"><div class="circle s${v.durumlar[bI]}" onclick="window.degis(${vIdx}, ${bI}, 'vakit')"></div><span class="label-text" onclick="window.showHeatmap(${vIdx}, 'vakit_sub', ${bI})">${b}</span></div>`).join('')}
@@ -219,7 +229,11 @@
         const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum === 0 ? "" : o.durum}" placeholder="-" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-            oDiv.innerHTML += `<div class="ozel-card">${getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;">⚠️</span>` : ''}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span></div>`;
+            let oWarn = !isFuture() && signalsActive && (o.durum == 0 || o.durum === "") ? true : false;
+            oDiv.innerHTML += `<div class="ozel-card">
+                ${oWarn && getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showOzelWarningDetail(event, '${o.ad}')">⚠️</span>` : ''}
+                <b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span>
+            </div>`;
         });
     }
 
@@ -261,24 +275,7 @@
             table += `</tr>`;
         });
         table += `</tbody></table></div>`;
-        let today = new Date(); let dayOfW = today.getDay(); let diff = today.getDate() - dayOfW + (dayOfW === 0 ? -6 : 1);
-        let monday = new Date(today.setDate(diff)); let qTrend = [[],[],[],[],[]];
-        vakitler.forEach((v, vIdx) => {
-            for (let i = 0; i < 7; i++) {
-                let d = new Date(monday); d.setDate(monday.getDate() + i);
-                let vT = JSON.parse(localStorage.getItem(getLocalKey(d)));
-                let q = 'rgba(255,255,255,0.05)';
-                if(vT && vT.vakitler[vIdx]) {
-                    if(vT.vakitler[vIdx].durumlar[1] > 0 && vT.vakitler[vIdx].durumlar[2] > 0) q = 'var(--light-green)';
-                    else if(vT.vakitler[vIdx].durumlar[1] > 0) q = 'var(--orange)';
-                    else if(vT.vakitler[vIdx].durumlar[0] > 0) q = 'var(--red)';
-                }
-                qTrend[vIdx].push(q);
-            }
-        });
-        let analiz = `<div style="margin-top:15px; font-size:11px;"><b>Haftalık Vakit Kalitesi:</b>`;
-        vakitler.forEach((v, i) => { analiz += `<div style="margin:8px 0;">${v.split(" ")[0]} <div class="quality-line">${qTrend[i].map(c => `<div class="q-dot" style="background:${c}"></div>`).join('')}</div></div>`; });
-        document.getElementById('calGrid').innerHTML = table + analiz;
+        document.getElementById('calGrid').innerHTML = table;
         document.getElementById('statModal').style.display = 'block';
     };
 
@@ -295,11 +292,10 @@
     window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v === "" ? "" : parseFloat(v); render(); };
-    window.showHelp = () => { document.getElementById('statTitle').innerHTML = `<b>DETAYLI REHBER</b>`; document.getElementById('calGrid').innerHTML = `<div style="font-size:12px; line-height:1.6; opacity:0.8;"><p><b style="color:var(--orange)">⚠️ Uyarılar:</b> Namazlar için 3 gün, ameller için 2 gün aksama olursa yanar.</p><p><b style="color:var(--light-green)">● İlerleme Puanları:</b> Farz %30, Sünnet %25, Tesbihat %25.</p><p><b style="color:var(--blue)">📊 Kalite:</b> Kırmızı (Farz), Turuncu (+Sünnet), Yeşil (+Tesbihat).</p></div>`; document.getElementById('statModal').style.display = 'block'; };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { let i = document.createElement('input'); i.type='file'; i.onchange=e=>{ let fr=new FileReader(); fr.onload=()=>{ let d=JSON.parse(fr.result); Object.keys(d).forEach(k=>localStorage.setItem(k,d[k])); location.reload(); }; fr.readAsText(e.target.files[0]); }; i.click(); };
+    window.showHelp = () => { document.getElementById('statTitle').innerHTML = `<b>DETAYLI REHBER</b>`; document.getElementById('calGrid').innerHTML = `<div style="font-size:12px; line-height:1.6; opacity:0.8;"><p><b style="color:var(--orange)">⚠️ Uyarılar:</b> Namazlar için 3 gün, ameller için 2 gün aksama olursa yanar.</p><p><b style="color:var(--light-green)">● İlerleme Puanları:</b> Farz %30, Sünnet %25, Tesbihat %25.</p></div>`; document.getElementById('statModal').style.display = 'block'; };
     window.showYearlyReport = () => { const grid = document.getElementById('calGrid'); const yil = new Date().getFullYear(); document.getElementById('statTitle').innerHTML = `<b>${yil} YILI ÖZETİ</b>`; let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {}; for (let m = 0; m < 12; m++) { for (let d = 1; d <= 31; d++) { let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); if (!v) continue; v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; }); (v.ozeller || []).forEach(vo => { if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip }; if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); else if (vo.durum > 0) arsiv[vo.ad].t += 1; }); } } let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; font-size:12px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">Kaza Namazları</th><th style="text-align:right;">Adet</th></tr></thead><tbody>`; Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; }); h += `</tbody></table><table style="width:100%; margin-top:15px; font-size:12px;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">Özel Ameller</th><th style="text-align:right;">Değer</th></tr></thead><tbody>`; Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].t} ${arsiv[k].tip==='sayi'?'':'G'}</td></tr>`; }); grid.innerHTML = h + `</tbody></table></div>`; document.getElementById('statModal').style.display = 'block'; };
-    
     veriYukle();
 </script>
 </body>
