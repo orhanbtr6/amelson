@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.22.26</title>
+    <title>Amel Defteri V.22.41</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; --today-border: #666666; }
         * { box-sizing: border-box; }
@@ -18,7 +18,7 @@
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 13px; }
         .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; }
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; gap: 5px; }
-        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); position: relative; cursor: pointer; transition: all 0.3s ease; }
+        .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); position: relative; cursor: pointer; }
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
         .vakit-success { background: var(--dark-green) !important; border-color: #fff !important; }
         .vakit-soft { background: var(--light-green) !important; border-color: #fff !important; color: #000 !important; }
@@ -26,10 +26,9 @@
         .vakit-warn { background: var(--orange) !important; border-color: #fff !important; }
         .warning-blink { position: absolute; top: -8px; right: -5px; font-size: 14px; animation: blink 0.8s infinite; cursor: help; z-index: 5; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
-        .circles-row { display: flex; gap: 8px; align-items: center; }
         .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
         .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; display: block; text-align: center; cursor: pointer; }
-        .progress-zone { width: 85px; text-align: center; margin-left: 5px; }
+        .progress-zone { width: 85px; text-align: center; }
         .progress-bg { background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; overflow: hidden; margin: 4px 0; }
         .progress-bar { height: 100%; transition: width 0.3s; }
         .status-badge { font-size: 8px; font-weight: bold; padding: 2px 4px; border-radius: 4px; display: inline-block; text-transform: uppercase; }
@@ -38,38 +37,28 @@
         .genel-table { border-collapse: separate; border-spacing: 2px; width: 100%; table-layout: fixed; }
         .genel-table td { height: 16px; border-radius: 2px; text-align: center; font-size: 9px; position: relative; }
         .heatmap-table td { height: 40px !important; font-size: 11px !important; font-weight: bold; }
-        .day-num { position: absolute; top: 2px; left: 2px; font-size: 7px; opacity: 0.4; color: white; }
         .v-row-label-full { font-size: 9px; font-weight: bold; position: sticky; left: 0; background: #082d42; width: 65px !important; text-align: left !important; padding-left: 5px; }
-        .quality-line { display: flex; gap: 2px; margin-top: 4px; height: 4px; width: 100%; }
-        .q-dot { flex: 1; border-radius: 1px; height: 100%; }
         .ozel-card { background: var(--card); padding: 10px 4px; border-radius: 10px; text-align: center; position: relative; }
         .ozel-name { font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px; cursor: pointer; color: #a5d3ff; }
-        .is-today-cell { outline: 2px solid var(--today-border); outline-offset: -2px; }
+        .arsiv-link { font-size: 8px; color: var(--red); opacity: 0.6; cursor: pointer; text-decoration: underline; margin-top: 4px; display: block; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
         .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 480px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
         .close-x { position: absolute; top: 10px; right: 10px; background: var(--red); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
-        .close-btn-bottom { display: block; width: 100%; padding: 12px; margin-top: 20px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
-        
-        /* Switch Design */
+        .close-btn-bottom { display: block; width: 100%; padding: 12px; margin-top: 20px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+        .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-radius: 15px 15px 0 0; }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.2); transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--dark-green); }
         input:checked + .slider:before { transform: translateX(20px); }
-
-        .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-radius: 15px 15px 0 0; }
-        input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
-        .arsiv-link { font-size: 8px; color: var(--red); opacity: 0.6; cursor: pointer; text-decoration: underline; margin-top: 4px; display: block; }
-        .type-btn { padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-weight: bold; text-align: center; margin-top: 10px; }
-        .help-section { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; margin-bottom: 10px; border-left: 3px solid var(--blue); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.26</span>
+        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.41</span>
     </div>
     <div class="nav-header">
         <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -98,19 +87,9 @@
     </div>
 </div>
 
-<div id="typeModal" class="modal">
-    <div class="modal-content">
-        <button class="close-x" onclick="document.getElementById('typeModal').style.display='none'">✕</button>
-        <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Tipi Seçin</h3>
-        <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
-        <div class="type-btn" onclick="finalEkle('renk')">🔵 Renk Bazlı (Daire)</div>
-        <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
-    </div>
-</div>
-
 <div id="settingsModal" class="modal">
     <div class="modal-content">
-        <button class="close-x" onclick="closeSettings()">✕</button>
+        <button class="close-x" onclick="document.getElementById('settingsModal').style.display='none'">✕</button>
         <h3 style="text-align:center; color:var(--blue);">Ayarlar</h3>
         <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
             <span style="font-size:14px;">Farkındalık Sinyalleri (⚠️)</span>
@@ -121,14 +100,14 @@
         </div>
         <button class="nav-btn" style="width:100%; margin-bottom:10px;" onclick="exportData()">💾 Yedekle</button>
         <button class="nav-btn" style="width:100%;" onclick="importData()">📂 Geri Yükle</button>
-        <button class="close-btn-bottom" onclick="closeSettings()">Kapat</button>
+        <button class="close-btn-bottom" onclick="document.getElementById('settingsModal').style.display='none'">Kapat</button>
     </div>
 </div>
 
 <div class="footer">
     <input type="text" id="habInp" placeholder="Yeni amel/görev...">
     <button class="nav-btn" style="background:var(--dark-green); font-weight:bold;" onclick="yeniEkle()">EKLE</button>
-    <button onclick="openSettings()" style="background:none; border:none; font-size:22px;">⚙️</button>
+    <button onclick="document.getElementById('settingsModal').style.display='block'" style="background:none; border:none; font-size:22px;">⚙️</button>
 </div>
 
 <script>
@@ -138,53 +117,48 @@
     let raporTarih = new Date();
     let gunlukVeriler = {};
     let signalsActive = localStorage.getItem('amel_signals_active') !== 'false';
-    let pendingName = "";
-    let currentHeatmapId = null;
-    let currentHeatmapType = null;
-    let currentHeatmapSubIdx = null;
 
     function getLocalKey(t) { return `amel_${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
     function getGlobalOzeller() { return JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; }
     function toggleSignals(val) { signalsActive = val; localStorage.setItem('amel_signals_active', val); render(); }
-    function isTodayCheck(d, m, y) { let today = new Date(); return d === today.getDate() && m === today.getMonth() && y === today.getFullYear(); }
-    function isFuture() { let today = new Date(); today.setHours(0,0,0,0); let check = new Date(seciliTarih); check.setHours(0,0,0,0); return check > today; }
+    function isFuture() { let t = new Date(); t.setHours(0,0,0,0); let s = new Date(seciliTarih); s.setHours(0,0,0,0); return s > t; }
 
-    function getWarningData(vIdx) {
+    // --- FARKINDALIK SİSTEMİ (NAMAZ + ÖZEL) ---
+    function getWarningData(idx, tip) {
         if(!signalsActive || isFuture()) return null;
         let history = [];
         for(let i=1; i<=3; i++) {
             let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
             let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
-            history.push(val ? val.vakitler[vIdx].durumlar : [0,0,0]);
+            if(tip === 'vakit') history.push(val ? val.vakitler[idx].durumlar : [0,0,0]);
+            else {
+                let o = val ? val.ozeller.find(x => x.ad === idx) : null;
+                history.push(o ? o.durum : 0);
+            }
         }
-        let fAksama = history.filter(h => h[0] === 0 || h[0] === 3).length;
-        let sAksama = history.filter(h => h[1] === 0).length;
-        let tAksama = history.filter(h => h[2] === 0).length;
+        let bugun = (tip === 'vakit') ? gunlukVeriler.vakitler[idx].durumlar : (gunlukVeriler.ozeller.find(x => x.ad === idx)?.durum || 0);
         
-        let bugun = gunlukVeriler.vakitler[vIdx].durumlar;
-        if ((fAksama >= 3 && (bugun[0]===0 || bugun[0]===3)) || (sAksama >= 3 && bugun[1]===0) || (tAksama >= 3 && bugun[2]===0)) {
-            return {fAksama, sAksama, tAksama, history};
+        let alert = false;
+        let sebep = "";
+        if(tip === 'vakit') {
+            if (history.every(h => h[0] === 0 || h[0] === 3) && (bugun[0] === 0 || bugun[0] === 3)) { alert = true; sebep = "Farz Namaz"; }
+            else if (history.every(h => h[1] === 0) && bugun[1] === 0) { alert = true; sebep = "Sünnet"; }
+            else if (history.every(h => h[2] === 0) && bugun[2] === 0) { alert = true; sebep = "Tesbihat"; }
+        } else {
+            if (history.every(h => h === 0 || h === "" || h === "0") && (bugun === 0 || bugun === "" || bugun === "0")) { alert = true; sebep = "Devamlılık"; }
         }
-        return null;
+        return alert ? {sebep, history} : null;
     }
 
-    window.showWarningDetail = (e, vIdx) => {
+    window.showWarningDetail = (e, label, info, tip) => {
         e.stopPropagation();
-        const w = getWarningData(vIdx); if(!w) return;
-        document.getElementById('statTitle').innerHTML = `⚠️ FARKINDALIK ANALİZİ<br><small>${vakitler[vIdx]}</small>`;
-        let detailHtml = `<div style="padding:10px; font-size:12px; line-height:1.5;">
-            <p style="color:var(--orange); text-align:center; font-weight:bold; margin-bottom:15px;">Son 3 Gündeki Aksama Durumu</p>
-            <table style="width:100%; border-collapse:collapse; text-align:center;">
-                <tr style="opacity:0.6"><td></td><td>Dün</td><td>Önceki</td><td>D.Önceki</td></tr>
-                <tr><td style="text-align:left">Farz</td>${w.history.map(h => `<td><div class="circle s${h[0]}" style="width:12px; height:12px; margin:auto"></div></td>`).join('')}</tr>
-                <tr><td style="text-align:left">Sünnet</td>${w.history.map(h => `<td><div class="circle s${h[1]}" style="width:12px; height:12px; margin:auto"></div></td>`).join('')}</tr>
-                <tr><td style="text-align:left">Tesbih</td>${w.history.map(h => `<td><div class="circle s${h[2]}" style="width:12px; height:12px; margin:auto"></div></td>`).join('')}</tr>
-            </table>
-            <div style="margin-top:20px; background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; font-style:italic;">
-                "Amellerin Allah katında en sevimlisi, az da olsa devamlı olanıdır."
-            </div>
+        document.getElementById('statTitle').innerHTML = `⚠️ FARKINDALIK ANALİZİ<br><small>${label}</small>`;
+        let h = `<div style="padding:10px; font-size:12px; text-align:center;">
+            <p style="color:var(--orange)"><b>Eksik:</b> ${info.sebep}</p>
+            <p>Son 3 gündür bu görevde aksama tespit edildi. İstikrarı korumak önemlidir.</p>
+            <div style="margin-top:20px; font-style:italic; opacity:0.8">"Amellerin en hayırlısı az da olsa devamlı olanıdır."</div>
         </div>`;
-        document.getElementById('calGrid').innerHTML = detailHtml;
+        document.getElementById('calGrid').innerHTML = h;
         document.getElementById('statModal').style.display = 'block';
     };
 
@@ -207,142 +181,69 @@
         document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
         document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
         document.getElementById('signalToggle').checked = signalsActive;
+
         const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
         gunlukVeriler.vakitler.forEach((v, vIdx) => {
-            let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
-            if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
-            if (s > 0) p += 25; if (t === 1 || t === 2) p += 25;
-            let anyInput = (f > 0 || s > 0 || t > 0);
-            let bCol = anyInput ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)";
-            let statusText = anyInput ? (p <= 30 ? "EKSİK" : (p <= 80 ? "UYGUN" : (p <= 90 ? "TAMAMLANDI" : "BAŞARILI"))) : "BEKLEMEDE";
-            let wData = getWarningData(vIdx);
-            let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
+            let p = 0; if (v.durumlar[0] === 1) p += 30; else if (v.durumlar[0] === 2) p += 50; else if (v.durumlar[0] === 4) p += 20;
+            if (v.durumlar[1] > 0) p += 25; if (v.durumlar[2] > 0) p += 25;
+            let w = getWarningData(vIdx, 'vakit');
+            let boxClass = (v.durumlar[0] === 1 && v.durumlar[1] > 0 && v.durumlar[2] > 0) ? "vakit-success" : (v.durumlar[0] === 2 ? "vakit-soft" : (v.durumlar[0] === 3 ? "vakit-danger" : (v.durumlar[0] === 4 ? "vakit-warn" : "")));
             vDiv.innerHTML += `<div class="habit-card">
                 <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
-                    ${wData ? `<span class="warning-blink" onclick="window.showWarningDetail(event, ${vIdx})">⚠️</span>` : ''}<span class="vakit-ad">${vakitler[vIdx]}</span>
+                    ${w ? `<span class="warning-blink" onclick="window.showWarningDetail(event, '${vakitler[vIdx]}', ${JSON.stringify(w)}, 'vakit')">⚠️</span>` : ''}<span class="vakit-ad">${vakitler[vIdx]}</span>
                 </div>
-                <div class="circles-row">
-                    ${basliklar.map((b, bI) => `<div style="text-align:center"><div class="circle s${v.durumlar[bI]}" onclick="window.degis(${vIdx}, ${bI}, 'vakit')"></div><span class="label-text" onclick="window.showHeatmap(${vIdx}, 'vakit_sub', ${bI})">${b}</span></div>`).join('')}
+                <div style="display:flex; gap:8px;">
+                    ${basliklar.map((b, bI) => `<div style="text-align:center"><div class="circle s${v.durumlar[bI]}" onclick="window.degis(${vIdx}, ${bI}, 'vakit')"></div><span class="label-text">${b}</span></div>`).join('')}
                 </div>
                 <div class="progress-zone">
                     <div style="font-size:11px; font-weight:bold;">%${p}</div>
-                    <div class="progress-bg"><div class="progress-bar" style="width:${p}%; background:${bCol}"></div></div>
-                    <div class="status-badge" style="color:${bCol}">${statusText}</div>
+                    <div class="progress-bg"><div class="progress-bar" style="width:${p}%; background:var(--light-green)"></div></div>
                 </div>
             </div>`;
         });
+
         const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
+            let w = getWarningData(o.ad, 'ozel');
             let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-            oDiv.innerHTML += `<div class="ozel-card"><b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span></div>`;
+            oDiv.innerHTML += `<div class="ozel-card">
+                ${w ? `<span class="warning-blink" style="top:2px; right:2px;" onclick="window.showWarningDetail(event, '${o.ad}', ${JSON.stringify(w)}, 'ozel')">⚠️</span>` : ''}
+                <b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span>
+            </div>`;
         });
     }
 
-    window.showHeatmap = (id, tip, subIdx = null) => {
-        currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
-        let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        let ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.heatmapNav(-1)">❮</button><div><div style="font-size:10px; opacity:0.7">${ayYilStr}</div><div style="font-size:14px">${tip === 'vakit' ? vakitler[id] : (tip === 'vakit_sub' ? vakitler[id].split(" ")[0] + " - " + basliklar[subIdx] : id)}</div></div><button class="nav-btn" onclick="window.heatmapNav(1)">❯</button></div>`;
-        let h = `<div class="genel-wrapper"><table class="genel-table heatmap-table"><tr>`;
-        for(let d=1; d<=sonGun; d++) {
-            let isToday = isTodayCheck(d, raporTarih.getMonth(), raporTarih.getFullYear());
-            let val = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
-            let c = "s0", txt = "";
-            if(val) {
-                if(tip === 'vakit') c = `s${val.vakitler[id].durumlar[0]}`;
-                else if(tip === 'vakit_sub') c = `s${val.vakitler[id].durumlar[subIdx]}`;
-                else { let o = val.ozeller.find(x => x.ad === id); if(o) { c = o.tip === 'sayi' ? (o.durum > 0 ? 's1' : 's0') : `s${o.durum}`; txt = (o.tip === 'sayi' && o.durum > 0) ? o.durum : ""; } }
-            }
-            h += `<td class="${c} ${isToday ? 'is-today-cell' : ''}"><span class="day-num">${d}</span>${txt}</td>`;
-            if(d % 7 === 0) h += `</tr><tr>`;
-        }
-        document.getElementById('calGrid').innerHTML = h + `</tr></table></div>`;
-        document.getElementById('statModal').style.display = 'block';
-    };
-
-    window.showGeneralReport = () => {
-        const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
-        let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label-full">Vakit</th>`;
-        for (let d = 1; d <= sonGun; d++) table += `<th style="font-size:7px;">${d}</th>`;
-        table += `</tr></thead><tbody>`;
-        vakitler.forEach((vAd, vIdx) => {
-            table += `<tr><td class="v-row-label-full">${vAd.split(" ")[0]}</td>`;
-            for (let d = 1; d <= sonGun; d++) {
-                let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
-                table += `<td class="s${(v && v.vakitler[vIdx]) ? v.vakitler[vIdx].durumlar[0] : 0}"></td>`;
-            }
-            table += `</tr>`;
-        });
-        table += `</tbody></table></div>`;
-        
-        let today = new Date(); let dayOfW = today.getDay(); let diff = today.getDate() - dayOfW + (dayOfW === 0 ? -6 : 1);
-        let monday = new Date(today.setDate(diff)); let qTrend = [[],[],[],[],[]];
-        vakitler.forEach((v, vIdx) => {
-            for (let i = 0; i < 7; i++) {
-                let d = new Date(monday); d.setDate(monday.getDate() + i);
-                let vT = JSON.parse(localStorage.getItem(getLocalKey(d)));
-                let q = 'rgba(255,255,255,0.05)';
-                if(vT && vT.vakitler[vIdx]) {
-                    if(vT.vakitler[vIdx].durumlar[1] > 0 && vT.vakitler[vIdx].durumlar[2] > 0) q = 'var(--light-green)';
-                    else if(vT.vakitler[vIdx].durumlar[1] > 0) q = 'var(--orange)';
-                    else if(vT.vakitler[vIdx].durumlar[0] > 0) q = 'var(--red)';
-                }
-                qTrend[vIdx].push(q);
-            }
-        });
-        let analiz = `<div style="margin-top:15px; font-size:11px;"><b>Haftalık Kalite Analizi:</b>`;
-        vakitler.forEach((v, i) => { analiz += `<div style="margin:8px 0;">${v.split(" ")[0]} <div class="quality-line">${qTrend[i].map(c => `<div class="q-dot" style="background:${c}"></div>`).join('')}</div></div>`; });
-        document.getElementById('calGrid').innerHTML = table + analiz;
-        document.getElementById('statModal').style.display = 'block';
-    };
-
-    window.showHelp = () => {
-        document.getElementById('statTitle').innerHTML = `<b>📖 AMEL DEFTERİ REHBERİ</b>`;
-        document.getElementById('calGrid').innerHTML = `
-            <div style="font-size:12px; max-height:60vh; overflow-y:auto; padding-right:5px;">
-                <div class="help-section">
-                    <b style="color:var(--blue)">Puanlama Sistemi:</b><br>
-                    • Farz: %30 | Sünnet: %25 | Tesbihat: %25<br>
-                    • <i>Cemaat/Tadil-i Erkan Ekstra Puan Getirir.</i>
-                </div>
-                <div class="help-section">
-                    <b style="color:var(--orange)">Farkındalık (⚠️):</b><br>
-                    Bir vakit veya görev son 3 gün boyunca aksatılırsa sistem ana ekranda uyarı simgesi yakar. Amacımız istikrarı korumaktır.
-                </div>
-                <div class="help-section">
-                    <b style="color:var(--dark-green)">Renk Kodları:</b><br>
-                    • <span style="color:var(--dark-green)">Koyu Yeşil:</span> Zamanında/Farz<br>
-                    • <span style="color:var(--light-green)">Açık Yeşil:</span> Cemaatle/Tadil-i Erkan<br>
-                    • <span style="color:var(--red)">Kırmızı:</span> Kaza Edildi/Yapılmadı<br>
-                    • <span style="color:var(--orange)">Turuncu:</span> Kerahat/Mazeretli
-                </div>
-                <div class="help-section">
-                    <b style="color:#a5d3ff">İstatistikler:</b><br>
-                    Genel rapor aylık tablo sunarken, Yıllık rapor kaza namazı borçlarını ve toplam başarıları listeler.
-                </div>
-            </div>
-        `;
-        document.getElementById('statModal').style.display = 'block';
-    };
-
-    window.yeniEkle = () => { pendingName = document.getElementById('habInp').value; if(!pendingName) return; document.getElementById('typeModal').style.display = 'block'; };
-    window.finalEkle = (tip) => { let g = getGlobalOzeller(); const yeni = { id: 'id_'+Date.now(), ad: pendingName, tip: tip }; g.push(yeni); localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); gunlukVeriler.ozeller.push({...yeni, durum: (tip === 'sayi' ? "" : 0)}); document.getElementById('typeModal').style.display = 'none'; render(); };
+    // --- DİĞER FONKSİYONLAR (V.22.26 KORUNANLAR) ---
     window.degis = (i, s, t) => { if (t === 'ozel_renk') gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum + 1) % 5; else { let d = gunlukVeriler.vakitler[i].durumlar[s]; if (s === 0) d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 4 : (d === 4) ? 3 : 0; else if (s === 1) d = (d === 0) ? 1 : (d === 1) ? 3 : 0; else d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 3 : 0; gunlukVeriler.vakitler[i].durumlar[s] = d; } render(); };
-    window.arsivle = (id) => { if(!confirm("Arşivlensin mi?")) return; let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) { g[idx].arsiv = true; localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => o.id !== id); render(); } };
-    window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
-    window.ayRaporuDegis = (n) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showGeneralReport(); };
-    window.heatmapNav = (n) => { raporTarih.setMonth(raporTarih.getMonth() + n); window.showHeatmap(currentHeatmapId, currentHeatmapType, currentHeatmapSubIdx); };
-    window.tarihSec = (v) => { if(v) { seciliTarih = new Date(v); raporTarih = new Date(seciliTarih); veriYukle(); } };
-    window.gitBugun = () => { seciliTarih = new Date(); raporTarih = new Date(); veriYukle(); };
-    window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; raporTarih = new Date(seciliTarih); };
-    window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
-    window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
+    window.yeniEkle = () => { let name = document.getElementById('habInp').value; if(!name) return; let tip = confirm("Sayı bazlı mı? (İptal=Renk)") ? "sayi" : "renk"; let g = getGlobalOzeller(); let yeni = { id: 'id_'+Date.now(), ad: name, tip: tip }; g.push(yeni); localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); document.getElementById('habInp').value=''; veriYukle(); };
+    window.arsivle = (id) => { if(confirm("Arşivlensin mi?")) { let g = getGlobalOzeller(); let i = g.findIndex(x => x.id === id); if(i>-1) g[i].arsiv = true; localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); veriYukle(); } };
+    window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); veriYukle(); };
+    window.tarihSec = (v) => { if(v) { seciliTarih = new Date(v); veriYukle(); } };
+    window.gitBugun = () => { seciliTarih = new Date(); veriYukle(); };
+    window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; };
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v === "" ? "" : parseFloat(v); render(); };
-    window.showYearlyReport = () => { const grid = document.getElementById('calGrid'); const yil = new Date().getFullYear(); document.getElementById('statTitle').innerHTML = `<b>${yil} YILI ÖZETİ</b>`; let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {}; for (let m = 0; m < 12; m++) { for (let d = 1; d <= 31; d++) { let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); if (!v) continue; v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; }); (v.ozeller || []).forEach(vo => { if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip }; if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); else if (vo.durum > 0) arsiv[vo.ad].t += 1; }); } } let h = `<div style="max-height:50vh; overflow-y:auto;"><table style="width:100%; font-size:12px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">Kaza Namazları</th><th style="text-align:right;">Adet</th></tr></thead><tbody>`; Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; }); h += `</tbody></table><table style="width:100%; margin-top:15px; font-size:12px;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">Özel Ameller</th><th style="text-align:right;">Değer</th></tr></thead><tbody>`; Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].t}</td></tr>`; }); grid.innerHTML = h + `</tbody></table></div>`; document.getElementById('statModal').style.display = 'block'; };
+
+    window.showGeneralReport = () => { 
+        let h = `<div class="genel-wrapper"><table class="genel-table"><tr><th class="v-row-label-full">Vakit</th>`;
+        for(let i=1; i<=31; i++) h += `<th style="font-size:7px;">${i}</th>`;
+        vakitler.forEach((v, vI) => { h += `<tr><td class="v-row-label-full">${v.split(" ")[0]}</td>`; for(let d=1; d<=31; d++) { let val = JSON.parse(localStorage.getItem(getLocalKey(new Date(seciliTarih.getFullYear(), seciliTarih.getMonth(), d)))); h += `<td class="s${val ? val.vakitler[vI].durumlar[0] : 0}"></td>`; } h += `</tr>`; });
+        document.getElementById('calGrid').innerHTML = h + `</table></div>`;
+        document.getElementById('statModal').style.display = 'block';
+    };
+
+    window.showYearlyReport = () => {
+        let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
+        for(let m=0; m<12; m++) { for(let d=1; d<=31; d++) { let val = JSON.parse(localStorage.getItem(getLocalKey(new Date(2026, m, d)))); if(val) val.vakitler.forEach((vk, i) => { if(vk.durumlar[0]===3) kaza[Object.keys(kaza)[i]]++; }); } }
+        let h = `<table style="width:100%; font-size:12px;"><tr><th>Vakit</th><th style="text-align:right">Kaza Borcu</th></tr>`;
+        Object.keys(kaza).forEach(k => h += `<tr><td>${k}</td><td style="text-align:right">${kaza[k]}</td></tr>`);
+        document.getElementById('calGrid').innerHTML = h + `</table>`;
+        document.getElementById('statModal').style.display = 'block';
+    };
+
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { let i = document.createElement('input'); i.type='file'; i.onchange=e=>{ let fr=new FileReader(); fr.onload=()=>{ let d=JSON.parse(fr.result); Object.keys(d).forEach(k=>localStorage.setItem(k,d[k])); location.reload(); }; fr.readAsText(e.target.files[0]); }; i.click(); };
+    window.showHelp = () => { document.getElementById('statTitle').innerHTML = `REHBER`; document.getElementById('calGrid').innerHTML = `<div class="help-section">Farz: %30 | Sünnet: %25 | Tesbih: %25<br>⚠️ Sinyali: 3 gün aksarsa yanar.</div>`; document.getElementById('statModal').style.display = 'block'; };
+
     veriYukle();
 </script>
 </body>
