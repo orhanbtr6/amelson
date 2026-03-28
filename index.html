@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0b3d59">
-    <title>Amel Defteri V.22.35</title>
+    <title>Amel Defteri V.22.23 (Güncel)</title>
     <style>
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; --today-border: #666666; }
         * { box-sizing: border-box; }
@@ -47,17 +47,14 @@
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-radius: 15px 15px 0 0; }
         .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; display: block; text-align: center; cursor: pointer; }
         .is-today-cell { outline: 2px solid var(--today-border); outline-offset: -2px; }
-        
-        /* Modern Kapat Butonu */
-        .close-btn-bottom { display: block; width: 100%; padding: 12px; margin-top: 20px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; transition: 0.3s; }
-        .close-btn-bottom:active { background: rgba(255,255,255,0.2); transform: scale(0.98); }
+
+        /* Madde 2: Kapat butonu stili */
+        .close-btn-bottom { display: block; width: 100%; padding: 12px; margin-top: 20px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; }
     </style>
 </head>
-<body id="swipeArea">
-
-<div class="container">
+<body id="swipeTarget"> <div class="container">
     <div class="main-title-container" onclick="window.gitBugun()">
-        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.35</span>
+        <span class="main-title">Amel Defteri</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.22.23+</span>
     </div>
     <div class="nav-header">
         <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
@@ -98,52 +95,48 @@
     let raporTarih = new Date();
     let gunlukVeriler = {};
 
-    // --- SWIPE SİSTEMİ (Madde 3) ---
+    // Madde 3: Sağa Sola Kaydırma (Swipe)
     let touchStartX = 0;
-    const swipeArea = document.getElementById('swipeArea');
-    swipeArea.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
-    swipeArea.addEventListener('touchend', e => {
+    document.getElementById('swipeTarget').addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, false);
+    document.getElementById('swipeTarget').addEventListener('touchend', e => {
         let touchEndX = e.changedTouches[0].screenX;
         let diff = touchStartX - touchEndX;
-        // Eğer modal açık değilse ve tablo içinde kaydırma yapılmıyorsa
-        if (document.getElementById('statModal').style.display !== 'block' && Math.abs(diff) > 70) {
-            if (diff > 0) degistirTarih(1); // Sola kaydırma -> Sonraki gün
-            else degistirTarih(-1); // Sağa kaydırma -> Önceki gün
+        if (Math.abs(diff) > 80 && e.target.closest('.genel-wrapper') === null) {
+            if (diff > 0) degistirTarih(1); else degistirTarih(-1);
         }
-    });
+    }, false);
 
     function getLocalKey(t) { return `amel_${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
     function getGlobalOzeller() { return JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; }
     function isTodayCheck(d, m, y) { let today = new Date(); return d === today.getDate() && m === today.getMonth() && y === today.getFullYear(); }
     function isFuture(targetDate = seciliTarih) { let today = new Date(); today.setHours(0,0,0,0); let st = new Date(targetDate); st.setHours(0,0,0,0); return st > today; }
 
-    // --- UYARI DETAY PENCERESİ (Madde 1) ---
+    // Madde 1: Uyarılara tıklandığında eksikleri bildiren pencere
     window.showVakitDetail = (e, vIdx) => {
         e.stopPropagation();
-        const vAd = vakitler[vIdx];
-        let alertData = getVakitWarning(vIdx);
-        if(!alertData) return;
-
-        document.getElementById('statTitle').innerHTML = `⚠️ EKSİKLİK BİLDİRİMİ<br><span style='font-size:12px; color:white;'>${vAd}</span>`;
-        let msg = `<div style="padding:10px; font-size:13px; line-height:1.6;">`;
-        msg += `<p style="color:var(--orange); text-align:center; font-weight:bold;">Son 2 gündür şu alanlar boş:</p><hr style="opacity:0.1">`;
+        let history = [];
+        for(let i=1; i<=2; i++) {
+            let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
+            let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
+            history.push({t: d, v: val ? val.vakitler[vIdx].durumlar : [0,0,0]});
+        }
         
-        alertData.history.forEach((gunDurumlar, i) => {
-            let tarihLabel = i === 0 ? "Dün" : "Evvelsi Gün";
+        document.getElementById('statTitle').innerHTML = `⚠️ ${vakitler[vIdx]} Eksikleri`;
+        let h = `<div style="padding:10px; font-size:13px;">`;
+        history.forEach(item => {
             let eksikler = [];
-            gunDurumlar.forEach((durum, dIdx) => { if(durum === 0) eksikler.push(basliklar[dIdx]); });
-            if(eksikler.length > 0) {
-                msg += `<p><b>${tarihLabel}:</b> ${eksikler.join(', ')}</p>`;
-            }
+            item.v.forEach((durum, idx) => { if(durum === 0) eksikler.push(basliklar[idx]); });
+            h += `<div style="margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px;">
+                    <b>${item.t.toLocaleDateString('tr-TR', {day:'numeric', month:'short'})}:</b> ${eksikler.length > 0 ? eksikler.join(", ") : "Eksik yok"}
+                  </div>`;
         });
-        msg += `</div>`;
-        
-        document.getElementById('calGrid').innerHTML = msg;
+        h += `</div>`;
+        document.getElementById('calGrid').innerHTML = h;
         document.getElementById('statModal').style.display = 'block';
     };
 
     function getVakitWarning(vIdx) {
-        if(isFuture()) return null;
+        if(isFuture()) return false;
         let history = [];
         for(let i=1; i<=2; i++) {
             let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
@@ -152,10 +145,9 @@
         }
         let alert = false;
         for(let j=0; j<3; j++) { if(history[0][j] === 0 && history[1][j] === 0) alert = true; }
-        return alert ? {history} : null;
+        return alert;
     }
 
-    // --- TEMEL FONKSİYONLAR (V.22.23 Koruması) ---
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
@@ -204,7 +196,7 @@
         });
     }
 
-    // --- RAPORLAMA FONKSİYONLARI ---
+    // Isı haritası ve raporlar - V.22.23 Orijinal Fonksiyonlar
     window.showGeneralReport = () => {
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
@@ -252,26 +244,34 @@
     window.showYearlyReport = () => {
         const yil = new Date().getFullYear();
         document.getElementById('statTitle').innerHTML = `<b>${yil} YILI ÖZETİ</b>`;
-        let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
+        let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {};
         for (let m = 0; m < 12; m++) {
             for (let d = 1; d <= 31; d++) {
                 let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d))));
-                if (v) v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[vakitler[i].split(" ")[0]]++; });
+                if (!v) continue;
+                v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; });
+                (v.ozeller || []).forEach(vo => {
+                    if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip };
+                    if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0);
+                    else if (vo.durum > 0) arsiv[vo.ad].t += 1;
+                });
             }
         }
-        let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px;">`;
-        Object.keys(kaza).forEach(k => { h += `<div style="background:rgba(231,76,60,0.1); padding:10px; border-radius:10px; text-align:center; border:1px solid rgba(231,76,60,0.2);"><div style="font-size:10px; opacity:0.7;">${k}</div><div style="font-size:18px; font-weight:bold; color:var(--red);">${kaza[k]}</div></div>`; });
-        document.getElementById('calGrid').innerHTML = h + `</div>`;
+        let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; font-size:12px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">Kaza Namazları</th><th style="text-align:right;">Adet</th></tr></thead><tbody>`;
+        Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
+        h += `</tbody></table><table style="width:100%; font-size:12px; margin-top:20px;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">Özel Ameller</th><th style="text-align:right;">Toplam</th></tr></thead><tbody>`;
+        Object.keys(arsiv).forEach(a => { h += `<tr><td>${a}</td><td style="text-align:right;">${arsiv[a].t} ${arsiv[a].tip==='sayi'?'':'Adet'}</td></tr>`; });
+        h += `</tbody></table></div>`;
+        document.getElementById('calGrid').innerHTML = h;
         document.getElementById('statModal').style.display = 'block';
     };
 
     window.showHelp = () => {
         document.getElementById('statTitle').innerHTML = `<b>📖 REHBER</b>`;
-        document.getElementById('calGrid').innerHTML = `<div style="font-size:12px; line-height:1.5; padding:10px;"><p>• <b>Koyu Yeşil:</b> Vaktinde</p><p>• <b>Açık Yeşil:</b> Cemaatle</p><p>• <b>Turuncu:</b> Kaza</p><p>• <b>Kırmızı:</b> Kazaya Kaldı</p><hr style="opacity:0.1"><p>• Sağa/Sola kaydırarak günler arası geçiş yapabilirsiniz.</p><p>• ⚠️ simgesine tıklayarak eksikleri görebilirsiniz.</p></div>`;
+        document.getElementById('calGrid').innerHTML = `<div style="font-size:12px; line-height:1.5;"><p><b style="color:var(--light-green)">Açık Yeşil:</b> Cemaatle</p><p><b style="color:var(--dark-green)">Koyu Yeşil:</b> Vaktinde</p><p><b style="color:var(--orange)">Turuncu:</b> Kaza</p><p><b style="color:var(--red)">Kırmızı:</b> Kazaya Bırakılmış</p></div>`;
         document.getElementById('statModal').style.display = 'block';
     };
 
-    // --- DİĞER FONKSİYONLAR ---
     window.yeniEkle = () => { let n = document.getElementById('habInp').value; if(!n) return; let t = confirm("Sayısal amel mi? (İptal=İşaretleme)") ? 'sayi' : 'renk'; let g = getGlobalOzeller(); g.push({ id: 'id_'+Date.now(), ad: n, tip: t }); localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); veriYukle(); document.getElementById('habInp').value=''; };
     window.degis = (i, s, t) => { if (t === 'ozel_renk') gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum + 1) % 5; else { let d = gunlukVeriler.vakitler[i].durumlar[s]; if (s === 0) d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 4 : (d === 4) ? 3 : 0; else if (s === 1) d = (d === 0) ? 1 : (d === 1) ? 3 : 0; else d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 3 : 0; gunlukVeriler.vakitler[i].durumlar[s] = d; } render(); };
     window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
