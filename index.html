@@ -222,25 +222,23 @@
             let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
             if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
             if (s > 0) p += 25; if (t === 1 || t === 2) p += 25;
-            let anyInput = (f > 0 || s > 0 || t > 0);
-            let bCol = anyInput ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)";
-            let statusText = anyInput ? (p <= 30 ? "EKSİK" : (p <= 80 ? "UYGUN" : (p <= 90 ? "TAMAMLANDI" : "BAŞARILI"))) : "BEKLEMEDE";
-            if (f === 4) { bCol = "var(--orange)"; statusText = "DİKKAT"; }
+            let bCol = (f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)";
+            
+            // Uyarı verisini al
             let wData = getWarningData(vIdx);
             let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
+            
             vDiv.innerHTML += `<div class="habit-card">
                 <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
-            
-// Yeni hali
-${w ? `<span class="warning-blink" onclick="window.showVDetail(event, ${vIdx})" title="Detay için tıkla">⚠️</span>` : ''}
-                    </div>
+                    ${wData ? `<span class="warning-blink" onclick="window.showVDetail(event, ${vIdx})">⚠️</span>` : ''}
+                    <span class="vakit-ad">${vakitler[vIdx]}</span>
+                </div>
                 <div class="circles-row">
                     ${basliklar.map((b, bI) => `<div style="text-align:center"><div class="circle s${v.durumlar[bI]}" onclick="window.degis(${vIdx}, ${bI}, 'vakit')"></div><span class="label-text" onclick="window.showHeatmap(${vIdx}, 'vakit_sub', ${bI})">${b}</span></div>`).join('')}
                 </div>
                 <div class="progress-zone">
                     <div style="font-size:11px; font-weight:bold;">%${p}</div>
                     <div class="progress-bg"><div class="progress-bar" style="width:${p}%; background:${bCol}"></div></div>
-                    <div class="status-badge" style="color:${bCol}">${statusText}</div>
                 </div>
             </div>`;
         });
