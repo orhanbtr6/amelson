@@ -131,6 +131,21 @@
         }
         xS = null;
     }
+// ⚠️ Tıklanınca açılan detay penceresi
+    window.showVDetail = (e, vIdx) => {
+        e.stopPropagation(); // Kartın ısı haritasını açmasını engelle
+        let res = "";
+        for(let i=1; i<=2; i++){
+            let d = new Date(seciliTarih); d.setDate(d.getDate()-i);
+            let v = JSON.parse(localStorage.getItem(getLocalKey(d)));
+            // Son 2 günün eksiklerini bul
+            let eksikler = v ? v.vakitler[vIdx].durumlar.map((s,idx)=>s===0?basliklar[idx]:null).filter(n=>n) : ["Kayıt Yok"];
+            res += `<p style='border-bottom:1px solid rgba(255,255,255,0.1); padding:5px;'><b>${d.getDate()}/${d.getMonth()+1}:</b> ${eksikler.length?eksikler.join(", "):"Eksik Yok"}</p>`;
+        }
+        document.getElementById('statTitle').innerText = vakitler[vIdx] + " Uyarı Sebebi";
+        document.getElementById('calGrid').innerHTML = `<div style='font-size:13px; text-align:left;'>Bu vakit son 2 gündür aksatıldığı için uyarı veriliyor:<br><br>${res}</div>`;
+        document.getElementById('statModal').style.display = 'block';
+    }
     const vakitler = ["Sabah Namazı", "Öğle Namazı", "İkindi Namazı", "Akşam Namazı", "Yatsı Namazı"];
     const basliklar = ["Farz", "Sünnet", "Tesbihat"];
     let seciliTarih = new Date();
@@ -215,8 +230,10 @@
             let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
             vDiv.innerHTML += `<div class="habit-card">
                 <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
-                    ${wData ? `<span class="warning-blink">⚠️</span>` : ''}<span class="vakit-ad">${vakitler[vIdx]}</span>
-                </div>
+            
+// Yeni hali
+${w ? `<span class="warning-blink" onclick="window.showVDetail(event, ${vIdx})" title="Detay için tıkla">⚠️</span>` : ''}
+                    </div>
                 <div class="circles-row">
                     ${basliklar.map((b, bI) => `<div style="text-align:center"><div class="circle s${v.durumlar[bI]}" onclick="window.degis(${vIdx}, ${bI}, 'vakit')"></div><span class="label-text" onclick="window.showHeatmap(${vIdx}, 'vakit_sub', ${bI})">${b}</span></div>`).join('')}
                 </div>
