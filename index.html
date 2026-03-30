@@ -365,7 +365,12 @@
     window.heatmapNav = (n) => { raporTarih.setMonth(raporTarih.getMonth() + n); window.showHeatmap(currentHeatmapId, currentHeatmapType, currentHeatmapSubIdx); };
     window.tarihSec = (v) => { if(v) { seciliTarih = new Date(v); raporTarih = new Date(seciliTarih); veriYukle(); } };
     window.gitBugun = () => { seciliTarih = new Date(); raporTarih = new Date(); veriYukle(); };
-    window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; raporTarih = new Date(seciliTarih); };
+    window.closeModal = () => { 
+    document.getElementById('statModal').style.display = 'none'; 
+    // Pencereyi kapatırken stil sınıfını temizliyoruz ki bir sonraki açılış karışmasın
+    document.querySelector('#statModal .modal-content').className = 'modal-content';
+    raporTarih = new Date(seciliTarih); 
+};
     window.openSettings = () => { document.getElementById('settingsModal').style.display = 'block'; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
     window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v === "" ? "" : parseFloat(v); render(); };
