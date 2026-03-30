@@ -45,8 +45,28 @@
         .ozel-card { background: var(--card); padding: 10px 4px; border-radius: 10px; text-align: center; position: relative; }
         .ozel-name { font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px; cursor: pointer; color: #a5d3ff; }
         .is-today-cell { outline: 2px solid var(--today-border); outline-offset: -2px; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 2000; overflow-y: auto; padding: 20px 10px; }
-        .modal-content { background: #082d42; margin: 0 auto; padding: 15px; width: 100%; max-width: 480px; border-radius: 15px; border: 1px solid var(--blue); position: relative; }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); /* Arka planı biraz daha şeffaf yaptık */
+            z-index: 2000; 
+            display: none; 
+            align-items: center; /* Dikeyde ortala */
+            justify-content: center; /* Yatayda ortala */
+            padding: 20px;
+        }
+        .modal-content { 
+            background: #082d42; 
+            padding: 20px; 
+            width: 90%; /* Mobilde kenarlardan boşluk bırakır */
+            max-width: 400px; /* Çok genişlemesini engeller */
+            border-radius: 20px; 
+            border: 1px solid var(--blue); 
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* Derinlik hissi */
+        }
         .close-x { position: absolute; top: 10px; right: 10px; background: var(--red); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
         .footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: #051a26; padding: 12px; display: flex; align-items: center; gap: 8px; z-index: 1000; border-radius: 15px 15px 0 0; }
         input[type="text"] { flex: 1; border-radius: 20px; border: none; padding: 12px; background: rgba(255,255,255,0.1); color: white; outline: none; }
@@ -144,7 +164,7 @@
         }
         document.getElementById('statTitle').innerText = vakitler[vIdx] + " Uyarı Sebebi";
         document.getElementById('calGrid').innerHTML = `<div style='font-size:13px; text-align:left;'>Bu vakit son 2 gündür aksatıldığı için uyarı veriliyor:<br><br>${res}</div>`;
-        document.getElementById('statModal').style.display = 'block';
+        document.getElementById('statModal').style.display = 'flex';
     }
 // Özel Amel Uyarı Detayı
     window.showODetail = (e, oIdx) => {
@@ -152,7 +172,7 @@
         let ozel = gunlukVeriler.ozeller[oIdx];
         document.getElementById('statTitle').innerText = ozel.ad + " Uyarı Sebebi";
         document.getElementById('calGrid').innerHTML = `<div style='font-size:13px; text-align:left;'>Bu amel son 2 gündür boş geçildiği için dikkat çekmek amacıyla yanıp sönüyor.</div>`;
-        document.getElementById('statModal').style.display = 'block';
+        document.getElementById('statModal').style.display = 'flex';
     }
     const vakitler = ["Sabah Namazı", "Öğle Namazı", "İkindi Namazı", "Akşam Namazı", "Yatsı Namazı"];
     const basliklar = ["Farz", "Sünnet", "Tesbihat"];
