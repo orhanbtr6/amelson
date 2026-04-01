@@ -383,12 +383,7 @@
     raporTarih = new Date(seciliTarih); 
 };
     window.sesDinle = () => {
-// Tarayıcı desteği kontrolü
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            alert("Maalesef bu cihaz/uygulama ses tanımayı desteklemiyor. Chrome ile açmayı deneyin.");
-            return;
-        }
+
         
         const recognition = new SpeechRecognition();
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
