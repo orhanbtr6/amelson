@@ -382,10 +382,7 @@
     document.querySelector('#statModal .modal-content').className = 'modal-content';
     raporTarih = new Date(seciliTarih); 
 };
-    window.sesDinle = () => {
-
-        
-        const recognition = new SpeechRecognition();
+   window.sesDinle = () => {
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'tr-TR';
         const btn = document.getElementById('micBtn');
