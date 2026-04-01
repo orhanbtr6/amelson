@@ -382,13 +382,27 @@
     document.querySelector('#statModal .modal-content').className = 'modal-content';
     raporTarih = new Date(seciliTarih); 
 };
-   window.sesDinle = () => {
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    window.sesDinle = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Tarayıcı desteği yok.");
+            return;
+        }
+        
+        const recognition = new SpeechRecognition();
         recognition.lang = 'tr-TR';
         const btn = document.getElementById('micBtn');
         
-        recognition.onstart = () => { btn.style.transform = "scale(1.3)"; btn.innerText = "🔴"; };
-        recognition.onend = () => { btn.style.transform = "scale(1)"; btn.innerText = "🎤"; };
+        recognition.onstart = () => { 
+            btn.style.transform = "scale(1.3)"; 
+            btn.innerText = "🔴"; 
+        };
+        
+        recognition.onend = () => { 
+            btn.style.transform = "scale(1)"; 
+            btn.innerText = "🎤"; 
+        };
+
         recognition.onresult = (event) => {
             const soz = event.results[0][0].transcript.toLowerCase();
             console.log("Duyulan:", soz);
@@ -405,18 +419,21 @@
                 const cemaatKelimeleri = ["cemaat", "cami", "toplu"];
 
                 if (onayKelimeleri.some(k => soz.includes(k))) {
-                    gunlukVeriler.vakitler[vIdx].durumlar[0] = 1; // Vaktinde
-                    render(); 
-                    // Alert kaldırıldı, sadece konsola yazıyor
+                    gunlukVeriler.vakitler[vIdx].durumlar[0] = 1; 
+                    render();
                 } 
                 else if (cemaatKelimeleri.some(k => soz.includes(k))) {
-                    gunlukVeriler.vakitler[vIdx].durumlar[0] = 2; // Cemaat
+                    gunlukVeriler.vakitler[vIdx].durumlar[0] = 2; 
                     render();
                 }
             } else {
-                document.getElementById('habInp').value = soz;
+                const inputAlan = document.getElementById('habInp');
+                if(inputAlan) inputAlan.value = soz;
             }
         };
+        
+        recognition.start();
+    };
     window.openSettings = () => { 
         document.getElementById('settingsModal').style.display = 'flex'; 
         // Butonun konumunu gerçek duruma göre güncelle (Hatanın çözümü):
