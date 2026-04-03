@@ -143,15 +143,14 @@
 
 <div id="statModal" class="modal">
     <div class="modal-content">
-        <button class="btn-close-new" onclick="closeModal()">Kapat</button>
         <div id="statTitle" style="text-align:center; font-weight:bold; margin-bottom:15px; color:#a5d3ff; text-transform:uppercase;"></div>
         <div id="calGrid"></div>
+        <button class="btn-close-new" onclick="closeModal()">Kapat</button>
     </div>
 </div>
 
 <div id="typeModal" class="modal">
     <div class="modal-content">
-        <button class="btn-close-new" onclick="closeModal()">Kapat</button>
         <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Tipi Seçin</h3>
         <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
         <div class="type-select-btns">
@@ -159,11 +158,12 @@
             <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
         </div>
     </div>
+    <button class="btn-close-new" onclick="closeModal()">Kapat</button>
 </div>
 
 <div id="settingsModal" class="modal">
     <div class="modal-content">
-        <button class="btn-close-new" onclick="closeModal()">Kapat</button>
+        
         <h3 style="text-align:center; color:var(--blue);">Ayarlar</h3>
        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
             <span style="font-size:14px; font-weight:bold;">Farkındalık Sinyalleri (⚠️)</span>
@@ -175,6 +175,7 @@
         <button class="nav-btn" style="width:100%; margin-bottom:10px;" onclick="exportData()">💾 Yedekle</button>
         <button class="nav-btn" style="width:100%;" onclick="importData()">📂 Geri Yükle</button>
     </div>
+    <button class="btn-close-new" onclick="closeModal()">Kapat</button>
 </div>
 
 <div class="footer">
