@@ -162,6 +162,20 @@
     </div>
 </div>
 
+<div id="typeModal" class="modal">
+    <div class="modal-content">
+        <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Tipi Seçin</h3>
+        <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
+        <div class="type-select-btns">
+            <div class="type-btn" onclick="finalEkle('renk')">🔵 Renk Bazlı (Daire)</div>
+            <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
+        </div>
+        <div style="margin-top: 25px;">
+            <button class="btn-close-new" onclick="document.getElementById('typeModal').style.display='none'">VAZGEÇ</button>
+        </div>
+    </div>
+</div>
+
 <div id="settingsModal" class="modal">
     <div class="modal-content">
         <button class="close-x" onclick="closeSettings()">✕</button>
