@@ -469,6 +469,11 @@
     window.showYearlyReport = () => { const grid = document.getElementById('calGrid'); const yil = new Date().getFullYear(); document.getElementById('statTitle').innerHTML = `<b>${yil} YILI ÖZETİ</b>`; let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {}; for (let m = 0; m < 12; m++) { for (let d = 1; d <= 31; d++) { let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); if (!v) continue; v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; }); (v.ozeller || []).forEach(vo => { if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip }; if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); else if (vo.durum > 0) arsiv[vo.ad].t += 1; }); } } let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; font-size:12px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">Kaza Namazları</th><th style="text-align:right;">Adet</th></tr></thead><tbody>`; Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; }); h += `</tbody></table><table style="width:100%; margin-top:15px; font-size:12px;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">Özel Ameller</th><th style="text-align:right;">Değer</th></tr></thead><tbody>`; Object.keys(arsiv).sort().forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${arsiv[k].t} ${arsiv[k].tip==='sayi'?'':'G'}</td></tr>`; }); grid.innerHTML = h + `</tbody></table></div>`; document.getElementById('statModal').style.display = 'flex'; };
     
     veriYukle();
+    function tumModallariKapat() {
+    // Sayfadaki tüm modal sınıfına sahip elementleri bul ve gizle
+    const modallar = document.querySelectorAll('.modal');
+    modallar.forEach(m => m.style.display = 'none');
+}
 </script>
 </body>
 </html>
