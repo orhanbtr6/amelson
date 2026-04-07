@@ -392,7 +392,25 @@
     };
 
     window.yeniEkle = () => { pendingName = document.getElementById('habInp').value; if(!pendingName) return; document.getElementById('pendingAmelAd').innerText = `"${pendingName}" için tip seçiniz:`; document.getElementById('typeModal').style.display = 'flex'; };
-    window.finalEkle = (tip) => { let g = getGlobalOzeller(); const yeni = { id: 'id_'+Date.now(), ad: pendingName, tip: tip }; g.push(yeni); localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); document.getElementById('habInp').value=""; gunlukVeriler.ozeller.push({...yeni, durum: (tip === 'sayi' ? "" : 0)}); document.getElementById('typeModal').style.display = 'none'; render(); };
+   window.finalEkle = (tip) => { 
+    let g = getGlobalOzeller(); 
+    // Tarihi YYYY-MM-DD formatında alıyoruz ki kolay kıyaslayalım
+    const bugunStr = seciliTarih.toISOString().split('T')[0]; 
+    
+    const yeni = { 
+        id: 'id_'+Date.now(), 
+        ad: pendingName, 
+        tip: tip,
+        eklenmeTarihi: bugunStr // 👈 Bu satırı ekledik
+    }; 
+    
+    g.push(yeni); 
+    localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); 
+    document.getElementById('habInp').value=""; 
+    gunlukVeriler.ozeller.push({...yeni, durum: (tip === 'sayi' ? "" : 0)}); 
+    document.getElementById('typeModal').style.display = 'none'; 
+    render(); 
+};
     window.degis = (i, s, t) => { if (t === 'ozel_renk') gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum + 1) % 5; else { let d = gunlukVeriler.vakitler[i].durumlar[s]; if (s === 0) d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 4 : (d === 4) ? 3 : 0; else if (s === 1) d = (d === 0) ? 1 : (d === 1) ? 3 : 0; else d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 3 : 0; gunlukVeriler.vakitler[i].durumlar[s] = d; } render(); };
     window.arsivle = (id) => { if(!confirm("Arşivlensin mi?")) return; let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) { g[idx].arsiv = true; localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => o.id !== id); render(); } };
     window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
