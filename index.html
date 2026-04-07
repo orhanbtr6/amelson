@@ -521,14 +521,14 @@ h += `<tr>
     modallar.forEach(m => m.style.display = 'none');
 }
 window.tamamenSil = (amelAd) => {
-    if(confirm(`'${amelAd}' kaydı her yerden silinecek. Emin misiniz?`)) {
+    if(confirm(`'${amelAd}' her yerden silinecek. Emin misiniz?`)) {
         
-        // 1. Global listeyi temizle
+        // 1. ADIM: Global listeyi temizle
         let g = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
         g = g.filter(a => a.ad.trim() !== amelAd.trim());
         localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
 
-        // 2. Tüm geçmişi tara ve temizle (Derin Temizlik)
+        // 2. ADIM: Tüm hafızayı (geçmişi) tara ve temizle
         for (let i = 0; i < localStorage.length; i++) {
             let key = localStorage.key(i);
             if (key && key.startsWith('amel_')) {
@@ -540,20 +540,24 @@ window.tamamenSil = (amelAd) => {
             }
         }
 
-        // --- KRİTİK NOKTA: SAYFAYI YENİLEME, SADECE EKRANI GÜNCELLE ---
+        // 3. ADIM: EKRANI ANINDA GÜNCELLE (Burası kritik!)
         
-        // Eğer o an ana ekrandaysak verileri tazele
+        // Önce ana sayfadaki değişkenleri tazele
         if (typeof veriYukle === "function") veriYukle(); 
-        
-        // Yıllık Rapor (Heatmap) penceresini anında güncellemek için:
-        // Önce raporu tekrar hesapla ve çiz
-        if (typeof showHeatmap === "function") {
-            showHeatmap(); 
-            // Not: showHeatmap fonksiyonun zaten içeriği 'statContent'e basıyor.
-            // Tekrar çağırdığımızda silinen amel listeden düşmüş olacak.
+
+        // Eğer Yıllık Rapor penceresi açıksa, içeriğini temizleyip yeniden çiz
+        const contentArea = document.getElementById('statContent');
+        if (contentArea) {
+            contentArea.innerHTML = ""; // Önce eski tabloyu bir boşaltalım
+            
+            // showHeatmap'i tekrar çağırarak güncel veriyi (silinmiş haliyle) bas
+            if (typeof showHeatmap === "function") {
+                showHeatmap(); 
+            }
         }
 
-        console.log(amelAd + " başarıyla her yerden kazındı.");
+        console.log(amelAd + " imha edildi.");
+        // alert koymuyoruz ki akış bozulmasın, anında gittiğini gör
     }
 }
 </script>
