@@ -523,12 +523,12 @@ h += `<tr>
 window.tamamenSil = (amelAd) => {
     if(confirm(`'${amelAd}' her yerden silinecek. Emin misiniz?`)) {
         
-        // 1. ADIM: Global listeyi temizle
+        // 1. Global listeyi temizle
         let g = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
         g = g.filter(a => a.ad.trim() !== amelAd.trim());
         localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
 
-        // 2. ADIM: Tüm hafızayı (geçmişi) tara ve temizle
+        // 2. Tüm geçmişi tara ve temizle
         for (let i = 0; i < localStorage.length; i++) {
             let key = localStorage.key(i);
             if (key && key.startsWith('amel_')) {
@@ -540,24 +540,17 @@ window.tamamenSil = (amelAd) => {
             }
         }
 
-        // 3. ADIM: EKRANI ANINDA GÜNCELLE (Burası kritik!)
+        // 3. ANINDA GÜNCELLEME SİHİRBBAZLIĞI
+        // Önce ana ekranı tazele
+        veriYukle(); 
         
-        // Önce ana sayfadaki değişkenleri tazele
-        if (typeof veriYukle === "function") veriYukle(); 
+        // Rapor modalını kapat ve 10 milisaniye sonra tekrar aç (Veriler sıfırlanmış olarak gelir)
+        closeModal(); 
+        setTimeout(() => {
+            showHeatmap();
+        }, 10);
 
-        // Eğer Yıllık Rapor penceresi açıksa, içeriğini temizleyip yeniden çiz
-        const contentArea = document.getElementById('statContent');
-        if (contentArea) {
-            contentArea.innerHTML = ""; // Önce eski tabloyu bir boşaltalım
-            
-            // showHeatmap'i tekrar çağırarak güncel veriyi (silinmiş haliyle) bas
-            if (typeof showHeatmap === "function") {
-                showHeatmap(); 
-            }
-        }
-
-        console.log(amelAd + " imha edildi.");
-        // alert koymuyoruz ki akış bozulmasın, anında gittiğini gör
+        console.log("İşlem tamam.");
     }
 }
 </script>
