@@ -341,29 +341,25 @@ function render() {
     
     const vDiv = document.getElementById('vakitList'); 
     vDiv.innerHTML = '';
-    
-    let cemaatVarMi = false; // Gün genelinde cemaat kontrolü
 
     gunlukVeriler.vakitler.forEach((v, vIdx) => {
         let p = 0; 
         const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
         
-        // YENİ PUAN MANTIĞI: Farz(1 veya 2) + Sünnet(1) + Tesbihat(1 veya 2) hepsi tamsa 100 puan
-        // v.durumlar[0] (Farz), [1] (Sünnet), [2] (Tesbihat)
+        // Bu vakit özelinde cemaat kontrolü
+        let buVakitCemaatMi = (f === 2);
+
+        // PUAN MANTIĞI: Farz + Sünnet + Tesbihat tam ise 100
         if ((f === 1 || f === 2) && s > 0 && (t === 1 || t === 2)) {
             p = 100;
         } else {
-            // Eğer hepsi tam değilse eski kademeli puan sistemin çalışır
             if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
             if (s > 0) p += 25; 
             if (t === 1 || t === 2) p += 25;
         }
 
-        // Cemaat Yıldızı Kontrolü: Herhangi bir vakitte Farz cemaatle (f === 2) kılınmış mı?
-        if (f === 2) cemaatVarMi = true;
-
-        // Çizgi Rengi: Cemaat varsa açık yeşil, yoksa senin eski renk skalası
-        let bCol = cemaatVarMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
+        // Renk: Sadece bu vakit cemaat ise açık yeşil, değilse eski sistem
+        let bCol = buVakitCemaatMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
         
         let wData = getWarningData(vIdx);
         let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
@@ -381,7 +377,7 @@ function render() {
                 <div class="progress-bg">
                     <div class="progress-bar" style="width:${p}%; background:${bCol}"></div>
                 </div>
-                ${cemaatVarMi ? `<span style="position:absolute; right:-2px; top:-8px; font-size:14px; color:#ffeb3b; text-shadow:0 0 3px #000;">⭐</span>` : ''}
+                ${buVakitCemaatMi ? `<span style="position:absolute; right:-2px; top:-8px; font-size:14px; color:#ffeb3b; text-shadow:0 0 3px #000;">⭐</span>` : ''}
             </div>
         </div>`;
     });
@@ -393,7 +389,7 @@ function render() {
         let wHtml = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
         oDiv.innerHTML += `<div class="ozel-card">${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span></div>`;
     });
-}
+} 
     window.showHeatmap = () => {
     const kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
     let arsiv = {};
