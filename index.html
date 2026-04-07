@@ -503,15 +503,15 @@
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { let i = document.createElement('input'); i.type='file'; i.onchange=e=>{ let fr=new FileReader(); fr.onload=()=>{ let d=JSON.parse(fr.result); Object.keys(d).forEach(k=>localStorage.setItem(k,d[k])); location.reload(); }; fr.readAsText(e.target.files[0]); }; i.click(); };
     window.showYearlyReport = () => { const grid = document.getElementById('calGrid'); const yil = new Date().getFullYear(); document.getElementById('statTitle').innerHTML = `<b>${yil} YILI ÖZETİ</b>`; let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {}; for (let m = 0; m < 12; m++) { for (let d = 1; d <= 31; d++) { let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); if (!v) continue; v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; }); (v.ozeller || []).forEach(vo => { if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip }; if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); else if (vo.durum > 0) arsiv[vo.ad].t += 1; }); } } let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; font-size:12px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">Kaza Namazları</th><th style="text-align:right;">Adet</th></tr></thead><tbody>`; Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; }); h += `</tbody></table><table style="width:100%; margin-top:15px; font-size:12px;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">Özel Ameller</th><th style="text-align:right;">Değer</th></tr></thead><tbody>`; Object.keys(arsiv).sort().forEach(k => {
-    h += `<tr>
-            <td style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">${k}</td>
-            <td style="text-align:right; border-bottom:1px solid rgba(255,255,255,0.05);">
-                <span style="font-weight:bold; color:var(--blue);">${arsiv[k].t}</span>
-                <span onclick="tamamenSil('${k}')" 
-                      style="cursor:pointer; margin-left:15px; color:var(--red); font-size:16px; padding:5px;" 
-                      title="Tamamen Sil">🗑️</span>
-            </td>
-          </tr>`;
+  // showHeatmap içindeki ilgili satırı bununla güncelle:
+h += `<tr>
+        <td style="padding:8px 0;">${k}</td>
+        <td style="text-align:right;">
+            ${arsiv[k].t} 
+            <span onclick="tamamenSil('${k.replace(/'/g, "\\'")}')" 
+                  style="cursor:pointer; margin-left:15px; color:var(--red); font-size:16px;">🗑️</span>
+        </td>
+      </tr>`;
 }); grid.innerHTML = h + `</tbody></table></div>`; document.getElementById('statModal').style.display = 'flex'; };
     
     veriYukle();
@@ -521,16 +521,25 @@
     modallar.forEach(m => m.style.display = 'none');
 }
     window.tamamenSil = (amelAd) => {
-    if(confirm(`'${amelAd}' ameli ve tüm geçmiş verileri tamamen silinecek. Emin misiniz?`)) {
-        let g = getGlobalOzeller();
-        // Global listeden bu isimdeki ameli temizle
-        g = g.filter(a => a.ad !== amelAd);
-        localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
+    if(confirm(`'${amelAd}' ameli ve tüm kayıtları tamamen silinecek. Emin misiniz?`)) {
+        // 1. Global listeyi al
+        let g = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
         
-        // Ekranı güncellemek için raporu tekrar tetikle veya kapat
-        alert("Amel tamamen silindi.");
-        closeModal(); 
-        render();
+        // 2. İsme göre filtrele (Tam eşleşme için trim ekledik)
+        const yeniListe = g.filter(a => a.ad.trim() !== amelAd.trim());
+        
+        // 3. Hafızaya yeni listeyi yaz
+        localStorage.setItem('amel_global_ozeller', JSON.stringify(yeniListe));
+        
+        // 4. Mevcut günün içindeki verilerden de temizle (Ekranın anlık düzelmesi için)
+        if (gunlukVeriler && gunlukVeriler.ozeller) {
+            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => o.ad.trim() !== amelAd.trim());
+        }
+
+        alert("İşlem Başarılı. Liste güncelleniyor...");
+        
+        // 5. KRİTİK: Sayfayı yenile ki tüm tarihlerden silindiği kesinleşsin
+        location.reload(); 
     }
 }
 </script>
