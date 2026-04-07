@@ -346,21 +346,23 @@ function render() {
         let p = 0; 
         const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
         
-        // Bu vakit özelinde cemaat kontrolü
+        // 1. BU VAKİT ÖZELİNDE CEMAAT KONTROLÜ
         let buVakitCemaatMi = (f === 2);
 
-        // PUAN MANTIĞI: Farz + Sünnet + Tesbihat tam ise 100
+        // 2. PUAN MANTIĞI: Farz + Sünnet + Tesbihat tam ise direkt 100 Puan
         if ((f === 1 || f === 2) && s > 0 && (t === 1 || t === 2)) {
             p = 100;
         } else {
+            // Tam değilse eski kademeli puan sistemin
             if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
             if (s > 0) p += 25; 
             if (t === 1 || t === 2) p += 25;
         }
 
-        // Renk: Sadece bu vakit cemaat ise açık yeşil, değilse eski sistem
+        // 3. RENK: Cemaat ise açık yeşil, değilse puan durumuna göre senin renklerin
         let bCol = buVakitCemaatMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
         
+        // Uyarı verilerini al (Senin orijinal kodun)
         let wData = getWarningData(vIdx);
         let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
         
@@ -386,8 +388,16 @@ function render() {
     oDiv.innerHTML = "";
     gunlukVeriler.ozeller.forEach((o, oIdx) => {
         let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
+        
         let wHtml = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
-        oDiv.innerHTML += `<div class="ozel-card">${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span></div>`;
+        
+        // Özel amellerin tıklama (Heatmap) özelliği korundu
+        oDiv.innerHTML += `<div class="ozel-card">
+            ${wHtml}
+            <b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>
+            ${ctrl}
+            <span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span>
+        </div>`;
     });
 } 
     window.showHeatmap = () => {
