@@ -520,31 +520,40 @@ h += `<tr>
     const modallar = document.querySelectorAll('.modal');
     modallar.forEach(m => m.style.display = 'none');
 }
-    window.tamamenSil = (amelAd) => {
-    if(confirm(`'${amelAd}' ameline ait TÜM GEÇMİŞ KAYITLAR silinecek. Bu işlem geri alınamaz! Emin misiniz?`)) {
+window.tamamenSil = (amelAd) => {
+    if(confirm(`'${amelAd}' kaydı her yerden silinecek. Emin misiniz?`)) {
         
-        // 1. ADIM: Global listeden sil (Gelecek günler için)
+        // 1. Global listeyi temizle
         let g = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
         g = g.filter(a => a.ad.trim() !== amelAd.trim());
         localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
 
-        // 2. ADIM: Tüm LocalStorage'ı tara (Geçmiş günler için)
-        // Bu döngü telefonun hafızasındaki tüm "amel_2026..." kayıtlarına bakar
+        // 2. Tüm geçmişi tara ve temizle (Derin Temizlik)
         for (let i = 0; i < localStorage.length; i++) {
             let key = localStorage.key(i);
-            if (key.startsWith('amel_')) {
+            if (key && key.startsWith('amel_')) {
                 let gunlukVeri = JSON.parse(localStorage.getItem(key));
                 if (gunlukVeri && gunlukVeri.ozeller) {
-                    // O günün içindeki bu özel ameli bul ve çıkar
                     gunlukVeri.ozeller = gunlukVeri.ozeller.filter(o => o.ad.trim() !== amelAd.trim());
-                    // Güncellenmiş günü geri kaydet
                     localStorage.setItem(key, JSON.stringify(gunlukVeri));
                 }
             }
         }
 
-        alert("Derin temizlik tamamlandı. Veritabanı güncellendi.");
-        location.reload(); // Her şeyi tazeleyip tertemiz açalım
+        // --- KRİTİK NOKTA: SAYFAYI YENİLEME, SADECE EKRANI GÜNCELLE ---
+        
+        // Eğer o an ana ekrandaysak verileri tazele
+        if (typeof veriYukle === "function") veriYukle(); 
+        
+        // Yıllık Rapor (Heatmap) penceresini anında güncellemek için:
+        // Önce raporu tekrar hesapla ve çiz
+        if (typeof showHeatmap === "function") {
+            showHeatmap(); 
+            // Not: showHeatmap fonksiyonun zaten içeriği 'statContent'e basıyor.
+            // Tekrar çağırdığımızda silinen amel listeden düşmüş olacak.
+        }
+
+        console.log(amelAd + " başarıyla her yerden kazındı.");
     }
 }
 </script>
