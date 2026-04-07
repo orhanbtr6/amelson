@@ -31,35 +31,7 @@
         .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; display: block; text-align: center; cursor: pointer; }
         .progress-zone { width: 85px; text-align: center; margin-left: 5px; }
         .progress-bg { background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; overflow: hidden; margin: 4px 0; }
-        .progress-bar { height: 100%; transition: width 0.3s;
-                      .progress-container {
-    position: relative;
-    width: 100%;
-    height: 10px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 5px;
-}
-
-.progress-bar {
-    height: 100%;
-    border-radius: 5px;
-    transition: width 0.3s, background 0.3s;
-}
-
-.cemaat-yildizi {
-    position: absolute;
-    top: -8px;
-    right: -5px;
-    color: #ffeb3b; /* Sarı yıldız */
-    font-size: 14px;
-    text-shadow: 0 0 5px rgba(0,0,0,0.5);
-}
-
-/* Cemaat aktifse çizgi rengi */
-.bg-cemaat {
-    background-color: #90ee90 !important; /* Açık yeşil */
-}
-                      }
+        .progress-bar { height: 100%; transition: width 0.3s; }
         .status-badge { font-size: 8px; font-weight: bold; padding: 2px 4px; border-radius: 4px; display: inline-block; text-transform: uppercase; }
         .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
         .genel-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; background: rgba(0,0,0,0.4); padding: 5px; }
@@ -334,105 +306,84 @@
     render();
 }
 
-function render() {
-    localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
-    document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
-    document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
+    function render() {
+        localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
+        document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+        document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
+        const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
+       gunlukVeriler.vakitler.forEach((v, vIdx) => {
+    let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
     
-    const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
+    // --- YENİ PUAN VE YILDIZ KONTROLÜ ---
+    const cemaatMi = (f === 2);
     
-    gunlukVeriler.vakitler.forEach((v, vIdx) => {
-        let p = 0; 
-        const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
-
-        // --- YENİ PUAN VE YILDIZ MANTIĞI ---
-        const cemaatMi = (f === 2);
-        
-        // Farz + Sünnet + Tesbihat tam ise skor 100
-        if ((f === 1 || f === 2) && s > 0 && (t === 1 || t === 2)) {
-            p = 100;
-        } else {
-            // Tam değilse orijinal puanlama sistemin
-            if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
-            if (s > 0) p += 25; if (t === 1 || t === 2) p += 25;
-        }
-
-        // Cemaatle ise açık yeşil, değilse orijinal renk skalası
-        let bCol = cemaatMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
-        // ----------------------------------
-
-        let wData = getWarningData(vIdx);
-        let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
-        
-        vDiv.innerHTML += `<div class="habit-card">
-            <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
-                ${wData ? `<span class="warning-blink" onclick="window.showVDetail(event, ${vIdx})">⚠️</span>` : ''}
-                <span class="vakit-ad">${vakitler[vIdx]}</span>
-            </div>
-            <div class="circles-row">
-                ${basliklar.map((b, bI) => `<div style="text-align:center"><div class="circle s${v.durumlar[bI]}" onclick="window.degis(${vIdx}, ${bI}, 'vakit')"></div><span class="label-text" onclick="window.showHeatmap(${vIdx}, 'vakit_sub', ${bI})">${b}</span></div>`).join('')}
-            </div>
-            <div class="progress-zone" style="position:relative;">
-                <div style="font-size:11px; font-weight:bold;">%${p}</div>
-                <div class="progress-bg">
-                    <div class="progress-bar" style="width:${p}%; background:${bCol}"></div>
-                </div>
-                ${cemaatMi ? `<span style="position:absolute; top:-10px; right:-2px; font-size:14px; color:#ffeb3b; text-shadow: 0 0 3px #000;">⭐</span>` : ''}
-            </div>
-        </div>`;
-    });
-
-    const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
-    gunlukVeriler.ozeller.forEach((o, oIdx) => {
-        let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-        let wHtml = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
-        oDiv.innerHTML += `<div class="ozel-card">${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span></div>`;
-    });
-} 
-    window.showHeatmap = () => {
-    const kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
-    let arsiv = {};
-    const yil = seciliTarih.getFullYear();
-    for (let m = 0; m < 12; m++) {
-        let gunSayisi = new Date(yil, m + 1, 0).getDate();
-        for (let d = 1; d <= gunSayisi; d++) {
-            const v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d))));
-            if (!v) continue;
-            v.vakitler.forEach((vk, i) => { if (vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; });
-            (v.ozeller || []).forEach(vo => {
-                if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip };
-                if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0);
-                else if (vo.durum > 0) arsiv[vo.ad].t += 1;
-            });
-        }
+    // Farz + Sünnet + Tesbihat (1 veya 2) tam ise 100 puan
+    if ((f === 1 || f === 2) && s > 0 && (t === 1 || t === 2)) {
+        p = 100;
+    } else {
+        // Tam değilse orijinal puanlama sistemin
+        if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
+        if (s > 0) p += 25; if (t === 1 || t === 2) p += 25;
     }
 
-    let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; font-size:12px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">Kaza Namazları</th><th style="text-align:right;">Adet</th></tr></thead><tbody>`;
-    Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
-    h += `</tbody></table><table style="width:100%; margin-top:15px; font-size:12px;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">Özel Ameller</th><th style="text-align:right;">Değer</th></tr></thead><tbody>`;
+    // Renk: Cemaat ise açık yeşil, değilse puan durumuna göre senin renklerin
+    let bCol = cemaatMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
+    // -----------------------------------     
+            // Uyarı verisini al
+            let wData = getWarningData(vIdx);
+            let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
+            
+            vDiv.innerHTML += `<div class="habit-card">
+    <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
+        ${wData ? `<span class="warning-blink" onclick="window.showVDetail(event, ${vIdx})">⚠️</span>` : ''}
+        <span class="vakit-ad">${vakitler[vIdx]}</span>
+    </div>
+    <div class="circles-row">
+        ${basliklar.map((b, bI) => `<div style="text-align:center"><div class="circle s${v.durumlar[bI]}" onclick="window.degis(${vIdx}, ${bI}, 'vakit')"></div><span class="label-text" onclick="window.showHeatmap(${vIdx}, 'vakit_sub', ${bI})">${b}</span></div>`).join('')}
+    </div>
+    <div class="progress-zone" style="position:relative;">
+        <div style="font-size:11px; font-weight:bold;">%${p}</div>
+        <div class="progress-bg">
+            <div class="progress-bar" style="width:${p}%; background:${bCol}"></div>
+        </div>
+        ${cemaatMi ? `<span style="position:absolute; top:-10px; right:-2px; font-size:14px; color:#ffeb3b; text-shadow: 0 0 3px #000;">⭐</span>` : ''}
+    </div>
+</div>`;
+        });
+        const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
+        gunlukVeriler.ozeller.forEach((o, oIdx) => {
+            let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
+            
+            // Özel ameller için uyarı tıklama fonksiyonunu ekliyoruz
+            let wHtml = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
+            
+            oDiv.innerHTML += `<div class="ozel-card">${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span></div>`;
+        });
+    }
 
-    // GÜNCELLENEN KISIM BURASI:
-    Object.keys(arsiv).sort().forEach((k, index) => {
-        const rowId = `amel-row-${index}`; // Satıra benzersiz ID verdik
-        h += `<tr id="${rowId}">
-                <td style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">${k}</td>
-                <td style="text-align:right; border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <span style="font-weight:bold; color:var(--blue);">${arsiv[k].t}</span>
-                    <span onclick="tamamenSil('${k.replace(/'/g, "\\'")}', '${rowId}')" 
-                          style="cursor:pointer; margin-left:15px; color:var(--red); font-size:16px; padding:5px;">🗑️</span>
-                </td>
-              </tr>`;
-    });
+    window.showHeatmap = (id, tip, subIdx = null) => {
+        currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
+        let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+        let ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.heatmapNav(-1)">❮</button><div><div style="font-size:10px; opacity:0.7">${ayYilStr}</div><div style="font-size:14px">${tip === 'vakit' ? vakitler[id] : (tip === 'vakit_sub' ? vakitler[id].split(" ")[0] + " - " + basliklar[subIdx] : id)}</div></div><button class="nav-btn" onclick="window.heatmapNav(1)">❯</button></div>`;
+        let h = `<div class="genel-wrapper"><table class="genel-table heatmap-table"><tr>`;
+        for(let d=1; d<=sonGun; d++) {
+            let isToday = isTodayCheck(d, raporTarih.getMonth(), raporTarih.getFullYear());
+            let val = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
+            let c = "s0", txt = "";
+            if(val) {
+                if(tip === 'vakit') c = `s${val.vakitler[id].durumlar[0]}`;
+                else if(tip === 'vakit_sub') c = `s${val.vakitler[id].durumlar[subIdx]}`;
+                else { let o = val.ozeller.find(x => x.ad === id); if(o) { c = o.tip === 'sayi' ? (o.durum > 0 ? 's1' : 's0') : `s${o.durum}`; txt = (o.tip === 'sayi' && o.durum > 0) ? o.durum : ""; } }
+            }
+            h += `<td class="${c} ${isToday ? 'is-today-cell' : ''}"><span class="day-num">${d}</span>${txt}</td>`;
+            if(d % 7 === 0) h += `</tr><tr>`;
+        }
+        document.getElementById('calGrid').innerHTML = h + `</tr></table></div>`;
+        document.getElementById('statModal').style.display = 'flex';
+        document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
+    };
 
-    h += `</tbody></table></div>`;
-    // Alttaki Kapat Butonu (Boşluklu ve şık)
-    h += `<div style="margin-top:25px; width:100%;">
-            <button class="btn-close-new" onclick="closeModal()" style="width:100%; padding:12px; border-radius:12px; background:rgba(255,255,255,0.05); color:white; border:1px solid var(--blue); cursor:pointer;">KAPAT</button>
-          </div>`;
-
-    document.getElementById('statContent').innerHTML = h;
-    document.getElementById('statModal').style.display = 'flex';
-};
     window.showGeneralReport = () => {
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
@@ -584,15 +535,15 @@ h += `<tr>
     const modallar = document.querySelectorAll('.modal');
     modallar.forEach(m => m.style.display = 'none');
 }
-window.tamamenSil = (amelAd, elementId) => {
-    if (confirm(`'${amelAd}' ameline ait tüm geçmiş veriler silinecek. Emin misiniz?`)) {
+window.tamamenSil = (amelAd) => {
+    if(confirm(`'${amelAd}' her yerden silinecek. Emin misiniz?`)) {
         
         // 1. Global listeyi temizle
         let g = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
         g = g.filter(a => a.ad.trim() !== amelAd.trim());
         localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
 
-        // 2. Tüm yerel hafızayı derinlemesine tara
+        // 2. Tüm geçmişi tara ve temizle
         for (let i = 0; i < localStorage.length; i++) {
             let key = localStorage.key(i);
             if (key && key.startsWith('amel_')) {
@@ -604,23 +555,19 @@ window.tamamenSil = (amelAd, elementId) => {
             }
         }
 
-        // 3. ANINDA GÖRSEL SİLME (Sayfayı yenilemeden)
-        const satir = document.getElementById(elementId);
-        if (satir) {
-            satir.style.transition = "all 0.4s ease";
-            satir.style.opacity = "0";
-            satir.style.transform = "translateX(20px)";
-            setTimeout(() => {
-                satir.remove();
-            }, 400);
-        }
-
-        // Arka planda ana ekranı da güncelle
-        if (typeof veriYukle === "function") veriYukle();
+        // 3. ANINDA GÜNCELLEME SİHİRBBAZLIĞI
+        // Önce ana ekranı tazele
+        veriYukle(); 
         
-        console.log(amelAd + " başarıyla imha edildi.");
+        // Rapor modalını kapat ve 10 milisaniye sonra tekrar aç (Veriler sıfırlanmış olarak gelir)
+        closeModal(); 
+        setTimeout(() => {
+            showHeatmap();
+        }, 10);
+
+        console.log("İşlem tamam.");
     }
-};
+}
 </script>
 </body>
 </html>
