@@ -279,16 +279,32 @@
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
-        const globalListe = getGlobalOzeller().filter(g => !g.arsiv);
+        const seciliTarihStr = seciliTarih.toISOString().split('T')[0]; // 👈 Mevcut günün metni
+
+        // Sadece eklenme tarihi bugünden küçük veya eşit olanları getir
+        const globalListe = getGlobalOzeller().filter(g => {
+        // Eğer amelde tarih yoksa (eskiden eklenenler), her zaman göster
+            if(!g.eklenmeTarihi) return !g.arsiv;
+        // Seçili tarih amelin doğum tarihinden sonraysa göster
+            return !g.arsiv && seciliTarihStr >= g.eklenmeTarihi;
+        });
+
         if (kaydedilmis) {
-            gunlukVeriler = kaydedilmis;
-            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.id === o.id));
-            globalListe.forEach(g => { if(!gunlukVeriler.ozeller.some(o => o.id === g.id)) gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)}); });
-        } else {
-            gunlukVeriler = { vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) };
-        }
-        render();
+        gunlukVeriler = kaydedilmis;
+        // Mevcut verideki özelleri global listeye göre süz
+        gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.id === o.id));
+        globalListe.forEach(g => { 
+            if(!gunlukVeriler.ozeller.some(o => o.id === g.id)) 
+                gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)}); 
+        });
+    } else {
+        gunlukVeriler = { 
+            vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
+            ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
+        };
     }
+    render();
+}
 
     function render() {
         localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
