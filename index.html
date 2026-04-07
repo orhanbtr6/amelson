@@ -31,7 +31,35 @@
         .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; display: block; text-align: center; cursor: pointer; }
         .progress-zone { width: 85px; text-align: center; margin-left: 5px; }
         .progress-bg { background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; overflow: hidden; margin: 4px 0; }
-        .progress-bar { height: 100%; transition: width 0.3s; }
+        .progress-bar { height: 100%; transition: width 0.3s;
+                      .progress-container {
+    position: relative;
+    width: 100%;
+    height: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 5px;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.3s, background 0.3s;
+}
+
+.cemaat-yildizi {
+    position: absolute;
+    top: -8px;
+    right: -5px;
+    color: #ffeb3b; /* Sarı yıldız */
+    font-size: 14px;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+/* Cemaat aktifse çizgi rengi */
+.bg-cemaat {
+    background-color: #90ee90 !important; /* Açık yeşil */
+}
+                      }
         .status-badge { font-size: 8px; font-weight: bold; padding: 2px 4px; border-radius: 4px; display: inline-block; text-transform: uppercase; }
         .s0 { background: rgba(255,255,255,0.05); } .s1 { background: var(--dark-green); } .s2 { background: var(--light-green); } .s3 { background: var(--red); } .s4 { background: var(--orange); }
         .genel-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; background: rgba(0,0,0,0.4); padding: 5px; }
