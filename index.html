@@ -346,29 +346,50 @@
         });
     }
 
-    window.showHeatmap = (id, tip, subIdx = null) => {
-        currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
-        let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        let ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.heatmapNav(-1)">❮</button><div><div style="font-size:10px; opacity:0.7">${ayYilStr}</div><div style="font-size:14px">${tip === 'vakit' ? vakitler[id] : (tip === 'vakit_sub' ? vakitler[id].split(" ")[0] + " - " + basliklar[subIdx] : id)}</div></div><button class="nav-btn" onclick="window.heatmapNav(1)">❯</button></div>`;
-        let h = `<div class="genel-wrapper"><table class="genel-table heatmap-table"><tr>`;
-        for(let d=1; d<=sonGun; d++) {
-            let isToday = isTodayCheck(d, raporTarih.getMonth(), raporTarih.getFullYear());
-            let val = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
-            let c = "s0", txt = "";
-            if(val) {
-                if(tip === 'vakit') c = `s${val.vakitler[id].durumlar[0]}`;
-                else if(tip === 'vakit_sub') c = `s${val.vakitler[id].durumlar[subIdx]}`;
-                else { let o = val.ozeller.find(x => x.ad === id); if(o) { c = o.tip === 'sayi' ? (o.durum > 0 ? 's1' : 's0') : `s${o.durum}`; txt = (o.tip === 'sayi' && o.durum > 0) ? o.durum : ""; } }
-            }
-            h += `<td class="${c} ${isToday ? 'is-today-cell' : ''}"><span class="day-num">${d}</span>${txt}</td>`;
-            if(d % 7 === 0) h += `</tr><tr>`;
+    window.showHeatmap = () => {
+    const kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
+    let arsiv = {};
+    const yil = seciliTarih.getFullYear();
+    for (let m = 0; m < 12; m++) {
+        let gunSayisi = new Date(yil, m + 1, 0).getDate();
+        for (let d = 1; d <= gunSayisi; d++) {
+            const v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d))));
+            if (!v) continue;
+            v.vakitler.forEach((vk, i) => { if (vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; });
+            (v.ozeller || []).forEach(vo => {
+                if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip };
+                if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0);
+                else if (vo.durum > 0) arsiv[vo.ad].t += 1;
+            });
         }
-        document.getElementById('calGrid').innerHTML = h + `</tr></table></div>`;
-        document.getElementById('statModal').style.display = 'flex';
-        document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
-    };
+    }
 
+    let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; font-size:12px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">Kaza Namazları</th><th style="text-align:right;">Adet</th></tr></thead><tbody>`;
+    Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; });
+    h += `</tbody></table><table style="width:100%; margin-top:15px; font-size:12px;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">Özel Ameller</th><th style="text-align:right;">Değer</th></tr></thead><tbody>`;
+
+    // GÜNCELLENEN KISIM BURASI:
+    Object.keys(arsiv).sort().forEach((k, index) => {
+        const rowId = `amel-row-${index}`; // Satıra benzersiz ID verdik
+        h += `<tr id="${rowId}">
+                <td style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">${k}</td>
+                <td style="text-align:right; border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <span style="font-weight:bold; color:var(--blue);">${arsiv[k].t}</span>
+                    <span onclick="tamamenSil('${k.replace(/'/g, "\\'")}', '${rowId}')" 
+                          style="cursor:pointer; margin-left:15px; color:var(--red); font-size:16px; padding:5px;">🗑️</span>
+                </td>
+              </tr>`;
+    });
+
+    h += `</tbody></table></div>`;
+    // Alttaki Kapat Butonu (Boşluklu ve şık)
+    h += `<div style="margin-top:25px; width:100%;">
+            <button class="btn-close-new" onclick="closeModal()" style="width:100%; padding:12px; border-radius:12px; background:rgba(255,255,255,0.05); color:white; border:1px solid var(--blue); cursor:pointer;">KAPAT</button>
+          </div>`;
+
+    document.getElementById('statContent').innerHTML = h;
+    document.getElementById('statModal').style.display = 'flex';
+};
     window.showGeneralReport = () => {
         const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
@@ -520,15 +541,15 @@ h += `<tr>
     const modallar = document.querySelectorAll('.modal');
     modallar.forEach(m => m.style.display = 'none');
 }
-window.tamamenSil = (amelAd) => {
-    if(confirm(`'${amelAd}' her yerden silinecek. Emin misiniz?`)) {
+window.tamamenSil = (amelAd, elementId) => {
+    if (confirm(`'${amelAd}' ameline ait tüm geçmiş veriler silinecek. Emin misiniz?`)) {
         
         // 1. Global listeyi temizle
         let g = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
         g = g.filter(a => a.ad.trim() !== amelAd.trim());
         localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
 
-        // 2. Tüm geçmişi tara ve temizle
+        // 2. Tüm yerel hafızayı derinlemesine tara
         for (let i = 0; i < localStorage.length; i++) {
             let key = localStorage.key(i);
             if (key && key.startsWith('amel_')) {
@@ -540,19 +561,23 @@ window.tamamenSil = (amelAd) => {
             }
         }
 
-        // 3. ANINDA GÜNCELLEME SİHİRBBAZLIĞI
-        // Önce ana ekranı tazele
-        veriYukle(); 
-        
-        // Rapor modalını kapat ve 10 milisaniye sonra tekrar aç (Veriler sıfırlanmış olarak gelir)
-        closeModal(); 
-        setTimeout(() => {
-            showHeatmap();
-        }, 10);
+        // 3. ANINDA GÖRSEL SİLME (Sayfayı yenilemeden)
+        const satir = document.getElementById(elementId);
+        if (satir) {
+            satir.style.transition = "all 0.4s ease";
+            satir.style.opacity = "0";
+            satir.style.transform = "translateX(20px)";
+            setTimeout(() => {
+                satir.remove();
+            }, 400);
+        }
 
-        console.log("İşlem tamam.");
+        // Arka planda ana ekranı da güncelle
+        if (typeof veriYukle === "function") veriYukle();
+        
+        console.log(amelAd + " başarıyla imha edildi.");
     }
-}
+};
 </script>
 </body>
 </html>
