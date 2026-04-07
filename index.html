@@ -339,27 +339,27 @@ function render() {
     document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
     
-    const vDiv = document.getElementById('vakitList'); 
-    vDiv.innerHTML = '';
+    const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
     
     gunlukVeriler.vakitler.forEach((v, vIdx) => {
         let p = 0; 
         const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
+
+        // --- YENİ PUAN VE YILDIZ MANTIĞI ---
+        const cemaatMi = (f === 2);
         
-        // --- YENİ MANTIK BAŞLANGICI ---
-        let buVakitCemaatMi = (f === 2);
-        
-        // Farz + Sünnet + Tesbihat (1 veya 2) tam ise 100
+        // Farz + Sünnet + Tesbihat tam ise skor 100
         if ((f === 1 || f === 2) && s > 0 && (t === 1 || t === 2)) {
             p = 100;
         } else {
+            // Tam değilse orijinal puanlama sistemin
             if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
             if (s > 0) p += 25; if (t === 1 || t === 2) p += 25;
         }
 
-        // Renk Seçimi
-        let bCol = buVakitCemaatMi ? "#90ee90" : ( (f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)" );
-        // --- YENİ MANTIK BİTİŞİ ---
+        // Cemaatle ise açık yeşil, değilse orijinal renk skalası
+        let bCol = cemaatMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
+        // ----------------------------------
 
         let wData = getWarningData(vIdx);
         let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
@@ -377,13 +377,12 @@ function render() {
                 <div class="progress-bg">
                     <div class="progress-bar" style="width:${p}%; background:${bCol}"></div>
                 </div>
-                ${buVakitCemaatMi ? `<span style="position:absolute; right:-2px; top:-8px; font-size:14px; color:#ffeb3b; text-shadow:0 0 3px #000;">⭐</span>` : ''}
+                ${cemaatMi ? `<span style="position:absolute; top:-10px; right:-2px; font-size:14px; color:#ffeb3b; text-shadow: 0 0 3px #000;">⭐</span>` : ''}
             </div>
         </div>`;
     });
 
-    const oDiv = document.getElementById('ozelList'); 
-    oDiv.innerHTML = "";
+    const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
     gunlukVeriler.ozeller.forEach((o, oIdx) => {
         let ctrl = o.tip === 'sayi' ? `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
         let wHtml = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
