@@ -276,7 +276,59 @@
         }
         return count >= 2;
     }
+window.analizEt = function() {
+    let son15Veri = [];
+    let bugun = new Date();
+    
+    // Son 15 günü tara
+    for (let i = 0; i < 15; i++) {
+        let d = new Date();
+        d.setDate(bugun.getDate() - i);
+        let k = getLocalKey(d);
+        let v = JSON.parse(localStorage.getItem(k));
+        if (v) son15Veri.push({tarih: d, veri: v});
+    }
 
+    if (son15Veri.length < 2) {
+        alert("Analiz için biraz daha veri birikmesi lazım hocam.");
+        return;
+    }
+
+    let kazaSayisi = 0;
+    let cemaatSayisi = 0;
+    let vakitAksama = [0,0,0,0,0];
+    const vAdlar = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
+
+    son15Veri.forEach(g => {
+        g.veri.vakitler.forEach((v, idx) => {
+            if (v.durumlar[0] === 3) { kazaSayisi++; vakitAksama[idx]++; }
+            if (v.durumlar[0] === 2) cemaatSayisi++;
+        });
+    });
+
+    let enCokAksayanIdx = vakitAksama.indexOf(Math.max(...vakitAksama));
+    
+    // Rapor Tasarımı
+    let analizNotu = `<div style="text-align:left; line-height:1.6;">`;
+    analizNotu += `<h3 style="margin-top:0; color:#a5d3ff; text-align:center;">🤖 YZ Analiz Raporu</h3>`;
+    analizNotu += `<p>✅ <b>Son 15 Gündeki İstikrar:</b><br>`;
+    analizNotu += `• Cemaatle kılınan: ${cemaatSayisi} vakit<br>`;
+    analizNotu += `• Kazaya kalan: ${kazaSayisi} vakit</p>`;
+
+    if (kazaSayisi > 0) {
+        analizNotu += `<div style="background:rgba(243,156,18,0.15); padding:12px; border-radius:10px; border-left:4px solid var(--orange);">`;
+        analizNotu += `<b>Sistem Tavsiyesi:</b> Verileriniz, özellikle <u>${vAdlar[enCokAksayanIdx]}</u> vaktinde zorlandığınızı gösteriyor. Bu vakit için hatırlatıcı kurmak veya hazırlığa erken başlamak performansı artırabilir.</div>`;
+    } else {
+        analizNotu += `<div style="background:rgba(144,238,144,0.15); padding:12px; border-radius:10px; border-left:4px solid var(--light-green);">`;
+        analizNotu += `<b>Sistem Tavsiyesi:</b> Maşallah hocam, son 15 günlük tablonuzda ciddi bir aksama yok. Bu disiplini korumak alışkanlığı kalıcı hale getirecektir.</div>`;
+    }
+    analizNotu += `</div>`;
+
+    // Mevcut modalını kullanarak göster
+    document.getElementById('statTitle').innerText = "YAPAY ZEKA ANALİZİ";
+    document.getElementById('calGrid').innerHTML = analizNotu;
+    document.getElementById('statModal').style.display = 'flex';
+};
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
