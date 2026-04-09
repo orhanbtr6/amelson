@@ -280,7 +280,6 @@ window.analizEt = function() {
     let son15Veri = [];
     let bugun = new Date();
     
-    // Son 15 günü tara
     for (let i = 0; i < 15; i++) {
         let d = new Date();
         d.setDate(bugun.getDate() - i);
@@ -290,43 +289,76 @@ window.analizEt = function() {
     }
 
     if (son15Veri.length < 2) {
-        alert("Analiz için biraz daha veri birikmesi lazım hocam.");
+        alert("Kapsamlı analiz için en az 2 günlük veri lazım hocam.");
         return;
     }
 
-    let kazaSayisi = 0;
-    let cemaatSayisi = 0;
-    let vakitAksama = [0,0,0,0,0];
-    const vAdlar = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
+    // İstatistik Kapları
+    let stats = {
+        vakit: [0,0,0,0,0], // Farz aksama
+        sunnet: 0,
+        tesbihat: 0,
+        ozeller: {}, // Özel ameller için dinamik takip
+        toplamPuan: 0
+    };
 
     son15Veri.forEach(g => {
+        // Vakit, Sünnet ve Tesbihat Analizi
         g.veri.vakitler.forEach((v, idx) => {
-            if (v.durumlar[0] === 3) { kazaSayisi++; vakitAksama[idx]++; }
-            if (v.durumlar[0] === 2) cemaatSayisi++;
+            if (v.durumlar[0] === 3) stats.vakit[idx]++; // Kaza
+            if (v.durumlar[1] > 0) stats.sunnet++; // Sünnet yapılmış
+            if (v.durumlar[2] > 0) stats.tesbihat++; // Tesbihat yapılmış
+        });
+
+        // Özel Ameller Analizi
+        g.veri.ozeller.forEach(o => {
+            if (!stats.ozeller[o.ad]) stats.ozeller[o.ad] = { yapildi: 0, miktar: 0, tip: o.tip };
+            if (o.tip === 'sayi') {
+                stats.ozeller[o.ad].miktar += Number(o.durum || 0);
+            } else if (o.durum > 0) {
+                stats.ozeller[o.ad].yapildi++;
+            }
         });
     });
 
-    let enCokAksayanIdx = vakitAksama.indexOf(Math.max(...vakitAksama));
-    
-    // Rapor Tasarımı
-    let analizNotu = `<div style="text-align:left; line-height:1.6;">`;
-    analizNotu += `<h3 style="margin-top:0; color:#a5d3ff; text-align:center;">🤖 YZ Analiz Raporu</h3>`;
-    analizNotu += `<p>✅ <b>Son 15 Gündeki İstikrar:</b><br>`;
-    analizNotu += `• Cemaatle kılınan: ${cemaatSayisi} vakit<br>`;
-    analizNotu += `• Kazaya kalan: ${kazaSayisi} vakit</p>`;
+    // Rapor Oluşturma
+    let raporHtml = `<div style="text-align:left; font-size:13px; line-height:1.5;">`;
+    raporHtml += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:10px;">🤖 KAPSAMLI ANALİZ</h3>`;
 
-    if (kazaSayisi > 0) {
-        analizNotu += `<div style="background:rgba(243,156,18,0.15); padding:12px; border-radius:10px; border-left:4px solid var(--orange);">`;
-        analizNotu += `<b>Sistem Tavsiyesi:</b> 👎🏻 Verileriniz, özellikle <u>${vAdlar[enCokAksayanIdx]}</u> vaktinde zorlandığınızı gösteriyor. Bu vakit için hatırlatıcı kurmak veya hazırlığa erken başlamak performansı artırabilir.</div>`;
-    } else {
-        analizNotu += `<div style="background:rgba(144,238,144,0.15); padding:12px; border-radius:10px; border-left:4px solid var(--light-green);">`;
-        analizNotu += `<b>Sistem Tavsiyesi:</b>👍🏻 Maşaallah, son 15 günlük tablonuzda ciddi bir aksama yok. Bu disiplini korumak alışkanlığı kalıcı hale getirecektir.</div>`;
+    // 1. Manevi Disiplin (Namaz Yan Detaylar)
+    raporHtml += `<b>📌 Namaz Kalitesi:</b><br>`;
+    let sunnetOran = Math.round((stats.sunnet / (son15Veri.length * 5)) * 100);
+    raporHtml += `• Sünnet Tamamlama: %${sunnetOran}<br>`;
+    raporHtml += `• Tesbihat İstikrarı: %${Math.round((stats.tesbihat / (son15Veri.length * 5)) * 100)}<br><br>`;
+
+    // 2. Özel Amel Performansı
+    raporHtml += `<b>🎯 Özel Amel Takibi:</b><br>`;
+    for (let ad in stats.ozeller) {
+        let veri = stats.ozeller[ad];
+        if (veri.tip === 'sayi') {
+            raporHtml += `• ${ad}: Toplam <b>${veri.miktar}</b> birim yapıldı.<br>`;
+        } else {
+            let oran = Math.round((veri.yapildi / son15Veri.length) * 100);
+            raporHtml += `• ${ad}: %${oran} başarı oranı.<br>`;
+        }
     }
-    analizNotu += `</div>`;
 
-    // Mevcut modalını kullanarak göster
-    document.getElementById('statTitle').innerText = "YAPAY ZEKA ANALİZİ";
-    document.getElementById('calGrid').innerHTML = analizNotu;
+    // 3. Yapay Zeka Tavsiyesi (Kritik Uyarı)
+    raporHtml += `<br><div style="background:rgba(52,152,219,0.2); padding:10px; border-radius:8px; border-left:4px solid var(--blue);">`;
+    raporHtml += `<b>YZ Tavsiyesi:</b> `;
+    
+    // Tavsiye Mantığı
+    if (sunnetOran < 50) {
+        raporHtml += `Sünnetler biraz zayıf kalmış hocam. Vakitlerin bereketini artırmak için sünnetlere daha çok vakit ayırabiliriz. `;
+    } else if (stats.tesbihat < (son15Veri.length * 3)) {
+        raporHtml += `Namaz sonrası tesbihatlar huzuru artırır, onları ihmal etmeyelim. `;
+    } else {
+        raporHtml += `Harika gidiyorsun! Mevcut disiplinini koruduğun sürece alışkanlıkların kalıcı hale gelecektir.`;
+    }
+    raporHtml += `</div></div>`;
+
+    document.getElementById('statTitle').innerText = "15 GÜNLÜK GENEL KARNE";
+    document.getElementById('calGrid').innerHTML = raporHtml;
     document.getElementById('statModal').style.display = 'flex';
 };
     function veriYukle() {
