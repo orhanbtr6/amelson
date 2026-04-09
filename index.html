@@ -279,6 +279,7 @@
 window.analizEt = function() {
     let veriler = [];
     let bugun = new Date();
+    const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
     
     for (let i = 0; i < 30; i++) {
         let d = new Date();
@@ -288,92 +289,100 @@ window.analizEt = function() {
         if (v) veriler.push({ fark: i, veri: v });
     }
 
-    if (veriler.length < 4) {
-        alert("Analiz için biraz daha veri birikmesi lazım hocam.");
+    if (veriler.length < 3) {
+        alert("Analiz için birkaç günlük veri girişi yapılmış olmalı hocam.");
         return;
     }
 
-    // Karşılaştırmalı Kaplar
     let stats = {
-        son: { cemaat: 0, sunnet: 0, tesbihat: 0, sabahKaza: 0, toplamPuan: 0, gun: 0 },
-        once: { cemaat: 0, sunnet: 0, tesbihat: 0, sabahKaza: 0, toplamPuan: 0, gun: 0 }
+        son: { cemaat: 0, sunnet: 0, tesbihat: 0, kaza: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 },
+        once: { cemaat: 0, sunnet: 0, tesbihat: 0, kaza: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 }
     };
 
     veriler.forEach(item => {
         let s = (item.fark < 15) ? stats.son : stats.once;
         s.gun++;
 
+        // 1. Namaz Analizi
         item.veri.vakitler.forEach((v, idx) => {
-            // Cemaat Kontrol
             if (v.durumlar[0] === 2) s.cemaat++;
-            // Sünnet & Tesbihat Kontrol
             if (v.durumlar[1] > 0) s.sunnet++;
             if (v.durumlar[2] > 0) s.tesbihat++;
-            // ÖZEL: Sabah Namazı Kaza (Turuncu - Durum 4) Analizi
-            if (idx === 0 && v.durumlar[0] === 4) s.sabahKaza++;
+            if (v.durumlar[0] === 4) s.kaza[idx]++; // Her vakit için turuncu (kaza onarımı) takibi
 
-            // Puanlama
             let p = (v.durumlar[0] === 1 || v.durumlar[0] === 2 ? 50 : (v.durumlar[0] === 4 ? 30 : 0));
             p += (v.durumlar[1] > 0 ? 25 : 0) + (v.durumlar[2] > 0 ? 25 : 0);
-            s.toplamPuan += p;
+            s.puan += p;
+        });
+
+        // 2. Özel Amel Analizi
+        item.veri.ozeller.forEach(o => {
+            if (!s.ozeller[o.ad]) s.ozeller[o.ad] = { yapildi: 0, miktar: 0 };
+            if (o.durum > 0) s.ozeller[o.ad].yapildi++;
+            if (o.tip === 'sayi') s.ozeller[o.ad].miktar += Number(o.durum || 0);
         });
     });
 
-    const sonOrt = Math.round(stats.son.toplamPuan / (stats.son.gun * 5 || 1));
-    const onceOrt = Math.round(stats.once.toplamPuan / (stats.once.gun * 5 || 1));
+    const sonOrt = Math.round(stats.son.puan / (stats.son.gun * 5 || 1));
+    const onceOrt = Math.round(stats.once.puan / (stats.once.gun * 5 || 1));
 
-    // Arayüz Hazırlama
-    let h = `<div style="text-align:left; font-size:13px; color:#eee;">`;
-    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">🤖 YZ ANALİZ & UYARI SİSTEMİ</h3>`;
+    let h = `<div style="text-align:left; font-size:13px; color:#eee; max-height:70vh; overflow-y:auto; padding-right:5px;">`;
+    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">📊 BÜTÜNCÜL MANEVİ ANALİZ</h3>`;
 
-    // 1. Gidişat Kartı
-    let trendIcon = sonOrt >= onceOrt ? '📈' : '📉';
-    h += `<div style="background:var(--card); padding:12px; border-radius:10px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);">
-            <div style="font-size:11px; opacity:0.7;">GENEL İSTİKRAR TRENDİ</div>
-            <div style="font-size:24px; font-weight:bold; color:${sonOrt >= onceOrt ? 'var(--light-green)' : 'var(--red)'};">
-                ${trendIcon} %${sonOrt} <span style="font-size:12px; font-weight:normal; opacity:0.8;">(Önceki: %${onceOrt})</span>
+    // --- BÖLÜM 1: NAMAZ & TREND ---
+    h += `<div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; opacity:0.7;">GENEL DİSİPLİN PUANI</span>
+                <b style="color:${sonOrt >= onceOrt ? 'var(--light-green)' : 'var(--red)'}; font-size:18px;">%${sonOrt} ${sonOrt >= onceOrt ? '↑' : '↓'}</b>
             </div>
           </div>`;
 
-    // 2. Özel Uyarı Motoru (Kritik Uyarılar Burada Üretiliyor)
-    h += `<div style="display:flex; flex-direction:column; gap:8px;">`;
+    // Nokta Atışı Namaz Uyarıları
+    vakitAdlari.forEach((ad, i) => {
+        if (stats.son.kaza[i] > stats.once.kaza[i]) {
+            h += alertBox("orange", `🟠 ${ad} Namazı Alarmı`, `Son 15 günde ${ad} vaktini vaktinde kılmak yerine "Kaza" (turuncu) olarak tamamlama eğiliminiz artmış.`);
+        }
+    });
 
-    // UYARI: Sabah Namazı Onarımı
-    if (stats.son.sabahKaza > stats.once.sabahKaza) {
-        h += alertBox("orange", "🟠 Sabah Namazı Dikkat", `Son 15 günde sabah namazlarını kaza etme (turuncu) oranınız artmış. Bu, uyanma konusunda bir zorluk yaşadığınızı gösteriyor.`);
+    if (stats.son.cemaat < stats.once.cemaat) h += alertBox("red", "🔻 Cemaat Kaybı", "Toplu ibadet istikrarında bir gevşeme tespit edildi.");
+    if (stats.son.sunnet < stats.once.sunnet) h += alertBox("blue", "📋 Sünnet Eksikliği", "Vakitlerin içindeki sünnet oranlarında düşüş var.");
+
+    // --- BÖLÜM 2: ÖZEL AMELLER ANALİZİ ---
+    h += `<div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+            <b style="color:var(--blue); font-size:14px;">🎯 Özel Ameller & Alışkanlıklar</b>
+          </div>`;
+    
+    h += `<div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">`;
+    for (let ad in stats.son.ozeller) {
+        let d = stats.son.ozeller[ad];
+        let eskiD = stats.once.ozeller[ad] || { yapildi: 0 };
+        let oran = Math.round((d.yapildi / stats.son.gun) * 100);
+        let eskiOran = Math.round((eskiD.yapildi / (stats.once.gun || 1)) * 100);
+        let fark = oran - eskiOran;
+
+        h += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>${ad}</span>
+                    <b style="color:${fark >= 0 ? 'var(--light-green)' : 'var(--red)'}">%${oran} ${fark > 0 ? '(+'+fark+')' : (fark < 0 ? '('+fark+')' : '')}</b>
+                </div>
+                <div style="font-size:10px; opacity:0.6; margin-top:4px;">${d.miktar > 0 ? 'Toplam: ' + d.miktar + ' birim' : 'İstikrar Takibi'}</div>
+              </div>`;
     }
-
-    // UYARI: Cemaat İlerleme/Gerileme
-    if (stats.son.cemaat > stats.once.cemaat) {
-        h += alertBox("light-green", "⭐ Cemaat Artışı", `Tebrikler! Cemaatle kılınan vakit sayınız <b>${stats.son.cemaat - stats.once.cemaat} vakit</b> yükselmiş. Harika bir gelişim.`);
-    } else if (stats.son.cemaat < stats.once.cemaat) {
-        h += alertBox("red", "🔻 Cemaat Kaybı", `Önceki döneme göre cemaatle kıldığınız vakit sayısında azalma var. Sosyal ibadet disiplinine tekrar odaklanmalıyız.`);
-    }
-
-    // UYARI: Sünnet & Tesbihat Disiplini
-    let sunnetFark = stats.son.sunnet - stats.once.sunnet;
-    if (sunnetFark < 0) {
-        h += alertBox("blue", "📋 Detaylar Seyreliyor", `Sünnet ve tesbihatlarda gerileme var. Namazın iç huzurunu korumak için acele etmeden bu detaylara dönmelisin.`);
-    }
-
     h += `</div>`;
 
-    // 3. Strateji Notu
-    h += `<div style="margin-top:15px; padding:12px; background:rgba(255,255,255,0.05); border-radius:10px; font-size:12px; border-top:2px solid var(--blue);">
-            <b>📝 Strateji Notu:</b> ${sonOrt >= onceOrt ? "Gidişatın umut verici. Küçük aksamaları önemsemeden zinciri kırmamaya devam et hocam." : "Bu dönem biraz yorulmuşsunuz. Yarın sadece bir vakti 'en kaliteli vakit' seçip tüm detaylarıyla eda ederek enerjinizi tazeleyin."}
+    h += `<div style="margin-top:20px; padding:12px; background:rgba(52,152,219,0.1); border-radius:10px; font-size:12px; border-left:4px solid var(--blue);">
+            <b>🤖 YZ Tavsiyesi:</b> ${sonOrt >= onceOrt ? "Mevcut düzeniniz çok iyi hocam, özellikle yükselen amellere odaklanarak bu ivmeyi koruyun." : "Bu ara genel bir yorgunluk olabilir. Özel amellerden birini seçip ona 3 gün asılmak sizi eski formunuza döndürecektir."}
           </div></div>`;
 
-    // Modal Gösterimi
-    document.getElementById('statTitle').innerText = "DİSİPLİN RAPORU";
+    document.getElementById('statTitle').innerText = "GELİŞMİŞ KARNE";
     document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
 };
 
-// Yardımcı Fonksiyon: Uyarı Kutusu Oluşturucu
 function alertBox(color, title, text) {
-    return `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border-left:4px solid var(--${color});">
+    return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
                 <b style="font-size:12px; color:var(--${color});">${title}</b><br>
-                <span style="font-size:11px; opacity:0.9;">${text}</span>
+                <span style="font-size:11px; opacity:0.8;">${text}</span>
             </div>`;
 }
     function veriYukle() {
