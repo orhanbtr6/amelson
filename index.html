@@ -277,88 +277,95 @@
         return count >= 2;
     }
 window.analizEt = function() {
-    let son15Veri = [];
+    let veriler = [];
     let bugun = new Date();
     
-    for (let i = 0; i < 15; i++) {
+    // Kıyaslama için toplamda son 30 günü tara
+    for (let i = 0; i < 30; i++) {
         let d = new Date();
         d.setDate(bugun.getDate() - i);
         let k = getLocalKey(d);
         let v = JSON.parse(localStorage.getItem(k));
-        if (v) son15Veri.push({tarih: d, veri: v});
+        if (v) veriler.push({ fark: i, veri: v });
     }
 
-    if (son15Veri.length < 2) {
-        alert("Kapsamlı analiz için en az 2 günlük veri lazım hocam.");
+    if (veriler.length < 5) {
+        alert("Sağlıklı bir trend analizi için en az 5 günlük veri girişi yapılmış olmalı hocam.");
         return;
     }
 
-    // İstatistik Kapları
-    let stats = {
-        vakit: [0,0,0,0,0], // Farz aksama
-        sunnet: 0,
-        tesbihat: 0,
-        ozeller: {}, // Özel ameller için dinamik takip
-        toplamPuan: 0
-    };
+    // Gruplandırma: Son 15 gün vs Önceki 15 gün
+    let son15 = { kaza: 0, cemaat: 0, puan: 0, say: 0 };
+    let onceki15 = { kaza: 0, cemaat: 0, puan: 0, say: 0 };
 
-    son15Veri.forEach(g => {
-        // Vakit, Sünnet ve Tesbihat Analizi
-        g.veri.vakitler.forEach((v, idx) => {
-            if (v.durumlar[0] === 3) stats.vakit[idx]++; // Kaza
-            if (v.durumlar[1] > 0) stats.sunnet++; // Sünnet yapılmış
-            if (v.durumlar[2] > 0) stats.tesbihat++; // Tesbihat yapılmış
-        });
-
-        // Özel Ameller Analizi
-        g.veri.ozeller.forEach(o => {
-            if (!stats.ozeller[o.ad]) stats.ozeller[o.ad] = { yapildi: 0, miktar: 0, tip: o.tip };
-            if (o.tip === 'sayi') {
-                stats.ozeller[o.ad].miktar += Number(o.durum || 0);
-            } else if (o.durum > 0) {
-                stats.ozeller[o.ad].yapildi++;
-            }
+    veriler.forEach(item => {
+        let hedef = (item.fark < 15) ? son15 : onceki15;
+        hedef.say++;
+        
+        item.veri.vakitler.forEach(v => {
+            if (v.durumlar[0] === 3) hedef.kaza++;
+            if (v.durumlar[0] === 2) hedef.cemaat++;
+            
+            // Puan hesaplama mantığı (Trend için ortalama puan)
+            let p = 0;
+            if ((v.durumlar[0] === 1 || v.durumlar[0] === 2) && v.durumlar[1] > 0 && (v.durumlar[2] === 1 || v.durumlar[2] === 2)) p = 100;
+            else p = (v.durumlar[0] > 0 ? 40 : 0) + (v.durumlar[1] > 0 ? 30 : 0) + (v.durumlar[2] > 0 ? 30 : 0);
+            hedef.puan += p;
         });
     });
 
-    // Rapor Oluşturma
-    let raporHtml = `<div style="text-align:left; font-size:13px; line-height:1.5;">`;
-    raporHtml += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:10px;">🤖 KAPSAMLI ANALİZ</h3>`;
+    const sonPuanAvg = Math.round(son15.puan / (son15.say * 5 || 1));
+    const oncekiPuanAvg = Math.round(onceki15.puan / (onceki15.say * 5 || 1));
+    const kazaFark = son15.kaza - onceki15.kaza;
+    const cemaatFark = son15.cemaat - onceki15.cemaat;
 
-    // 1. Manevi Disiplin (Namaz Yan Detaylar)
-    raporHtml += `<b>📌 Namaz Kalitesi:</b><br>`;
-    let sunnetOran = Math.round((stats.sunnet / (son15Veri.length * 5)) * 100);
-    raporHtml += `• Sünnet Tamamlama: %${sunnetOran}<br>`;
-    raporHtml += `• Tesbihat İstikrarı: %${Math.round((stats.tesbihat / (son15Veri.length * 5)) * 100)}<br><br>`;
+    // Arayüz Oluşturma
+    let h = `<div style="text-align:left; font-size:13px; color:#eee;">`;
+    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">📊 PERFORMANS TRENDİ</h3>`;
 
-    // 2. Özel Amel Performansı
-    raporHtml += `<b>🎯 Özel Amel Takibi:</b><br>`;
-    for (let ad in stats.ozeller) {
-        let veri = stats.ozeller[ad];
-        if (veri.tip === 'sayi') {
-            raporHtml += `• ${ad}: Toplam <b>${veri.miktar}</b> birim yapıldı.<br>`;
-        } else {
-            let oran = Math.round((veri.yapildi / son15Veri.length) * 100);
-            raporHtml += `• ${ad}: %${oran} başarı oranı.<br>`;
-        }
-    }
-
-    // 3. Yapay Zeka Tavsiyesi (Kritik Uyarı)
-    raporHtml += `<br><div style="background:rgba(52,152,219,0.2); padding:10px; border-radius:8px; border-left:4px solid var(--blue);">`;
-    raporHtml += `<b>YZ Tavsiyesi:</b> `;
+    // 1. Genel Durum ve Kıyaslama
+    let trendIcon = sonPuanAvg >= oncekiPuanAvg ? "📈" : "📉";
+    let trendRenk = sonPuanAvg >= oncekiPuanAvg ? "#90ee90" : "#e74c3c";
     
-    // Tavsiye Mantığı
-    if (sunnetOran < 50) {
-        raporHtml += `Sünnetler biraz zayıf kalmış hocam. Vakitlerin bereketini artırmak için sünnetlere daha çok vakit ayırabiliriz. `;
-    } else if (stats.tesbihat < (son15Veri.length * 3)) {
-        raporHtml += `Namaz sonrası tesbihatlar huzuru artırır, onları ihmal etmeyelim. `;
-    } else {
-        raporHtml += `Harika gidiyorsun! Mevcut disiplinini koruduğun sürece alışkanlıkların kalıcı hale gelecektir.`;
-    }
-    raporHtml += `</div></div>`;
+    h += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between;">
+                <span>Genel Puan Ortalaması:</span>
+                <b style="color:${trendRenk}">${trendIcon} %${sonPuanAvg}</b>
+            </div>
+            <div style="font-size:10px; opacity:0.6;">Önceki 15 gün: %${oncekiPuanAvg} idi.</div>
+          </div>`;
 
-    document.getElementById('statTitle').innerText = "15 GÜNLÜK GENEL KARNE";
-    document.getElementById('calGrid').innerHTML = raporHtml;
+    // 2. Detaylı Farklar
+    h += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div style="background:rgba(231,76,60,0.1); padding:8px; border-radius:8px; border:1px solid rgba(231,76,60,0.2);">
+                <div style="font-size:10px; color:var(--red);">KAZA DURUMU</div>
+                <b style="font-size:16px;">${son15.kaza} Vakit</b>
+                <div style="font-size:9px;">${kazaFark > 0 ? '🔺 Artış: '+kazaFark : (kazaFark < 0 ? '🟢 Azalma: '+Math.abs(kazaFark) : '➖ Değişim yok')}</div>
+            </div>
+            <div style="background:rgba(34,139,34,0.1); padding:8px; border-radius:8px; border:1px solid rgba(144,238,144,0.2);">
+                <div style="font-size:10px; color:var(--light-green);">CEMAAT İSTİKRARI</div>
+                <b style="font-size:16px;">${son15.cemaat} Vakit</b>
+                <div style="font-size:9px;">${cemaatFark > 0 ? '🟢 Artış: '+cemaatFark : (cemaatFark < 0 ? '🔻 Azalma: '+Math.abs(cemaatFark) : '➖ Değişim yok')}</div>
+            </div>
+          </div>`;
+
+    // 3. YZ Yorumu
+    h += `<div style="background:var(--blue); padding:12px; border-radius:10px; color:white; font-size:12px; border-left:5px solid #2980b9;">
+            <b>🤖 YZ Strateji Notu:</b><br>`;
+    
+    if (kazaFark > 0) {
+        h += `Dikkat hocam! Son 15 günde kazaya kalan namaz sayısında <u>${kazaFark} vakitlik</u> bir artış var. Bu durum genelde uyku düzeneği veya günlük yoğunluktan kaynaklanır. Yarından itibaren bir vakti "odak vakit" seçip onu asla kaçırmayarak trendi geri çevirebiliriz.`;
+    } else if (cemaatFark < 0) {
+        h += `Cemaatle kılma sayın <u>${Math.abs(cemaatFark)} vakit</u> gerilemiş. Sosyal çevrenle veya camiye gidiş yolunla ilgili bir engel mi var? Küçük bir planlama ile bu sayıyı tekrar yukarı çekebilirsin.`;
+    } else if (sonPuanAvg > oncekiPuanAvg) {
+        h += `Mükemmel bir gidişat! Hem puanını yükseltmişsin hem de disiplini korumuşsun. Bu momentumu bozmadan devam edersen alışkanlıkların kalıcı birer yaşam tarzına dönüşecek.`;
+    } else {
+        h += `Dengeli gidiyorsun. Mevcut istikrarın iyi, ancak cemaat veya sünnet tamamlama gibi küçük alanlarda %5'lik bir iyileştirme seni "zirve" seviyesine taşıyacaktır.`;
+    }
+    h += `</div></div>`;
+
+    document.getElementById('statTitle').innerText = "YZ PERFORMANS ANALİZİ";
+    document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
 };
     function veriYukle() {
