@@ -280,7 +280,6 @@ window.analizEt = function() {
     let veriler = [];
     let bugun = new Date();
     
-    // Kıyaslama için toplamda son 30 günü tara
     for (let i = 0; i < 30; i++) {
         let d = new Date();
         d.setDate(bugun.getDate() - i);
@@ -289,82 +288,86 @@ window.analizEt = function() {
         if (v) veriler.push({ fark: i, veri: v });
     }
 
-    if (veriler.length < 5) {
-        alert("Sağlıklı bir trend analizi için en az 5 günlük veri girişi yapılmış olmalı hocam.");
+    if (veriler.length < 3) {
+        alert("Trend analizi için birkaç günlük veri girişi lazım hocam.");
         return;
     }
 
-    // Gruplandırma: Son 15 gün vs Önceki 15 gün
-    let son15 = { kaza: 0, cemaat: 0, puan: 0, say: 0 };
-    let onceki15 = { kaza: 0, cemaat: 0, puan: 0, say: 0 };
+    // Gruplandırma Kapları
+    let son15 = { kazaBekleyen: 0, kazaEdilmis: 0, cemaat: 0, vaktinde: 0, say: 0 };
+    let onceki15 = { kazaBekleyen: 0, kazaEdilmis: 0, cemaat: 0, vaktinde: 0, say: 0 };
 
     veriler.forEach(item => {
         let hedef = (item.fark < 15) ? son15 : onceki15;
         hedef.say++;
         
         item.veri.vakitler.forEach(v => {
-            if (v.durumlar[0] === 3) hedef.kaza++;
-            if (v.durumlar[0] === 2) hedef.cemaat++;
-            
-            // Puan hesaplama mantığı (Trend için ortalama puan)
-            let p = 0;
-            if ((v.durumlar[0] === 1 || v.durumlar[0] === 2) && v.durumlar[1] > 0 && (v.durumlar[2] === 1 || v.durumlar[2] === 2)) p = 100;
-            else p = (v.durumlar[0] > 0 ? 40 : 0) + (v.durumlar[1] > 0 ? 30 : 0) + (v.durumlar[2] > 0 ? 30 : 0);
-            hedef.puan += p;
+            const d = v.durumlar[0];
+            if (d === 3) hedef.kazaBekleyen++; // Kırmızı
+            if (d === 4) hedef.kazaEdilmis++;   // Turuncu (Senin sorduğun kısım)
+            if (d === 2) hedef.cemaat++;       // Açık Yeşil + Yıldız
+            if (d === 1) hedef.vaktinde++;     // Koyu Yeşil
         });
     });
 
-    const sonPuanAvg = Math.round(son15.puan / (son15.say * 5 || 1));
-    const oncekiPuanAvg = Math.round(onceki15.puan / (onceki15.say * 5 || 1));
-    const kazaFark = son15.kaza - onceki15.kaza;
-    const cemaatFark = son15.cemaat - onceki15.cemaat;
+    // İstatistiksel Hesaplar
+    const toplamVakit = son15.say * 5;
+    const disiplinPuani = Math.round(((son15.vaktinde + son15.cemaat) / toplamVakit) * 100);
+    const kazaKapatmaOrani = Math.round((son15.kazaEdilmis / (son15.kazaBekleyen + son15.kazaEdilmis || 1)) * 100);
 
-    // Arayüz Oluşturma
-    let h = `<div style="text-align:left; font-size:13px; color:#eee;">`;
-    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">📊 PERFORMANS TRENDİ</h3>`;
+    let h = `<div style="text-align:left; font-size:13px; color:#eee; line-height:1.4;">`;
+    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">📊 DETAYLI PERFORMANS ANALİZİ</h3>`;
 
-    // 1. Genel Durum ve Kıyaslama
-    let trendIcon = sonPuanAvg >= oncekiPuanAvg ? "📈" : "📉";
-    let trendRenk = sonPuanAvg >= oncekiPuanAvg ? "#90ee90" : "#e74c3c";
-    
-    h += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:10px;">
+    // 1. Kaza Analizi (Turuncu ve Kırmızı Kıyaslaması)
+    h += `<div style="background:rgba(243,156,18,0.1); padding:10px; border-radius:10px; border:1px solid rgba(243,156,18,0.3); margin-bottom:10px;">
+            <b style="color:var(--orange);">🟠 Kaza Onarma Analizi</b><br>
+            <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                <span>Kaza Edilen (Turuncu):</span> <b>${son15.kazaEdilmis}</b>
+            </div>
             <div style="display:flex; justify-content:space-between;">
-                <span>Genel Puan Ortalaması:</span>
-                <b style="color:${trendRenk}">${trendIcon} %${sonPuanAvg}</b>
+                <span>Bekleyen (Kırmızı):</span> <b>${son15.kazaBekleyen}</b>
             </div>
-            <div style="font-size:10px; opacity:0.6;">Önceki 15 gün: %${oncekiPuanAvg} idi.</div>
+            <div style="margin-top:5px; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+                <div style="width:${kazaKapatmaOrani}%; height:100%; background:var(--orange);"></div>
+            </div>
+            <div style="font-size:10px; text-align:right; margin-top:3px;">Borç Kapatma Başarısı: %${kazaKapatmaOrani}</div>
           </div>`;
 
-    // 2. Detaylı Farklar
-    h += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
-            <div style="background:rgba(231,76,60,0.1); padding:8px; border-radius:8px; border:1px solid rgba(231,76,60,0.2);">
-                <div style="font-size:10px; color:var(--red);">KAZA DURUMU</div>
-                <b style="font-size:16px;">${son15.kaza} Vakit</b>
-                <div style="font-size:9px;">${kazaFark > 0 ? '🔺 Artış: '+kazaFark : (kazaFark < 0 ? '🟢 Azalma: '+Math.abs(kazaFark) : '➖ Değişim yok')}</div>
+    // 2. Vaktinde ve Cemaat Durumu
+    h += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+            <div style="background:rgba(34,139,34,0.1); padding:8px; border-radius:8px; border:1px solid var(--dark-green);">
+                <div style="font-size:10px; color:var(--light-green);">VAKTİNDE</div>
+                <b style="font-size:16px;">${son15.vaktinde + son15.cemaat}</b>
+                <div style="font-size:9px; opacity:0.7;">(Cemaat: ${son15.cemaat})</div>
             </div>
-            <div style="background:rgba(34,139,34,0.1); padding:8px; border-radius:8px; border:1px solid rgba(144,238,144,0.2);">
-                <div style="font-size:10px; color:var(--light-green);">CEMAAT İSTİKRARI</div>
-                <b style="font-size:16px;">${son15.cemaat} Vakit</b>
-                <div style="font-size:9px;">${cemaatFark > 0 ? '🟢 Artış: '+cemaatFark : (cemaatFark < 0 ? '🔻 Azalma: '+Math.abs(cemaatFark) : '➖ Değişim yok')}</div>
+            <div style="background:rgba(52,152,219,0.1); padding:8px; border-radius:8px; border:1px solid var(--blue);">
+                <div style="font-size:10px; color:var(--blue);">DİSİPLİN SKORU</div>
+                <b style="font-size:16px;">%${disiplinPuani}</b>
+                <div style="font-size:9px; opacity:0.7;">Vaktinde kılma oranı</div>
             </div>
           </div>`;
 
-    // 3. YZ Yorumu
-    h += `<div style="background:var(--blue); padding:12px; border-radius:10px; color:white; font-size:12px; border-left:5px solid #2980b9;">
-            <b>🤖 YZ Strateji Notu:</b><br>`;
+    // 3. YZ Strateji Notu
+    h += `<div style="background:#082d42; padding:12px; border-radius:10px; border-left:5px solid var(--orange);">
+            <b>🤖 YZ Gözlemi:</b><br>`;
     
-    if (kazaFark > 0) {
-        h += `Dikkat hocam! Son 15 günde kazaya kalan namaz sayısında <u>${kazaFark} vakitlik</u> bir artış var. Bu durum genelde uyku düzeneği veya günlük yoğunluktan kaynaklanır. Yarından itibaren bir vakti "odak vakit" seçip onu asla kaçırmayarak trendi geri çevirebiliriz.`;
-    } else if (cemaatFark < 0) {
-        h += `Cemaatle kılma sayın <u>${Math.abs(cemaatFark)} vakit</u> gerilemiş. Sosyal çevrenle veya camiye gidiş yolunla ilgili bir engel mi var? Küçük bir planlama ile bu sayıyı tekrar yukarı çekebilirsin.`;
-    } else if (sonPuanAvg > oncekiPuanAvg) {
-        h += `Mükemmel bir gidişat! Hem puanını yükseltmişsin hem de disiplini korumuşsun. Bu momentumu bozmadan devam edersen alışkanlıkların kalıcı birer yaşam tarzına dönüşecek.`;
-    } else {
-        h += `Dengeli gidiyorsun. Mevcut istikrarın iyi, ancak cemaat veya sünnet tamamlama gibi küçük alanlarda %5'lik bir iyileştirme seni "zirve" seviyesine taşıyacaktır.`;
+    if (son15.kazaEdilmis > onceki15.kazaEdilmis) {
+        h += `Hocam, son 15 günde kaza namazlarını telafi etme hızınız artmış. Turuncu tabloların çoğalması, borçlara karşı duyarlılığınızın yükseldiğini gösteriyor. `;
     }
+    
+    if (son15.kazaBekleyen > 0) {
+        h += `Şu an bekleyen <u>${son15.kazaBekleyen} vakit</u> kırmızı alan var. Turuncuya çevrilmeyi bekliyorlar. `;
+    } else if (son15.kazaBekleyen === 0 && son15.kazaEdilmis > 0) {
+        h += `Harika! Tüm kazalarınızı onarmışsınız, bekleyen kırmızı vakit kalmamış. `;
+    }
+
+    if (disiplinPuani < 70) {
+        h += `Vaktinde kılma oranını %80 üzerine çekebilirsek, onarma (kaza) ihtiyacı da kendiliğinden azalacaktır.`;
+    }
+    
     h += `</div></div>`;
 
-    document.getElementById('statTitle').innerText = "YZ PERFORMANS ANALİZİ";
+    document.getElementById('statTitle').innerText = "KAZA VE ONARIM ANALİZİ";
     document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
 };
