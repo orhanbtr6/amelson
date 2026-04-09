@@ -121,11 +121,43 @@
     animation: shake 0.5s infinite;
     border: 1px dashed var(--orange) !important;
 }
+/* Sallanma Animasyonu */
 @keyframes shake {
     0% { transform: rotate(0deg); }
-    25% { transform: rotate(0.5deg); }
-    75% { transform: rotate(-0.5deg); }
+    25% { transform: rotate(0.8deg); }
+    75% { transform: rotate(-0.8deg); }
     100% { transform: rotate(0deg); }
+}
+
+/* Edit Modu Aktifken Uygulanacak Stiller */
+.edit-mode .ozel-kart {
+    animation: shake 0.3s infinite;
+    border: 1px dashed var(--orange) !important;
+    position: relative;
+}
+
+/* Arşiv Butonu (Normalde Gizli) */
+.archive-badge {
+    display: none; 
+    position: absolute; 
+    top: -8px; 
+    right: -8px;
+    background: var(--orange); 
+    color: white;
+    width: 26px; 
+    height: 26px; 
+    border-radius: 50%;
+    align-items: center; 
+    justify-content: center; 
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5); 
+    cursor: pointer; 
+    z-index: 100;
+}
+
+/* Edit Modu varken badge'i göster */
+.edit-mode .archive-badge { 
+    display: flex; 
 }
 .archive-badge {
     display: none; /* Normalde gizli */
@@ -702,19 +734,60 @@ window.tamamenSil = (amelAd) => {
 // Düzenleme modunu açıp kapatan değişken
 let isEditMode = false;
 
-function toggleEditMode() {
+window.toggleEditMode = function() {
     isEditMode = !isEditMode;
-    const container = document.querySelector('.container'); // Amellerin olduğu ana kapsayıcı
+    const container = document.querySelector('.container');
     if (isEditMode) {
         container.classList.add('edit-mode');
     } else {
         container.classList.remove('edit-mode');
     }
-}
+    // İkonun rengini veya şeklini değiştirmek istersen buraya ekleme yapabiliriz
+};
 
 // render() fonksiyonu içinde Özel Amelleri bastığınız döngüyü şu şekilde güncelleyin:
 // (Döngü içindeki amel kutusunun en başına şu badge'i ekleyin)
 const archiveBtn = `<div class="archive-badge" onclick="event.stopPropagation(); window.arsivle('${o.ad}')">📦</div>`;
+currentData.ozeller.forEach((o, i) => {
+    if (o.arsiv) return; // Arşivlenmişse gösterme
+
+    const card = document.createElement('div');
+    card.className = 'ozel-kart'; // Senin mevcut class adın neyse o kalsın
+    
+    // ARŞİV BADGE'İNİ BURAYA EKLE
+    card.innerHTML = `
+        <div class="archive-badge" onclick="event.stopPropagation(); window.arsivle('${o.ad}')">📦</div>
+        <div class="ozel-baslik">${o.ad}</div>
+        <div class="ozel-icerik">
+            ${o.tip === 'renk' ? renderRenk(o) : renderSayi(o)}
+        </div>
+    `;
+    
+    // Eğer edit modu açıksa render sonrası class'ı koru
+    if (isEditMode) container.classList.add('edit-mode');
+    
+    container.appendChild(card);
+});
+currentData.ozeller.forEach((o, i) => {
+    if (o.arsiv) return; // Arşivlenmişse gösterme
+
+    const card = document.createElement('div');
+    card.className = 'ozel-kart'; // Senin mevcut class adın neyse o kalsın
+    
+    // ARŞİV BADGE'İNİ BURAYA EKLE
+    card.innerHTML = `
+        <div class="archive-badge" onclick="event.stopPropagation(); window.arsivle('${o.ad}')">📦</div>
+        <div class="ozel-baslik">${o.ad}</div>
+        <div class="ozel-icerik">
+            ${o.tip === 'renk' ? renderRenk(o) : renderSayi(o)}
+        </div>
+    `;
+    
+    // Eğer edit modu açıksa render sonrası class'ı koru
+    if (isEditMode) container.classList.add('edit-mode');
+    
+    container.appendChild(card);
+});
 
 </script>
 </body>
