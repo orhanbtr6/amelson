@@ -488,7 +488,7 @@ function alertBox(color, title, text) {
             // Özel ameller için uyarı tıklama fonksiyonunu ekliyoruz
             let wHtml = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
             
-            
+          oDiv.innerHTML += `<div class="ozel-card">${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}<span class="arsiv-link" onclick="window.arsivle('${o.id}')">Arşiv</span></div>`;  
         });
     }
 
