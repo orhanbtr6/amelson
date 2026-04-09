@@ -117,6 +117,26 @@
             background: var(--blue);
             color: #000;
         }
+.edit-mode .ozel-kart {
+    animation: shake 0.5s infinite;
+    border: 1px dashed var(--orange) !important;
+}
+@keyframes shake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(0.5deg); }
+    75% { transform: rotate(-0.5deg); }
+    100% { transform: rotate(0deg); }
+}
+.archive-badge {
+    display: none; /* Normalde gizli */
+    position: absolute; top: -10px; right: -10px;
+    background: var(--orange); color: white;
+    width: 24px; height: 24px; border-radius: 50%;
+    align-items: center; justify-content: center; font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); cursor: pointer; z-index: 10;
+}
+.edit-mode .archive-badge { display: flex; } /* Sadece düzenleme modunda göster */
+
     </style>
 </head>
 <body ontouchstart="hTS(event)" ontouchend="hTE(event)">
@@ -185,6 +205,8 @@
     <button class="nav-btn" style="background:var(--dark-green); font-weight:bold;" onclick="yeniEkle()">EKLE</button>
    <button id="micBtn" onclick="window.sesDinle()" style="background:none; border:none; font-size:22px; cursor:pointer; transition: 0.3s;">🎤</button>
     <div class="menu-item" onclick="window.analizEt()" title="Analiz">🤖</div>
+<div class="menu-item" onclick="toggleEditMode()" title="Düzenle">✏️</div>
+
     <button onclick="openSettings()" style="background:none; border:none; font-size:22px;">⚙️</button>
 </div>
 
@@ -677,6 +699,23 @@ window.tamamenSil = (amelAd) => {
         console.log("İşlem tamam.");
     }
 }
+// Düzenleme modunu açıp kapatan değişken
+let isEditMode = false;
+
+function toggleEditMode() {
+    isEditMode = !isEditMode;
+    const container = document.querySelector('.container'); // Amellerin olduğu ana kapsayıcı
+    if (isEditMode) {
+        container.classList.add('edit-mode');
+    } else {
+        container.classList.remove('edit-mode');
+    }
+}
+
+// render() fonksiyonu içinde Özel Amelleri bastığınız döngüyü şu şekilde güncelleyin:
+// (Döngü içindeki amel kutusunun en başına şu badge'i ekleyin)
+const archiveBtn = `<div class="archive-badge" onclick="event.stopPropagation(); window.arsivle('${o.ad}')">📦</div>`;
+
 </script>
 </body>
 </html>
