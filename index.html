@@ -280,7 +280,6 @@ window.analizEt = function() {
     let veriler = [];
     let bugun = new Date();
     
-    // 30 günlük veri çekme (Kıyaslama için)
     for (let i = 0; i < 30; i++) {
         let d = new Date();
         d.setDate(bugun.getDate() - i);
@@ -289,106 +288,94 @@ window.analizEt = function() {
         if (v) veriler.push({ fark: i, veri: v });
     }
 
-    if (veriler.length < 3) {
+    if (veriler.length < 4) {
         alert("Analiz için biraz daha veri birikmesi lazım hocam.");
         return;
     }
 
-    // İstatistik Kapları
+    // Karşılaştırmalı Kaplar
     let stats = {
-        son15: { namazPuan: 0, amelPuan: 0, gunSay: 0, detaylar: {} },
-        onceki15: { namazPuan: 0, amelPuan: 0, gunSay: 0, detaylar: {} }
+        son: { cemaat: 0, sunnet: 0, tesbihat: 0, sabahKaza: 0, toplamPuan: 0, gun: 0 },
+        once: { cemaat: 0, sunnet: 0, tesbihat: 0, sabahKaza: 0, toplamPuan: 0, gun: 0 }
     };
 
     veriler.forEach(item => {
-        let s = (item.fark < 15) ? stats.son15 : stats.onceki15;
-        s.gunSay++;
+        let s = (item.fark < 15) ? stats.son : stats.once;
+        s.gun++;
 
-        // 1. Namaz (Farz, Sünnet, Tesbihat) Analizi
-        item.veri.vakitler.forEach(v => {
-            let gunlukVakitPuani = 0;
-            if (v.durumlar[0] === 1 || v.durumlar[0] === 2) gunlukVakitPuani += 50; // Farz/Cemaat
-            if (v.durumlar[0] === 4) gunlukVakitPuani += 30; // Sonradan Kaza
-            if (v.durumlar[1] > 0) gunlukVakitPuani += 25;   // Sünnet
-            if (v.durumlar[2] > 0) gunlukVakitPuani += 25;   // Tesbihat
-            s.namazPuan += gunlukVakitPuani;
-        });
+        item.veri.vakitler.forEach((v, idx) => {
+            // Cemaat Kontrol
+            if (v.durumlar[0] === 2) s.cemaat++;
+            // Sünnet & Tesbihat Kontrol
+            if (v.durumlar[1] > 0) s.sunnet++;
+            if (v.durumlar[2] > 0) s.tesbihat++;
+            // ÖZEL: Sabah Namazı Kaza (Turuncu - Durum 4) Analizi
+            if (idx === 0 && v.durumlar[0] === 4) s.sabahKaza++;
 
-        // 2. Özel Ameller Analizi (Kuran vb.)
-        item.veri.ozeller.forEach(o => {
-            if (!s.detaylar[o.ad]) s.detaylar[o.ad] = { yapildi: 0, miktar: 0 };
-            
-            if (o.tip === 'sayi') {
-                s.detaylar[o.ad].miktar += Number(o.durum || 0);
-                if (Number(o.durum) > 0) s.detaylar[o.ad].yapildi++;
-            } else if (o.durum > 0) {
-                s.detaylar[o.ad].yapildi++;
-            }
+            // Puanlama
+            let p = (v.durumlar[0] === 1 || v.durumlar[0] === 2 ? 50 : (v.durumlar[0] === 4 ? 30 : 0));
+            p += (v.durumlar[1] > 0 ? 25 : 0) + (v.durumlar[2] > 0 ? 25 : 0);
+            s.toplamPuan += p;
         });
     });
 
-    // Ortalama Skor Hesaplama
-    const sonGenelPuan = Math.round((stats.son15.namazPuan / (stats.son15.gunSay * 5 || 1)));
-    const oncekiGenelPuan = Math.round((stats.onceki15.namazPuan / (stats.onceki15.gunSay * 5 || 1)));
-    const fark = sonGenelPuan - oncekiGenelPuan;
+    const sonOrt = Math.round(stats.son.toplamPuan / (stats.son.gun * 5 || 1));
+    const onceOrt = Math.round(stats.once.toplamPuan / (stats.once.gun * 5 || 1));
 
-    // HTML Raporu Oluşturma
+    // Arayüz Hazırlama
     let h = `<div style="text-align:left; font-size:13px; color:#eee;">`;
-    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">📊 30 GÜNLÜK İSTİKRAR ANALİZİ</h3>`;
+    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">🤖 YZ ANALİZ & UYARI SİSTEMİ</h3>`;
 
-    // Genel Skor Kartı
-    h += `<div style="background:var(--card); padding:15px; border-radius:12px; text-align:center; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
-            <div style="font-size:11px; opacity:0.8; text-transform:uppercase;">Genel Disiplin Puanı</div>
-            <div style="font-size:32px; font-weight:bold; color:${fark >= 0 ? 'var(--light-green)' : 'var(--red)'};">
-                %${sonGenelPuan} <span style="font-size:14px;">${fark >= 0 ? '↑'+fark : '↓'+Math.abs(fark)}</span>
+    // 1. Gidişat Kartı
+    let trendIcon = sonOrt >= onceOrt ? '📈' : '📉';
+    h += `<div style="background:var(--card); padding:12px; border-radius:10px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="font-size:11px; opacity:0.7;">GENEL İSTİKRAR TRENDİ</div>
+            <div style="font-size:24px; font-weight:bold; color:${sonOrt >= onceOrt ? 'var(--light-green)' : 'var(--red)'};">
+                ${trendIcon} %${sonOrt} <span style="font-size:12px; font-weight:normal; opacity:0.8;">(Önceki: %${onceOrt})</span>
             </div>
-            <div style="font-size:10px; opacity:0.5;">Önceki dönem ortalaması: %${oncekiGenelPuan}</div>
           </div>`;
 
-    // Özel Ameller (Kuran Okuma vb.) Analizi
-    h += `<b style="color:var(--blue);">🎯 Özel Amel İstikrarı (Son 15 Gün)</b><br>`;
-    h += `<div style="margin-top:8px; display:flex; flex-direction:column; gap:8px;">`;
-    
-    for (let ad in stats.son15.detaylar) {
-        let d = stats.son15.detaylar[ad];
-        let eskiD = stats.onceki15.detaylar[ad] || { yapildi: 0 };
-        let oran = Math.round((d.yapildi / stats.son15.gunSay) * 100);
-        let eskiOran = Math.round((eskiD.yapildi / (stats.onceki15.gunSay || 1)) * 100);
-        let trendOk = oran >= eskiOran ? '🟢' : '🔴';
+    // 2. Özel Uyarı Motoru (Kritik Uyarılar Burada Üretiliyor)
+    h += `<div style="display:flex; flex-direction:column; gap:8px;">`;
 
-        h += `<div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                    <span>${trendOk} ${ad}</span>
-                    <b>%${oran}</b>
-                </div>
-                <div style="height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
-                    <div style="width:${oran}%; height:100%; background:var(--blue);"></div>
-                </div>
-                <div style="font-size:9px; opacity:0.6; margin-top:3px;">Önceki dönem: %${eskiOran}</div>
-              </div>`;
+    // UYARI: Sabah Namazı Onarımı
+    if (stats.son.sabahKaza > stats.once.sabahKaza) {
+        h += alertBox("orange", "🟠 Sabah Namazı Dikkat", `Son 15 günde sabah namazlarını kaza etme (turuncu) oranınız artmış. Bu, uyanma konusunda bir zorluk yaşadığınızı gösteriyor.`);
     }
+
+    // UYARI: Cemaat İlerleme/Gerileme
+    if (stats.son.cemaat > stats.once.cemaat) {
+        h += alertBox("light-green", "⭐ Cemaat Artışı", `Tebrikler! Cemaatle kılınan vakit sayınız <b>${stats.son.cemaat - stats.once.cemaat} vakit</b> yükselmiş. Harika bir gelişim.`);
+    } else if (stats.son.cemaat < stats.once.cemaat) {
+        h += alertBox("red", "🔻 Cemaat Kaybı", `Önceki döneme göre cemaatle kıldığınız vakit sayısında azalma var. Sosyal ibadet disiplinine tekrar odaklanmalıyız.`);
+    }
+
+    // UYARI: Sünnet & Tesbihat Disiplini
+    let sunnetFark = stats.son.sunnet - stats.once.sunnet;
+    if (sunnetFark < 0) {
+        h += alertBox("blue", "📋 Detaylar Seyreliyor", `Sünnet ve tesbihatlarda gerileme var. Namazın iç huzurunu korumak için acele etmeden bu detaylara dönmelisin.`);
+    }
+
     h += `</div>`;
 
-    // Yapay Zeka Stratejik Yorumu
-    h += `<div style="margin-top:15px; background:rgba(52,152,219,0.15); padding:12px; border-radius:10px; border-left:4px solid var(--blue); font-size:12px;">
-            <b>🤖 YZ Tavsiyesi:</b><br>`;
-    
-    // Kuran okuma özel kontrolü
-    if (stats.son15.detaylar["Kuran Okuma"] && Math.round((stats.son15.detaylar["Kuran Okuma"].yapildi / stats.son15.gunSay) * 100) < 50) {
-        h += `Hocam, Kuran Okuma amelinde son 15 günde bir yavaşlama sezdim. Günlük sadece 5 sayfa bile olsa zinciri kırmamak istikrarı geri getirecektir. `;
-    }
+    // 3. Strateji Notu
+    h += `<div style="margin-top:15px; padding:12px; background:rgba(255,255,255,0.05); border-radius:10px; font-size:12px; border-top:2px solid var(--blue);">
+            <b>📝 Strateji Notu:</b> ${sonOrt >= onceOrt ? "Gidişatın umut verici. Küçük aksamaları önemsemeden zinciri kırmamaya devam et hocam." : "Bu dönem biraz yorulmuşsunuz. Yarın sadece bir vakti 'en kaliteli vakit' seçip tüm detaylarıyla eda ederek enerjinizi tazeleyin."}
+          </div></div>`;
 
-    if (fark < 0) {
-        h += `Genel puanında %${Math.abs(fark)}'lık bir düşüş var. Genelde sünnet veya tesbihatların ihmal edilmesi puanı hızlı düşürür. Yarın sadece sünnetlere odaklanarak puanı toparlayabiliriz.`;
-    } else {
-        h += `Maşallah! Önceki döneme göre %${fark} daha disiplinlisin. Özellikle özel amellerdeki artış manevi motivasyonunun yükseldiğini gösteriyor.`;
-    }
-    h += `</div></div>`;
-
-    document.getElementById('statTitle').innerText = "İSTİKRAR KARNESİ";
+    // Modal Gösterimi
+    document.getElementById('statTitle').innerText = "DİSİPLİN RAPORU";
     document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
 };
+
+// Yardımcı Fonksiyon: Uyarı Kutusu Oluşturucu
+function alertBox(color, title, text) {
+    return `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border-left:4px solid var(--${color});">
+                <b style="font-size:12px; color:var(--${color});">${title}</b><br>
+                <span style="font-size:11px; opacity:0.9;">${text}</span>
+            </div>`;
+}
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
