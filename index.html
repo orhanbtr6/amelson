@@ -280,6 +280,7 @@ window.analizEt = function() {
     let veriler = [];
     let bugun = new Date();
     
+    // 30 günlük veri çekme (Kıyaslama için)
     for (let i = 0; i < 30; i++) {
         let d = new Date();
         d.setDate(bugun.getDate() - i);
@@ -289,85 +290,102 @@ window.analizEt = function() {
     }
 
     if (veriler.length < 3) {
-        alert("Trend analizi için birkaç günlük veri girişi lazım hocam.");
+        alert("Analiz için biraz daha veri birikmesi lazım hocam.");
         return;
     }
 
-    // Gruplandırma Kapları
-    let son15 = { kazaBekleyen: 0, kazaEdilmis: 0, cemaat: 0, vaktinde: 0, say: 0 };
-    let onceki15 = { kazaBekleyen: 0, kazaEdilmis: 0, cemaat: 0, vaktinde: 0, say: 0 };
+    // İstatistik Kapları
+    let stats = {
+        son15: { namazPuan: 0, amelPuan: 0, gunSay: 0, detaylar: {} },
+        onceki15: { namazPuan: 0, amelPuan: 0, gunSay: 0, detaylar: {} }
+    };
 
     veriler.forEach(item => {
-        let hedef = (item.fark < 15) ? son15 : onceki15;
-        hedef.say++;
-        
+        let s = (item.fark < 15) ? stats.son15 : stats.onceki15;
+        s.gunSay++;
+
+        // 1. Namaz (Farz, Sünnet, Tesbihat) Analizi
         item.veri.vakitler.forEach(v => {
-            const d = v.durumlar[0];
-            if (d === 3) hedef.kazaBekleyen++; // Kırmızı
-            if (d === 4) hedef.kazaEdilmis++;   // Turuncu (Senin sorduğun kısım)
-            if (d === 2) hedef.cemaat++;       // Açık Yeşil + Yıldız
-            if (d === 1) hedef.vaktinde++;     // Koyu Yeşil
+            let gunlukVakitPuani = 0;
+            if (v.durumlar[0] === 1 || v.durumlar[0] === 2) gunlukVakitPuani += 50; // Farz/Cemaat
+            if (v.durumlar[0] === 4) gunlukVakitPuani += 30; // Sonradan Kaza
+            if (v.durumlar[1] > 0) gunlukVakitPuani += 25;   // Sünnet
+            if (v.durumlar[2] > 0) gunlukVakitPuani += 25;   // Tesbihat
+            s.namazPuan += gunlukVakitPuani;
+        });
+
+        // 2. Özel Ameller Analizi (Kuran vb.)
+        item.veri.ozeller.forEach(o => {
+            if (!s.detaylar[o.ad]) s.detaylar[o.ad] = { yapildi: 0, miktar: 0 };
+            
+            if (o.tip === 'sayi') {
+                s.detaylar[o.ad].miktar += Number(o.durum || 0);
+                if (Number(o.durum) > 0) s.detaylar[o.ad].yapildi++;
+            } else if (o.durum > 0) {
+                s.detaylar[o.ad].yapildi++;
+            }
         });
     });
 
-    // İstatistiksel Hesaplar
-    const toplamVakit = son15.say * 5;
-    const disiplinPuani = Math.round(((son15.vaktinde + son15.cemaat) / toplamVakit) * 100);
-    const kazaKapatmaOrani = Math.round((son15.kazaEdilmis / (son15.kazaBekleyen + son15.kazaEdilmis || 1)) * 100);
+    // Ortalama Skor Hesaplama
+    const sonGenelPuan = Math.round((stats.son15.namazPuan / (stats.son15.gunSay * 5 || 1)));
+    const oncekiGenelPuan = Math.round((stats.onceki15.namazPuan / (stats.onceki15.gunSay * 5 || 1)));
+    const fark = sonGenelPuan - oncekiGenelPuan;
 
-    let h = `<div style="text-align:left; font-size:13px; color:#eee; line-height:1.4;">`;
-    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">📊 DETAYLI PERFORMANS ANALİZİ</h3>`;
+    // HTML Raporu Oluşturma
+    let h = `<div style="text-align:left; font-size:13px; color:#eee;">`;
+    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">📊 30 GÜNLÜK İSTİKRAR ANALİZİ</h3>`;
 
-    // 1. Kaza Analizi (Turuncu ve Kırmızı Kıyaslaması)
-    h += `<div style="background:rgba(243,156,18,0.1); padding:10px; border-radius:10px; border:1px solid rgba(243,156,18,0.3); margin-bottom:10px;">
-            <b style="color:var(--orange);">🟠 Kaza Onarma Analizi</b><br>
-            <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                <span>Kaza Edilen (Turuncu):</span> <b>${son15.kazaEdilmis}</b>
+    // Genel Skor Kartı
+    h += `<div style="background:var(--card); padding:15px; border-radius:12px; text-align:center; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="font-size:11px; opacity:0.8; text-transform:uppercase;">Genel Disiplin Puanı</div>
+            <div style="font-size:32px; font-weight:bold; color:${fark >= 0 ? 'var(--light-green)' : 'var(--red)'};">
+                %${sonGenelPuan} <span style="font-size:14px;">${fark >= 0 ? '↑'+fark : '↓'+Math.abs(fark)}</span>
             </div>
-            <div style="display:flex; justify-content:space-between;">
-                <span>Bekleyen (Kırmızı):</span> <b>${son15.kazaBekleyen}</b>
-            </div>
-            <div style="margin-top:5px; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
-                <div style="width:${kazaKapatmaOrani}%; height:100%; background:var(--orange);"></div>
-            </div>
-            <div style="font-size:10px; text-align:right; margin-top:3px;">Borç Kapatma Başarısı: %${kazaKapatmaOrani}</div>
+            <div style="font-size:10px; opacity:0.5;">Önceki dönem ortalaması: %${oncekiGenelPuan}</div>
           </div>`;
 
-    // 2. Vaktinde ve Cemaat Durumu
-    h += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
-            <div style="background:rgba(34,139,34,0.1); padding:8px; border-radius:8px; border:1px solid var(--dark-green);">
-                <div style="font-size:10px; color:var(--light-green);">VAKTİNDE</div>
-                <b style="font-size:16px;">${son15.vaktinde + son15.cemaat}</b>
-                <div style="font-size:9px; opacity:0.7;">(Cemaat: ${son15.cemaat})</div>
-            </div>
-            <div style="background:rgba(52,152,219,0.1); padding:8px; border-radius:8px; border:1px solid var(--blue);">
-                <div style="font-size:10px; color:var(--blue);">DİSİPLİN SKORU</div>
-                <b style="font-size:16px;">%${disiplinPuani}</b>
-                <div style="font-size:9px; opacity:0.7;">Vaktinde kılma oranı</div>
-            </div>
-          </div>`;
+    // Özel Ameller (Kuran Okuma vb.) Analizi
+    h += `<b style="color:var(--blue);">🎯 Özel Amel İstikrarı (Son 15 Gün)</b><br>`;
+    h += `<div style="margin-top:8px; display:flex; flex-direction:column; gap:8px;">`;
+    
+    for (let ad in stats.son15.detaylar) {
+        let d = stats.son15.detaylar[ad];
+        let eskiD = stats.onceki15.detaylar[ad] || { yapildi: 0 };
+        let oran = Math.round((d.yapildi / stats.son15.gunSay) * 100);
+        let eskiOran = Math.round((eskiD.yapildi / (stats.onceki15.gunSay || 1)) * 100);
+        let trendOk = oran >= eskiOran ? '🟢' : '🔴';
 
-    // 3. YZ Strateji Notu
-    h += `<div style="background:#082d42; padding:12px; border-radius:10px; border-left:5px solid var(--orange);">
-            <b>🤖 YZ Gözlemi:</b><br>`;
-    
-    if (son15.kazaEdilmis > onceki15.kazaEdilmis) {
-        h += `Hocam, son 15 günde kaza namazlarını telafi etme hızınız artmış. Turuncu tabloların çoğalması, borçlara karşı duyarlılığınızın yükseldiğini gösteriyor. `;
+        h += `<div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span>${trendOk} ${ad}</span>
+                    <b>%${oran}</b>
+                </div>
+                <div style="height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
+                    <div style="width:${oran}%; height:100%; background:var(--blue);"></div>
+                </div>
+                <div style="font-size:9px; opacity:0.6; margin-top:3px;">Önceki dönem: %${eskiOran}</div>
+              </div>`;
     }
+    h += `</div>`;
+
+    // Yapay Zeka Stratejik Yorumu
+    h += `<div style="margin-top:15px; background:rgba(52,152,219,0.15); padding:12px; border-radius:10px; border-left:4px solid var(--blue); font-size:12px;">
+            <b>🤖 YZ Tavsiyesi:</b><br>`;
     
-    if (son15.kazaBekleyen > 0) {
-        h += `Şu an bekleyen <u>${son15.kazaBekleyen} vakit</u> kırmızı alan var. Turuncuya çevrilmeyi bekliyorlar. `;
-    } else if (son15.kazaBekleyen === 0 && son15.kazaEdilmis > 0) {
-        h += `Harika! Tüm kazalarınızı onarmışsınız, bekleyen kırmızı vakit kalmamış. `;
+    // Kuran okuma özel kontrolü
+    if (stats.son15.detaylar["Kuran Okuma"] && Math.round((stats.son15.detaylar["Kuran Okuma"].yapildi / stats.son15.gunSay) * 100) < 50) {
+        h += `Hocam, Kuran Okuma amelinde son 15 günde bir yavaşlama sezdim. Günlük sadece 5 sayfa bile olsa zinciri kırmamak istikrarı geri getirecektir. `;
     }
 
-    if (disiplinPuani < 70) {
-        h += `Vaktinde kılma oranını %80 üzerine çekebilirsek, onarma (kaza) ihtiyacı da kendiliğinden azalacaktır.`;
+    if (fark < 0) {
+        h += `Genel puanında %${Math.abs(fark)}'lık bir düşüş var. Genelde sünnet veya tesbihatların ihmal edilmesi puanı hızlı düşürür. Yarın sadece sünnetlere odaklanarak puanı toparlayabiliriz.`;
+    } else {
+        h += `Maşallah! Önceki döneme göre %${fark} daha disiplinlisin. Özellikle özel amellerdeki artış manevi motivasyonunun yükseldiğini gösteriyor.`;
     }
-    
     h += `</div></div>`;
 
-    document.getElementById('statTitle').innerText = "KAZA VE ONARIM ANALİZİ";
+    document.getElementById('statTitle').innerText = "İSTİKRAR KARNESİ";
     document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
 };
