@@ -266,7 +266,7 @@ window.analizEt = function() {
             </div>
           </div>`;
     vakitAdlari.forEach((ad, i) => { if (stats.son.kaza[i] > stats.once.kaza[i]) h += alertBox("orange", `🟠 ${ad} Namazı Alarmı`, `Son 15 günde ${ad} vaktini vaktinde kılmak yerine "Kaza" (turuncu) olarak tamamlama eğiliminiz artmış.`); });
-    if (stats.son.cemaat < stats.once.cemaat) h += alertBox("red", "🔻 Cemaat Kaybı", "Toplu ibadet istikrarında bir gevşeme tespit edildi.");
+    if (stats.son.cemaat < stats.once.cemaat) h += alertBox("red", "🔻 Cemaat Kaybı", "Cemaatle yapılan ibadet istikrarında bir gevşeme tespit edildi.");
     if (stats.son.sunnet < stats.once.sunnet) h += alertBox("blue", "📋 Sünnet Eksikliği", "Vakitlerin içindeki sünnet oranlarında düşüş var.");
     h += `<div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;"><b style="color:var(--blue); font-size:14px;">🎯 Özel Ameller & Alışkanlıklar</b></div>`;
     h += `<div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">`;
@@ -279,7 +279,7 @@ window.analizEt = function() {
                 <div style="font-size:10px; opacity:0.6; margin-top:4px;">${d.miktar > 0 ? 'Toplam: ' + d.miktar + ' birim' : 'İstikrar Takibi'}</div>
               </div>`;
     }
-    h += `</div><div style="margin-top:20px; padding:12px; background:rgba(52,152,219,0.1); border-radius:10px; font-size:12px; border-left:4px solid var(--blue);"><b>🤖 YZ Tavsiyesi:</b> ${sonOrt >= onceOrt ? "Mevcut düzeniniz çok iyi hocam, özellikle yükselen amellere odaklanarak bu ivmeyi koruyun." : "Bu ara genel bir yorgunluk olabilir. Özel amellerden birini seçip ona 3 gün asılmak sizi eski formunuza döndürecektir."}</div></div>`;
+    h += `</div><div style="margin-top:20px; padding:12px; background:rgba(52,152,219,0.1); border-radius:10px; font-size:12px; border-left:4px solid var(--blue);"><b>🤖 YZ Tavsiyesi:</b> ${sonOrt >= onceOrt ? "Mevcut düzeniniz çok iyi, özellikle yükselen amellere odaklanarak bu ivmeyi koruyun." : "Bu ara genel bir yorgunluk olabilir. Özel amellerden birini seçip ona 3 gün asılmak sizi eski formunuza döndürecektir."}</div></div>`;
     document.getElementById('statTitle').innerText = "GELİŞMİŞ KARNE";
     document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
