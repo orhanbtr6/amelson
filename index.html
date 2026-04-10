@@ -46,7 +46,18 @@
         /* ÖZEL AMEL KARTI VE ARŞİV İKONU DÜZENLEMESİ */
         .ozel-card { background: var(--card); padding: 12px 4px; border-radius: 10px; text-align: center; position: relative; }
         .ozel-name { font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px; cursor: pointer; color: #a5d3ff; }
-        .arsiv-mini-btn { position: absolute; top: 4px; right: 6px; font-size: 12px; opacity: 0.3; cursor: pointer; padding: 4px; transition: 0.2s; }
+        /* Bu kısmı bul ve değerleri değiştir */
+.arsiv-mini-btn {
+    position: absolute;
+    top: -2px;    /* 4px veya 5px olan değeri -2px yaparak yukarı taşıdık */
+    right: -2px;  /* 6px veya 8px olan değeri -2px yaparak sağa taşıdık */
+    font-size: 12px;
+    opacity: 0.3;
+    cursor: pointer;
+    padding: 5px;
+    transition: 0.2s;
+    z-index: 5;   /* Diğer öğelerin üstünde kalması için */
+}
         .arsiv-mini-btn:hover { opacity: 1; }
 
         .is-today-cell { outline: 2px solid var(--today-border); outline-offset: -2px; }
