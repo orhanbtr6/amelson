@@ -184,6 +184,7 @@
     <input type="text" id="habInp" placeholder="Yeni amel/görev...">
     <button class="nav-btn" style="background:var(--dark-green); font-weight:bold;" onclick="yeniEkle()">EKLE</button>
    <button id="micBtn" onclick="window.sesDinle()" style="background:none; border:none; font-size:22px; cursor:pointer; transition: 0.3s;">🎤</button>
+    <div class="menu-item" onclick="window.analizEt()" title="Analiz">🤖</div>
     <button onclick="openSettings()" style="background:none; border:none; font-size:22px;">⚙️</button>
 </div>
 
@@ -275,7 +276,115 @@
         }
         return count >= 2;
     }
+window.analizEt = function() {
+    let veriler = [];
+    let bugun = new Date();
+    const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
+    
+    for (let i = 0; i < 30; i++) {
+        let d = new Date();
+        d.setDate(bugun.getDate() - i);
+        let k = getLocalKey(d);
+        let v = JSON.parse(localStorage.getItem(k));
+        if (v) veriler.push({ fark: i, veri: v });
+    }
 
+    if (veriler.length < 3) {
+        alert("Analiz için birkaç günlük veri girişi yapılmış olmalı hocam.");
+        return;
+    }
+
+    let stats = {
+        son: { cemaat: 0, sunnet: 0, tesbihat: 0, kaza: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 },
+        once: { cemaat: 0, sunnet: 0, tesbihat: 0, kaza: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 }
+    };
+
+    veriler.forEach(item => {
+        let s = (item.fark < 15) ? stats.son : stats.once;
+        s.gun++;
+
+        // 1. Namaz Analizi
+        item.veri.vakitler.forEach((v, idx) => {
+            if (v.durumlar[0] === 2) s.cemaat++;
+            if (v.durumlar[1] > 0) s.sunnet++;
+            if (v.durumlar[2] > 0) s.tesbihat++;
+            if (v.durumlar[0] === 4) s.kaza[idx]++; // Her vakit için turuncu (kaza onarımı) takibi
+
+            let p = (v.durumlar[0] === 1 || v.durumlar[0] === 2 ? 50 : (v.durumlar[0] === 4 ? 30 : 0));
+            p += (v.durumlar[1] > 0 ? 25 : 0) + (v.durumlar[2] > 0 ? 25 : 0);
+            s.puan += p;
+        });
+
+        // 2. Özel Amel Analizi
+        item.veri.ozeller.forEach(o => {
+            if (!s.ozeller[o.ad]) s.ozeller[o.ad] = { yapildi: 0, miktar: 0 };
+            if (o.durum > 0) s.ozeller[o.ad].yapildi++;
+            if (o.tip === 'sayi') s.ozeller[o.ad].miktar += Number(o.durum || 0);
+        });
+    });
+
+    const sonOrt = Math.round(stats.son.puan / (stats.son.gun * 5 || 1));
+    const onceOrt = Math.round(stats.once.puan / (stats.once.gun * 5 || 1));
+
+    let h = `<div style="text-align:left; font-size:13px; color:#eee; max-height:70vh; overflow-y:auto; padding-right:5px;">`;
+    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">📊 BÜTÜNCÜL MANEVİ ANALİZ</h3>`;
+
+    // --- BÖLÜM 1: NAMAZ & TREND ---
+    h += `<div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; opacity:0.7;">GENEL DİSİPLİN PUANI</span>
+                <b style="color:${sonOrt >= onceOrt ? 'var(--light-green)' : 'var(--red)'}; font-size:18px;">%${sonOrt} ${sonOrt >= onceOrt ? '↑' : '↓'}</b>
+            </div>
+          </div>`;
+
+    // Nokta Atışı Namaz Uyarıları
+    vakitAdlari.forEach((ad, i) => {
+        if (stats.son.kaza[i] > stats.once.kaza[i]) {
+            h += alertBox("orange", `🟠 ${ad} Namazı Alarmı`, `Son 15 günde ${ad} vaktini vaktinde kılmak yerine "Kaza" (turuncu) olarak tamamlama eğiliminiz artmış.`);
+        }
+    });
+
+    if (stats.son.cemaat < stats.once.cemaat) h += alertBox("red", "🔻 Cemaat Kaybı", "Toplu ibadet istikrarında bir gevşeme tespit edildi.");
+    if (stats.son.sunnet < stats.once.sunnet) h += alertBox("blue", "📋 Sünnet Eksikliği", "Vakitlerin içindeki sünnet oranlarında düşüş var.");
+
+    // --- BÖLÜM 2: ÖZEL AMELLER ANALİZİ ---
+    h += `<div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+            <b style="color:var(--blue); font-size:14px;">🎯 Özel Ameller & Alışkanlıklar</b>
+          </div>`;
+    
+    h += `<div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">`;
+    for (let ad in stats.son.ozeller) {
+        let d = stats.son.ozeller[ad];
+        let eskiD = stats.once.ozeller[ad] || { yapildi: 0 };
+        let oran = Math.round((d.yapildi / stats.son.gun) * 100);
+        let eskiOran = Math.round((eskiD.yapildi / (stats.once.gun || 1)) * 100);
+        let fark = oran - eskiOran;
+
+        h += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>${ad}</span>
+                    <b style="color:${fark >= 0 ? 'var(--light-green)' : 'var(--red)'}">%${oran} ${fark > 0 ? '(+'+fark+')' : (fark < 0 ? '('+fark+')' : '')}</b>
+                </div>
+                <div style="font-size:10px; opacity:0.6; margin-top:4px;">${d.miktar > 0 ? 'Toplam: ' + d.miktar + ' birim' : 'İstikrar Takibi'}</div>
+              </div>`;
+    }
+    h += `</div>`;
+
+    h += `<div style="margin-top:20px; padding:12px; background:rgba(52,152,219,0.1); border-radius:10px; font-size:12px; border-left:4px solid var(--blue);">
+            <b>🤖 YZ Tavsiyesi:</b> ${sonOrt >= onceOrt ? "Mevcut düzeniniz çok iyi hocam, özellikle yükselen amellere odaklanarak bu ivmeyi koruyun." : "Bu ara genel bir yorgunluk olabilir. Özel amellerden birini seçip ona 3 gün asılmak sizi eski formunuza döndürecektir."}
+          </div></div>`;
+
+    document.getElementById('statTitle').innerText = "GELİŞMİŞ KARNE";
+    document.getElementById('calGrid').innerHTML = h;
+    document.getElementById('statModal').style.display = 'flex';
+};
+
+function alertBox(color, title, text) {
+    return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
+                <b style="font-size:12px; color:var(--${color});">${title}</b><br>
+                <span style="font-size:11px; opacity:0.8;">${text}</span>
+            </div>`;
+}
     function veriYukle() {
         const key = getLocalKey(seciliTarih);
         const kaydedilmis = JSON.parse(localStorage.getItem(key));
