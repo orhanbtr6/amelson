@@ -355,22 +355,20 @@ function alertBox(color, title, text) {
                     ${cemaatMi ? `<span style="position:absolute; top:-10px; right:-2px; font-size:14px; color:#ffeb3b; text-shadow: 0 0 3px #000;">⭐</span>` : ''}
                 </div></div>`;
         });
-   const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
+const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             if (o.arsiv) return;
 
-            // Yapıldı kontrolü
-            const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && o.durum > 0);
+            // Kontrol: Sayı 0'dan büyük mü veya Renk seçili mi?
+            const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
             
             const card = document.createElement('div');
-            card.className = 'ozel-kart'; // Sınıfı sabit bıraktık, bozma ihtimalini sildik
+            
+            // CLASS EKLEME: ozel-card her zaman var, yapildi duruma göre eklenir
+            card.classList.add('ozel-kart');
+            if (isDone) card.classList.add('yapildi');
+            
             card.style.position = 'relative';
-
-            // EĞER YAPILDIYSA ARKA PLANI BURADA DEĞİŞTİRİYORUZ
-            if (isDone) {
-                card.style.backgroundColor = 'rgba(144, 238, 144, 0.25)'; // Soft Yeşil
-                card.style.border = '1px solid rgba(144, 238, 144, 0.5)';
-            }
 
             let ctrl = o.tip === 'sayi' ? 
                 `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
