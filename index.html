@@ -356,16 +356,23 @@ function alertBox(color, title, text) {
                     ${cemaatMi ? `<span style="position:absolute; top:-10px; right:-2px; font-size:14px; color:#ffeb3b; text-shadow: 0 0 3px #000;">⭐</span>` : ''}
                 </div></div>`;
         });
-        const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
+       const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             if (o.arsiv) return;
 
-            // Yapıldı kontrolü: Sayı varsa veya renk seçilmişse
-            const isDone = (o.tip === 'sayi' && o.durum > 0) || (o.tip === 'renk' && o.durum > 0);
+            // Kontrol: Sayı 0'dan büyükse veya renk dairesi seçilmişse (durum 0 değilse)
+            const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
             
             const card = document.createElement('div');
-            // 'ozel-card' her zaman kalmalı, 'yapildi' sadece varsa eklenmeli
-            card.className = 'ozel-kart' + (isDone ? ' yapildi' : '');
+            
+            // Tasarımın bozulmaması için ana sınıfı ekliyoruz
+            card.classList.add('ozel-kart');
+            
+            // Eğer yapıldıysa yeşil sınıfını ekliyoruz
+            if (isDone) {
+                card.classList.add('yapildi');
+            }
+            
             card.style.position = 'relative';
 
             let ctrl = o.tip === 'sayi' ? 
