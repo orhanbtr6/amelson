@@ -359,12 +359,13 @@ function alertBox(color, title, text) {
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             if (o.arsiv) return;
 
-            // Yapıldı kontrolü: Sayı varsa veya renk seçilmişse
-            const isDone = (o.tip === 'sayi' && o.durum > 0) || (o.tip === 'renk' && o.durum > 0);
+            // Kontrol: Sayı varsa (0'dan büyükse) veya renk dairesi seçilmişse (durum 0 değilse)
+            // o.durum hem sayı hem string gelebileceği için Number() ile garantiye alıyoruz
+            const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && o.durum > 0);
             
             const card = document.createElement('div');
-            // 'ozel-card' her zaman kalmalı, 'yapildi' sadece varsa eklenmeli
-            card.className = 'ozel-card' + (isDone ? ' yapildi' : '');
+            // 'ozel-card' her zaman kalmalı, yapıldıysa 'yapildi' eklenmeli
+            card.className = 'ozel-kart' + (isDone ? ' yapildi' : '');
             card.style.position = 'relative';
 
             let ctrl = o.tip === 'sayi' ? 
