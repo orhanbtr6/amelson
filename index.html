@@ -356,35 +356,29 @@ function alertBox(color, title, text) {
                 </div></div>`;
         });
    const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
-const oDiv = document.getElementById('ozelList'); 
-oDiv.innerHTML = "";
+        gunlukVeriler.ozeller.forEach((o, oIdx) => {
+            if (o.arsiv) return;
 
-gunlukVeriler.ozeller.forEach((o, oIdx) => {
-    if (o.arsiv) return;
+            // Yapıldı kontrolü: Sayı varsa veya renk seçilmişse
+            const isDone = (o.tip === 'sayi' && o.durum > 0) || (o.tip === 'renk' && o.durum > 0);
+            
+            const card = document.createElement('div');
+            // 'ozel-card' her zaman kalmalı, 'yapildi' sadece varsa eklenmeli
+            card.className = 'ozel-card' + (isDone ? ' yapildi' : '');
+            card.style.position = 'relative';
 
-    // Amel dolu mu boş mu kontrolü
-    const isDone = (o.tip === 'sayi' && o.durum > 0) || (o.tip === 'renk' && o.durum > 0);
-    
-    const card = document.createElement('div');
-    
-    // BURASI KRİTİK: Hem orijinal class'ı (ozel-card) koruyoruz hem de yanına 'yapildi' ekliyoruz
-    card.className = 'ozel-card' + (isDone ? ' yapildi' : '');
-    card.style.position = 'relative';
-
-    let ctrl = o.tip === 'sayi' ? 
-        `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
-        `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-    
-    let wHtml = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
-    
-    card.innerHTML = `
-        <span class="arsiv-mini-btn" onclick="event.stopPropagation(); window.arsivle('${o.id}')" title="Arşivle" style="position:absolute; top:-2px; right:-2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">📁</span>
-        ${wHtml}
-        <b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>
-        ${ctrl}
-    `;
-    oDiv.appendChild(card);
-});
+            let ctrl = o.tip === 'sayi' ? 
+                `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
+                `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
+            
+            let wHtml = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
+            
+            card.innerHTML = `
+                <span class="arsiv-mini-btn" onclick="event.stopPropagation(); window.arsivle('${o.id}')" title="Arşivle" style="position:absolute; top:-2px; right:-2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">📦</span>
+                ${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}
+            `;
+            oDiv.appendChild(card);
+        });
     }
 
     window.showHeatmap = (id, tip, subIdx = null) => {
