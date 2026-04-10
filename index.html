@@ -360,16 +360,18 @@ const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
         gunlukVeriler.ozeller.forEach((o, oIdx) => {
             if (o.arsiv) return;
 
-            // Kontrol: Sayı 0'dan büyük mü veya Renk seçili mi?
-            const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
+            // Yapıldı kontrolü
+            const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && o.durum > 0);
             
             const card = document.createElement('div');
-            
-            // CLASS EKLEME: ozel-card her zaman var, yapildi duruma göre eklenir
-            card.classList.add('ozel-kart');
-            if (isDone) card.classList.add('yapildi');
-            
+            card.className = 'ozel-kart'; // Sınıfı sabit bıraktık, bozma ihtimalini sildik
             card.style.position = 'relative';
+
+            // EĞER YAPILDIYSA ARKA PLANI BURADA DEĞİŞTİRİYORUZ
+            if (isDone) {
+                card.style.backgroundColor = 'rgba(144, 238, 144, 0.25)'; // Soft Yeşil
+                card.style.border = '1px solid rgba(144, 238, 144, 0.5)';
+            }
 
             let ctrl = o.tip === 'sayi' ? 
                 `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
