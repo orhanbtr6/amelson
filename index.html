@@ -627,86 +627,92 @@ window.showModernReport = () => {
 function hesaplaPuan(v) {
     if (!v) return 0;
     let p = 0;
-    
-    v.vakitler.forEach(vk => {
-        let f = Number(vk.durumlar[0]); // Farz
-        let s = Number(vk.durumlar[1]); // Sünnet
-        let t = Number(vk.durumlar[2]); // Tesbihat
+    let toplamPuanPayi = 0;
 
-        // --- FARZ PUANLAMASI ---
-        if (f === 1 || f === 2) { 
-            p += 12; // Tam Puan
-        } else if (f === 4) { 
-            p += 6;  // Turuncu (Sonradan) -> Yarım Puan
-        } 
-        // Boş (0) ve Kırmızı (3) durumlarında kod buraya girmez, puan 0 kalır.
+    let simdi = new Date();
+    let suAnkiSaat = simdi.getHours();
+    let seciliTarihStr = getLocalKey(seciliTarih);
+    let bugunStr = getLocalKey(new Date());
+    let bugunMu = (seciliTarihStr === bugunStr);
 
-        // --- SÜNNET PUANLAMASI ---
-        if (s === 1 || s === 2) {
-            p += 4; 
-        } else if (s === 4) {
-            p += 2; // Turuncu (Sonradan) -> Yarım Puan
-        }
+    v.vakitler.forEach((vk, index) => {
+        let f = Number(vk.durumlar[0]);
+        let s = Number(vk.durumlar[1]);
+        let t = Number(vk.durumlar[2]);
 
-        // --- TESBİHAT PUANLAMASI ---
-        if (t === 1 || t === 2) {
-            p += 2;
-        } else if (t === 4) {
-            p += 1; // Turuncu (Sonradan) -> Yarım Puan
+        let vakitGeldiMi = !bugunMu || (suAnkiSaat >= vakitSaatleri[index]);
+
+        if (vakitGeldiMi) {
+            toplamPuanPayi += 18; // 12 (Farz) + 4 (Sünnet) + 2 (Tesbihat)
+            
+            // Puan ekleme mantığı aynı kalıyor
+            if (f === 1 || f === 2) p += 12; else if (f === 4) p += 6;
+            if (s === 1 || s === 2) p += 4; else if (s === 4) p += 2;
+            if (t === 1 || t === 2) p += 2; else if (t === 4) p += 1;
         }
     });
 
-    // Özel Amellerin Etkisi (Toplam 10 puan üzerinden)
+    // Özel ameller (Sabit 10 puan)
+    toplamPuanPayi += 10;
     let ozeller = v.ozeller || [];
-    let yapilanOzel = ozeller.filter(o => {
-        let d = Number(o.durum);
-        // Özel amellerde turuncu mantığı varsa d === 4 için yarım puan verilebilir
-        // Ama genellikle yapıldı/yapılmadı olduğu için d > 0 kalsın diyorsanız böyle kalabilir.
-        return d > 0;
-    }).length;
-    
+    let yapilanOzel = ozeller.filter(o => Number(o.durum) > 0).length;
     if (ozeller.length > 0) {
-        let ozelKatki = (yapilanOzel / ozeller.length) * 10;
-        p += ozelKatki;
+        p += (yapilanOzel / ozeller.length) * 10;
     }
 
-    return Math.round(Math.min(p, 100));
+    // Dinamik oranlama: (Alınan Puan / O ana kadarki Max Puan) * 100
+    if (toplamPuanPayi === 0) return 0;
+    return Math.round((p / toplamPuanPayi) * 100);
 }
-
 function getEksikler(v) {
     let e = [];
-    v.vakitler.forEach((vk) => {
-        let f = Number(vk.durumlar[0]); // Farz
-        let s = Number(vk.durumlar[1]); // Sünnet
-        let t = Number(vk.durumlar[2]); // Tesbihat
+    let simdi = new Date();
+    let suAnkiSaat = simdi.getHours();
+    
+    // Eğer raporu baktığımız gün BUGÜN değilse (geçmiş bir günse), tüm vakitleri kontrol et
+    // Eğer BUGÜN ise sadece saati gelenleri kontrol et
+    let seciliTarihStr = getLocalKey(seciliTarih);
+    let bugunStr = getLocalKey(new Date());
+    let bugunMu = (seciliTarihStr === bugunStr);
 
-        // Farz: Boş (0) veya Kırmızı (3) ise eksik yaz
-        if (f === 0 || f === 3) {
-            e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.2); border:1px solid #e74c3c; border-radius:8px; margin:2px; font-size:11px; color:#ff7675;">🚨 ${vk.ad.split(' ')[0]} Farz</span>`);
-        }
+    v.vakitler.forEach((vk, index) => {
+        let f = Number(vk.durumlar[0]);
+        let s = Number(vk.durumlar[1]);
+        let t = Number(vk.durumlar[2]);
         
-        // Sünnet: Boş veya Kırmızı ise eksik yaz
-        if (s === 0 || s === 3) {
-            e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(243,156,18,0.1); border:1px solid #f39c12; border-radius:8px; margin:2px; font-size:11px; color:#fab1a0;">🔸 ${vk.ad.split(' ')[0]} Sünnet</span>`);
-        }
+        // Vakti geldi mi? (Geçmiş günler için her zaman evet, bugün için saate bak)
+        let vakitGeldiMi = !bugunMu || (suAnkiSaat >= vakitSaatleri[index]);
 
-        // Tesbihat: Boş veya Kırmızı ise eksik yaz
-        if (t === 0 || t === 3) {
-            e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); border-radius:8px; margin:2px; font-size:11px; opacity:0.8;">📿 ${vk.ad.split(' ')[0]} Tesbihat</span>`);
+        if (vakitGeldiMi) {
+            if (f === 0 || f === 3) {
+                e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.2); border:1px solid #e74c3c; border-radius:8px; margin:2px; font-size:11px; color:#ff7675;">🚨 ${vk.ad.split(' ')[0]} Farz</span>`);
+            }
+            if (s === 0 || s === 3) {
+                e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(243,156,18,0.1); border:1px solid #f39c12; border-radius:8px; margin:2px; font-size:11px; color:#fab1a0;">🔸 ${vk.ad.split(' ')[0]} Sünnet</span>`);
+            }
+            if (t === 0 || t === 3) {
+                e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); border-radius:8px; margin:2px; font-size:11px; opacity:0.8;">📿 ${vk.ad.split(' ')[0]} Tesbihat</span>`);
+            }
         }
     });
 
-    // Özel Ameller için kontrol
+    // Özel ameller genellikle tüm güne yayılır, onları her zaman gösteriyoruz
     let ozeller = v.ozeller || [];
     ozeller.forEach(o => {
-        let d = Number(o.durum);
-        if (d === 0 || d === 3) { // Boş veya Kırmızı ise
+        if (Number(o.durum) === 0 || Number(o.durum) === 3) {
             e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(52,152,219,0.1); border:1px solid #3498db; border-radius:8px; margin:2px; font-size:11px; color:#74b9ff;">✨ ${o.ad}</span>`);
         }
     });
 
-    return e.length > 0 ? e.join('') : "<span style='color:#2ecc71; font-weight:bold;'>🌟 Harika! Bugün her şey tamam.</span>";
+    return e.length > 0 ? e.join('') : "<span style='color:#2ecc71; font-weight:bold;'>🌟 Şu ana kadar her şey yolunda!</span>";
 }
+const vakitSaatleri = {
+    0: 4,  // Sabah (Örn: 04:00'den itibaren sorumlu)
+    1: 13, // Öğle (13:00)
+    2: 16, // İkindi (16:30 gibi)
+    3: 19, // Akşam (19:30 gibi)
+    4: 21  // Yatsı (21:00)
+};
 </script>
 </body>
 </html>
