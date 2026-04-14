@@ -532,51 +532,47 @@ function alertBox(color, title, text) {
     veriYukle();
     window.tamamenSil = (amelAd) => { if(confirm(`'${amelAd}' her yerden silinecek. Emin misiniz?`)) { let g = JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; g = g.filter(a => a.ad.trim() !== amelAd.trim()); localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); for (let i = 0; i < localStorage.length; i++) { let key = localStorage.key(i); if (key && key.startsWith('amel_')) { let gunlukVeri = JSON.parse(localStorage.getItem(key)); if (gunlukVeri && gunlukVeri.ozeller) { gunlukVeri.ozeller = gunlukVeri.ozeller.filter(o => o.ad.trim() !== amelAd.trim()); localStorage.setItem(key, JSON.stringify(gunlukVeri)); } } } veriYukle(); closeModal(); } }
 window.showModernReport = () => {
-    let bugunVeri = gunlukVeriler;
-    let dun = new Date(seciliTarih); dun.setDate(dun.getDate() - 1);
-    let dunVeri = JSON.parse(localStorage.getItem(getLocalKey(dun)));
+    // 1. Verileri Hazırla
+    let bugunVeri = gunlukVeriler; // Tek sefer tanımladık
+    let dunTarih = new Date(seciliTarih); 
+    dunTarih.setDate(dunTarih.getDate() - 1);
+    let dunVeri = JSON.parse(localStorage.getItem(getLocalKey(dunTarih)));
 
     let bPuan = hesaplaPuan(bugunVeri);
     let dPuan = dunVeri ? hesaplaPuan(dunVeri) : 0;
 
     let mesaj = "";
-    let mRenk = ""; // Mesaj ve Bar Rengi
+    let mRenk = ""; 
 
-    let bugunVeri = gunlukVeriler;
-    
-    
     // --- ÖZEL BAŞLANGIÇ KONTROLÜ ---
     let simdi = new Date();
     let saat = simdi.getHours();
+    
+    // Kullanıcının bugün herhangi bir şeye tıklayıp tıklamadığını kontrol ediyoruz
     let toplamGiris = bugunVeri.vakitler.reduce((acc, v) => acc + v.durumlar.reduce((a, b) => a + b, 0), 0) + 
-                     bugunVeri.ozeller.reduce((acc, o) => acc + Number(o.durum), 0);
+                     (bugunVeri.ozeller ? bugunVeri.ozeller.reduce((acc, o) => acc + Number(o.durum || 0), 0) : 0);
 
-
-
-    // Eğer sabah saatlerindeysek (örneğin öğle 13:00'den önce) ve hiç giriş yapılmamışsa
+    // --- RENK VE MESAJ MANTIĞI ---
     if (saat < 13 && toplamGiris === 0) {
-        mRenk = "#3498db"; // Huzurlu bir mavi ile başla
+        mRenk = "#3498db"; // Mavi
         mesaj = "Hayırlı sabahlar! Güne güzel bir maneviyatla başlamaya ne dersin? Sabah namazını kılarak ilk nuru alalım. ✨";
-    } 
-   
-    // --- YENİ RENK SKALASI ---
-    else if (bPuan >= 100) {
-        mRenk = "#2ecc71"; // Yeşil tonları
+    } else if (bPuan >= 100) {
+        mRenk = "#2ecc71"; // Yeşil
         mesaj = "Manevi zirvedesin! Bu nuru koru 🔥🌟";
     } else if (bPuan >= 90) {
-        mRenk = "#2ecc71"; // Yeşil tonları
+        mRenk = "#2ecc71"; // Yeşil
         mesaj = "Gayretin çok iyi, küçük bir adımla zirveye çıkabilirsin! 🚀";
-    }else if (bPuan >= 80) {
-        mRenk = "#3498db"; // Mavi tonları
+    } else if (bPuan >= 80) {
+        mRenk = "#3498db"; // Mavi
         mesaj = "Gayretini arttır, manevi basamakları çıkmalısın! 💡";
     } else if (bPuan >= 70) {
-        mRenk = "#e67e22"; // Turuncu tonları
+        mRenk = "#e67e22"; // Turuncu
         mesaj = "Dikkat etmelisin, bazı şeyler aksamaya başlamış. ⚠️";
     } else if (bPuan >= 50) {
-        mRenk = "#9b59b6"; // Mor tonları
+        mRenk = "#9b59b6"; // Mor
         mesaj = "Toparlanma vakti! Enerjini yeniden yükseltmelisin. ✨";
     } else {
-        mRenk = "#e74c3c"; // Kırmızı tonları
+        mRenk = "#e74c3c"; // Kırmızı
         mesaj = "Acil müdahale lazım! Manevi batarya çok zayıfladı. 🚨";
     }
 
@@ -609,7 +605,7 @@ window.showModernReport = () => {
             </div>
         </div>
 
-        <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; border-left:4px solid ${mRenk}; font-size:13px; line-height:1.6; transition: all 0.5s;">
+        <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; border-left:4px solid ${mRenk}; font-size:13px; line-height:1.6;">
             ${mesaj}
         </div>
 
@@ -639,7 +635,6 @@ window.showModernReport = () => {
     document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
 };
-
 // Yardımcı Fonksiyonlar
 function hesaplaPuan(v) {
     if (!v) return 0;
