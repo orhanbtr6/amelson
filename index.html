@@ -154,7 +154,7 @@
     <div class="menu-item" onclick="window.analizEt()" title="Analiz">🤖</div>
 <div class="nav-item" onclick="window.showModernReport()" style="flex:1; display:flex; flex-direction:column; align-items:center; cursor:pointer;">
     <span style="font-size:22px;">⚡</span>
-    <div style="font-size:10px; font-weight:bold;">Enerji</div>
+ 
 </div>
     <button onclick="openSettings()" style="background:none; border:none; font-size:22px;">⚙️</button>
 </div>
@@ -528,7 +528,7 @@ window.showModernReport = () => {
     let mesaj = "";
     let mesajRenk = "";
     if (bPuan >= 100) {
-        mesaj = "Manevi zirvedesin! Bu nuru koru hocam. 🔥";
+        mesaj = "Manevi zirvedesin! Bu nuru korumalısın. 🔥";
         mesajRenk = "var(--light-green)";
     } else if (bPuan >= dPuan) {
         mesaj = "Düne göre daha iyisin, küçük bir gayretle tamamlarsın! 🚀";
@@ -578,27 +578,47 @@ window.showModernReport = () => {
 function hesaplaPuan(v) {
     if (!v) return 0;
     let p = 0;
+    
     v.vakitler.forEach(vk => {
-        if (vk.durumlar[0] > 0) p += 12; // Farzlar
-        if (vk.durumlar[1] > 0) p += 4;  // Sünnetler
-        if (vk.durumlar[2] > 0) p += 4;  // Tesbihatlar
+        // Farz Kontrolü (Tam veya Kaza fark etmez, ama yapılmış olması önemli)
+        if (vk.durumlar[0] > 0) p += 12; 
+        
+        // Sünnet Kontrolü
+        if (vk.durumlar[1] > 0) p += 4;
+        
+        // Tesbihat Kontrolü
+        if (vk.durumlar[2] > 0) p += 2;
     });
-    let yapilanOzel = v.ozeller.filter(o => (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && o.durum > 0)).length;
-    p += (yapilanOzel * 5); // Her özel amel 5 puan
-    return Math.min(p, 100);
+
+    // Özel Amellerin Etkisi (Toplam özel amel sayısına göre 10 puanı bölüştürür)
+    let ozeller = v.ozeller || [];
+    let yapilanOzel = ozeller.filter(o => (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0)).length;
+    
+    if (ozeller.length > 0) {
+        let ozelKatki = (yapilanOzel / ozeller.length) * 10;
+        p += ozelKatki;
+    }
+
+    return Math.round(Math.min(p, 100)); // En fazla 100 puan ve tam sayı
 }
 
 function getEksikler(v) {
     let e = [];
-    v.vakitler.forEach((vk, idx) => {
-        if (vk.durumlar[2] === 0) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.2); border-radius:8px; margin:2px; font-size:11px;">📌 ${vk.ad.split(' ')[0]} Tesbihatı</span>`);
+    v.vakitler.forEach((vk) => {
+        // Nelerin eksik olduğunu daha detaylı gösterelim
+        if (vk.durumlar[0] === 0) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.3); border-radius:8px; margin:2px; font-size:11px; border:1px solid #e74c3c;">🚨 ${vk.ad.split(' ')[0]} Farz</span>`);
+        if (vk.durumlar[1] === 0) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(243,156,18,0.2); border-radius:8px; margin:2px; font-size:11px;">🔸 ${vk.ad.split(' ')[0]} Sünnet</span>`);
+        if (vk.durumlar[2] === 0) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(255,255,255,0.1); border-radius:8px; margin:2px; font-size:11px;">📿 ${vk.ad.split(' ')[0]} Tesbihat</span>`);
     });
-    v.ozeller.forEach(o => {
-        if (!((o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && o.durum > 0))) {
+
+    let ozeller = v.ozeller || [];
+    ozeller.forEach(o => {
+        if (!((o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0))) {
             e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(52,152,219,0.2); border-radius:8px; margin:2px; font-size:11px;">✨ ${o.ad}</span>`);
         }
     });
-    return e.length > 0 ? e.join('') : "<span style='color:var(--light-green)'>Tüm görevler tamamlandı, mükemmel!</span>";
+
+    return e.length > 0 ? e.join('') : "<span style='color:var(--light-green)'>Tüm görevler tamamlandı, mükemmel bir gün! 🌟</span>";
 }
 </script>
 </body>
