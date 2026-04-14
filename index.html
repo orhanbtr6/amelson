@@ -673,20 +673,36 @@ function hesaplaPuan(v) {
 function getEksikler(v) {
     let e = [];
     v.vakitler.forEach((vk) => {
-        // Nelerin eksik olduğunu daha detaylı gösterelim
-        if (vk.durumlar[0] === 0) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.3); border-radius:8px; margin:2px; font-size:11px; border:1px solid #e74c3c;">🚨 ${vk.ad.split(' ')[0]} Farz</span>`);
-        if (vk.durumlar[1] === 0) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(243,156,18,0.2); border-radius:8px; margin:2px; font-size:11px;">🔸 ${vk.ad.split(' ')[0]} Sünnet</span>`);
-        if (vk.durumlar[2] === 0) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(255,255,255,0.1); border-radius:8px; margin:2px; font-size:11px;">📿 ${vk.ad.split(' ')[0]} Tesbihat</span>`);
-    });
+        let f = Number(vk.durumlar[0]); // Farz
+        let s = Number(vk.durumlar[1]); // Sünnet
+        let t = Number(vk.durumlar[2]); // Tesbihat
 
-    let ozeller = v.ozeller || [];
-    ozeller.forEach(o => {
-        if (!((o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0))) {
-            e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(52,152,219,0.2); border-radius:8px; margin:2px; font-size:11px;">✨ ${o.ad}</span>`);
+        // Farz: Boş (0) veya Kırmızı (3) ise eksik yaz
+        if (f === 0 || f === 3) {
+            e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.2); border:1px solid #e74c3c; border-radius:8px; margin:2px; font-size:11px; color:#ff7675;">🚨 ${vk.ad.split(' ')[0]} Farz</span>`);
+        }
+        
+        // Sünnet: Boş veya Kırmızı ise eksik yaz
+        if (s === 0 || s === 3) {
+            e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(243,156,18,0.1); border:1px solid #f39c12; border-radius:8px; margin:2px; font-size:11px; color:#fab1a0;">🔸 ${vk.ad.split(' ')[0]} Sünnet</span>`);
+        }
+
+        // Tesbihat: Boş veya Kırmızı ise eksik yaz
+        if (t === 0 || t === 3) {
+            e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); border-radius:8px; margin:2px; font-size:11px; opacity:0.8;">📿 ${vk.ad.split(' ')[0]} Tesbihat</span>`);
         }
     });
 
-    return e.length > 0 ? e.join('') : "<span style='color:var(--light-green)'>Tüm görevler tamamlandı, mükemmel bir gün! 🌟</span>";
+    // Özel Ameller için kontrol
+    let ozeller = v.ozeller || [];
+    ozeller.forEach(o => {
+        let d = Number(o.durum);
+        if (d === 0 || d === 3) { // Boş veya Kırmızı ise
+            e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(52,152,219,0.1); border:1px solid #3498db; border-radius:8px; margin:2px; font-size:11px; color:#74b9ff;">✨ ${o.ad}</span>`);
+        }
+    });
+
+    return e.length > 0 ? e.join('') : "<span style='color:#2ecc71; font-weight:bold;'>🌟 Harika! Bugün her şey tamam.</span>";
 }
 </script>
 </body>
