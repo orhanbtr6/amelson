@@ -624,84 +624,39 @@ function hesaplaPuan(v) {
     let p = 0;
     
     v.vakitler.forEach(vk => {
-        // Durumları sayıya zorlayarak alıyoruz (Metin gelse bile sayı olur)
         let f = Number(vk.durumlar[0]); // Farz
         let s = Number(vk.durumlar[1]); // Sünnet
         let t = Number(vk.durumlar[2]); // Tesbihat
 
         // --- FARZ PUANLAMASI ---
-        // 1: Yeşil (Vaktinde), 2: Açık Yeşil (Cemaat) -> TAM PUAN
         if (f === 1 || f === 2) { 
-            p += 12; 
+            p += 12; // Tam Puan
+        } else if (f === 4) { 
+            p += 6;  // Turuncu (Sonradan) -> Yarım Puan
         } 
-        // 4: Turuncu veya 3: Kırmızı (Kaza/Sonradan) -> YARIM PUAN
-        else if (f > 2) { 
-            p += 6;  
-        }
-        
+        // Boş (0) ve Kırmızı (3) durumlarında kod buraya girmez, puan 0 kalır.
+
         // --- SÜNNET PUANLAMASI ---
         if (s === 1 || s === 2) {
             p += 4; 
-        } else if (s > 2) {
-            p += 2;
+        } else if (s === 4) {
+            p += 2; // Turuncu (Sonradan) -> Yarım Puan
         }
 
         // --- TESBİHAT PUANLAMASI ---
         if (t === 1 || t === 2) {
             p += 2;
+        } else if (t === 4) {
+            p += 1; // Turuncu (Sonradan) -> Yarım Puan
         }
     });
 
     // Özel Amellerin Etkisi (Toplam 10 puan üzerinden)
     let ozeller = v.ozeller || [];
     let yapilanOzel = ozeller.filter(o => {
-        let d = (o.tip === 'sayi') ? Number(o.durum) : Number(o.durum);
-        return d > 0;
-    }).length;
-    
-    if (ozeller.length > 0) {
-        let ozelKatki = (yapilanOzel / ozeller.length) * 10;
-        p += ozelKatki;
-    }
-
-    return Math.round(Math.min(p, 100));
-}function hesaplaPuan(v) {
-    if (!v) return 0;
-    let p = 0;
-    
-    v.vakitler.forEach(vk => {
-        // Durumları sayıya zorlayarak alıyoruz (Metin gelse bile sayı olur)
-        let f = Number(vk.durumlar[0]); // Farz
-        let s = Number(vk.durumlar[1]); // Sünnet
-        let t = Number(vk.durumlar[2]); // Tesbihat
-
-        // --- FARZ PUANLAMASI ---
-        // 1: Yeşil (Vaktinde), 2: Açık Yeşil (Cemaat) -> TAM PUAN
-        if (f === 1 || f === 2) { 
-            p += 12; 
-        } 
-        // 4: Turuncu veya 3: Kırmızı (Kaza/Sonradan) -> YARIM PUAN
-        else if (f > 2) { 
-            p += 6;  
-        }
-        
-        // --- SÜNNET PUANLAMASI ---
-        if (s === 1 || s === 2) {
-            p += 4; 
-        } else if (s > 2) {
-            p += 2;
-        }
-
-        // --- TESBİHAT PUANLAMASI ---
-        if (t === 1 || t === 2) {
-            p += 2;
-        }
-    });
-
-    // Özel Amellerin Etkisi (Toplam 10 puan üzerinden)
-    let ozeller = v.ozeller || [];
-    let yapilanOzel = ozeller.filter(o => {
-        let d = (o.tip === 'sayi') ? Number(o.durum) : Number(o.durum);
+        let d = Number(o.durum);
+        // Özel amellerde turuncu mantığı varsa d === 4 için yarım puan verilebilir
+        // Ama genellikle yapıldı/yapılmadı olduğu için d > 0 kalsın diyorsanız böyle kalabilir.
         return d > 0;
     }).length;
     
