@@ -541,9 +541,9 @@ window.showModernReport = () => {
 
     let mesaj = "";
     let mRenk = ""; // Mesaj ve Bar Rengi
-window.showModernReport = () => {
+
     let bugunVeri = gunlukVeriler;
-    let bPuan = hesaplaPuan(bugunVeri);
+    
     
     // --- ÖZEL BAŞLANGIÇ KONTROLÜ ---
     let simdi = new Date();
@@ -551,8 +551,7 @@ window.showModernReport = () => {
     let toplamGiris = bugunVeri.vakitler.reduce((acc, v) => acc + v.durumlar.reduce((a, b) => a + b, 0), 0) + 
                      bugunVeri.ozeller.reduce((acc, o) => acc + Number(o.durum), 0);
 
-    let mesaj = "";
-    let mRenk = "";
+
 
     // Eğer sabah saatlerindeysek (örneğin öğle 13:00'den önce) ve hiç giriş yapılmamışsa
     if (saat < 13 && toplamGiris === 0) {
@@ -561,7 +560,7 @@ window.showModernReport = () => {
     } 
    
     // --- YENİ RENK SKALASI ---
-    if (bPuan >= 100) {
+    else if (bPuan >= 100) {
         mRenk = "#2ecc71"; // Yeşil tonları
         mesaj = "Manevi zirvedesin! Bu nuru koru 🔥🌟";
     } else if (bPuan >= 90) {
