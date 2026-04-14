@@ -543,12 +543,15 @@ window.showModernReport = () => {
     let mRenk = ""; // Mesaj ve Bar Rengi
 
     // --- YENİ RENK SKALASI ---
-    if (bPuan >= 90) {
+    if (bPuan >= 100) {
         mRenk = "#2ecc71"; // Yeşil tonları
         mesaj = "Manevi zirvedesin! Bu nuru koru hocam. 🔥🌟";
-    } else if (bPuan >= 80) {
-        mRenk = "#3498db"; // Mavi tonları
+    } else if (bPuan >= 90) {
+        mRenk = "#2ecc71"; // Yeşil tonları
         mesaj = "Gayretin çok iyi, küçük bir adımla zirveye çıkabilirsin! 🚀";
+    }else if (bPuan >= 80) {
+        mRenk = "#3498db"; // Mavi tonları
+        mesaj = "Gayretini arttır, manevi basamakları çıkmalısın! 💡";
     } else if (bPuan >= 70) {
         mRenk = "#e67e22"; // Turuncu tonları
         mesaj = "Dikkat etmelisin, bazı şeyler aksamaya başlamış. ⚠️";
