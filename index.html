@@ -652,29 +652,32 @@ function hesaplaPuan(v) {
         let s = Number(vk.durumlar[1]);
         let t = Number(vk.durumlar[2]);
 
-        let vakitGeldiMi = !bugunMu || (suAnkiSaat >= vakitSaatleri[index]);
+        // Sabah namazı (index 0) her zaman aktiftir. 
+        // Diğerleri saatine göre devreye girer.
+        let vakitGeldiMi = (index === 0) || !bugunMu || (suAnkiSaat >= vakitSaatleri[index]);
 
         if (vakitGeldiMi) {
-            toplamPuanPayi += 18; // 12 (Farz) + 4 (Sünnet) + 2 (Tesbihat)
+            toplamPuanPayi += 18; 
             
-            // Puan ekleme mantığı aynı kalıyor
             if (f === 1 || f === 2) p += 12; else if (f === 4) p += 6;
             if (s === 1 || s === 2) p += 4; else if (s === 4) p += 2;
             if (t === 1 || t === 2) p += 2; else if (t === 4) p += 1;
         }
     });
 
-    // Özel ameller (Sabit 10 puan)
+    // Özel amelleri puanlamaya her zaman dahil ediyoruz
     toplamPuanPayi += 10;
     let ozeller = v.ozeller || [];
     let yapilanOzel = ozeller.filter(o => Number(o.durum) > 0).length;
+    
     if (ozeller.length > 0) {
+        // Özel amellerin toplam içindeki ağırlığını koruyoruz
         p += (yapilanOzel / ozeller.length) * 10;
     }
 
-    // Dinamik oranlama: (Alınan Puan / O ana kadarki Max Puan) * 100
     if (toplamPuanPayi === 0) return 0;
-    return Math.round((p / toplamPuanPayi) * 100);
+    let sonuc = Math.round((p / toplamPuanPayi) * 100);
+    return Math.min(sonuc, 100);
 }
 function getEksikler(v) {
     let e = [];
