@@ -582,17 +582,29 @@ function hesaplaPuan(v) {
     let p = 0;
     
     v.vakitler.forEach(vk => {
-        // Farz Kontrolü (Tam veya Kaza fark etmez, ama yapılmış olması önemli)
-        if (vk.durumlar[0] > 0) p += 12; 
+        // --- FARZ PUANLAMASI ---
+        let farzDurum = vk.durumlar[0];
+        if (farzDurum === 1) { 
+            p += 12; // Vaktinde kılındı (Yeşil) - Tam Puan
+        } else if (farzDurum > 1) { 
+            p += 6;  // Kaza veya sonradan kılındı (Turuncu/Kırmızı) - Yarım Puan
+        }
         
-        // Sünnet Kontrolü
-        if (vk.durumlar[1] > 0) p += 4;
-        
-        // Tesbihat Kontrolü
-        if (vk.durumlar[2] > 0) p += 2;
+        // --- SÜNNET PUANLAMASI ---
+        let sunnetDurum = vk.durumlar[1];
+        if (sunnetDurum === 1) {
+            p += 4;  // Vaktinde (Yeşil)
+        } else if (sunnetDurum > 1) {
+            p += 2;  // Sonradan
+        }
+
+        // --- TESBİHAT PUANLAMASI ---
+        if (vk.durumlar[2] === 1) {
+            p += 2;  // Yapıldı (Yeşil)
+        }
     });
 
-    // Özel Amellerin Etkisi (Toplam özel amel sayısına göre 10 puanı bölüştürür)
+    // Özel Amellerin Etkisi (Toplam 10 puan üzerinden)
     let ozeller = v.ozeller || [];
     let yapilanOzel = ozeller.filter(o => (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0)).length;
     
@@ -601,7 +613,7 @@ function hesaplaPuan(v) {
         p += ozelKatki;
     }
 
-    return Math.round(Math.min(p, 100)); // En fazla 100 puan ve tam sayı
+    return Math.round(Math.min(p, 100));
 }
 
 function getEksikler(v) {
