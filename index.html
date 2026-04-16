@@ -683,7 +683,7 @@ window.showModernReport = () => {
     document.getElementById('statModal').style.display = 'flex';
 };
 // Yardımcı Fonksiyonlar
-function hesaplaPuan(v, hedefTarihKey) { // hedefTarihKey parametresini ekledik
+function hesaplaPuan(v, hedefTarihKey) {
     if (!v) return 0;
     let p = 0;
     let toplamPuanPayi = 0;
@@ -691,23 +691,30 @@ function hesaplaPuan(v, hedefTarihKey) { // hedefTarihKey parametresini ekledik
     let simdi = new Date();
     let suAnkiSaat = simdi.getHours();
     
-    // Bugünün anahtarını al (Örn: "2026-04-16")
-    let bugunKey = getLocalKey(new Date());
-    
-    // Eğer hesaplanan gün BUGÜN ise saat kontrolü yap, DEĞİLSE (geçmişse) tüm vakitleri say
-    let bugunMu = (hedefTarihKey === bugunKey);
+    // Tarih karşılaştırması için saatleri sıfırlayarak alıyoruz
+    let bugun = new Date(); bugun.setHours(0,0,0,0);
+    let secili = new Date(hedefTarihKey); secili.setHours(0,0,0,0);
 
     v.vakitler.forEach((vk, index) => {
         let f = Number(vk.durumlar[0]);
         let s = Number(vk.durumlar[1]);
         let t = Number(vk.durumlar[2]);
 
-        // KRİTİK DÜZELTME: 
-        // Eğer geçmiş bir güne bakıyorsak vakitGeldiMi her zaman TRUE olmalı.
-        let vakitGeldiMi = !bugunMu || (index === 0) || (suAnkiSaat >= vakitSaatleri[index]);
+        let vakitGeldiMi = false;
+
+        if (secili > bugun) {
+            // GELECEK GÜN: Hiçbir vakit gelmedi
+            vakitGeldiMi = false;
+        } else if (secili < bugun) {
+            // GEÇMİŞ GÜN: Tüm vakitler geldi
+            vakitGeldiMi = true;
+        } else {
+            // BUGÜN: Saat kontrolü yap
+            vakitGeldiMi = (index === 0) || (suAnkiSaat >= vakitSaatleri[index]);
+        }
 
         if (vakitGeldiMi) {
-            toplamPuanPayi += 18; 
+            toplamPuanPayi += 18;
             if (f === 1 || f === 2) p += 12; else if (f === 4) p += 6;
             if (s === 1 || s === 2) p += 4; else if (s === 4) p += 2;
             if (t === 1 || t === 2) p += 2; else if (t === 4) p += 1;
@@ -719,42 +726,36 @@ function hesaplaPuan(v, hedefTarihKey) { // hedefTarihKey parametresini ekledik
     let yapilanOzel = ozeller.filter(o => Number(o.durum) > 0).length;
     if (ozeller.length > 0) p += (yapilanOzel / ozeller.length) * 10;
 
-    if (toplamPuanPayi === 0) return 0;
-    return Math.min(Math.round((p / toplamPuanPayi) * 100), 100);
+    return toplamPuanPayi === 0 ? 0 : Math.min(Math.round((p / toplamPuanPayi) * 100), 100);
 }
 function getEksikler(v) {
     let e = [];
     let simdi = new Date();
     let suAnkiSaat = simdi.getHours();
     
-    // Eğer raporu baktığımız gün BUGÜN değilse (geçmiş bir günse), tüm vakitleri kontrol et
-    // Eğer BUGÜN ise sadece saati gelenleri kontrol et
-    let seciliTarihStr = getLocalKey(seciliTarih);
-    let bugunStr = getLocalKey(new Date());
-    let bugunMu = (seciliTarihStr === bugunStr);
+    let bugun = new Date(); bugun.setHours(0,0,0,0);
+    let secili = new Date(seciliTarih); secili.setHours(0,0,0,0);
+
+    // Eğer bakılan gün gelecek bir günse hiçbir eksik gösterme
+    if (secili > bugun) {
+        return "<span style='color:#3498db;'>⏳ Bu gün henüz başlamadı.</span>";
+    }
 
     v.vakitler.forEach((vk, index) => {
         let f = Number(vk.durumlar[0]);
         let s = Number(vk.durumlar[1]);
         let t = Number(vk.durumlar[2]);
         
-        // Vakti geldi mi? (Geçmiş günler için her zaman evet, bugün için saate bak)
-        let vakitGeldiMi = !bugunMu || (suAnkiSaat >= vakitSaatleri[index]);
+        // Geçmiş gün mü yoksa bugün mü kontrolü
+        let vakitGeldiMi = (secili < bugun) || (index === 0) || (suAnkiSaat >= vakitSaatleri[index]);
 
         if (vakitGeldiMi) {
-            if (f === 0 || f === 3) {
-                e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.2); border:1px solid #e74c3c; border-radius:8px; margin:2px; font-size:11px; color:#ff7675;">🚨 ${vk.ad.split(' ')[0]} Farz</span>`);
-            }
-            if (s === 0 || s === 3) {
-                e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(243,156,18,0.1); border:1px solid #f39c12; border-radius:8px; margin:2px; font-size:11px; color:#fab1a0;">🔸 ${vk.ad.split(' ')[0]} Sünnet</span>`);
-            }
-            if (t === 0 || t === 3) {
-                e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); border-radius:8px; margin:2px; font-size:11px; opacity:0.8;">📿 ${vk.ad.split(' ')[0]} Tesbihat</span>`);
-            }
+            if (f === 0 || f === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.2); border:1px solid #e74c3c; border-radius:8px; margin:2px; font-size:11px; color:#ff7675;">🚨 ${vk.ad.split(' ')[0]} Farz</span>`);
+            if (s === 0 || s === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(243,156,18,0.1); border:1px solid #f39c12; border-radius:8px; margin:2px; font-size:11px; color:#fab1a0;">🔸 ${vk.ad.split(' ')[0]} Sünnet</span>`);
+            if (t === 0 || t === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); border-radius:8px; margin:2px; font-size:11px; opacity:0.8;">📿 ${vk.ad.split(' ')[0]} Tesbihat</span>`);
         }
     });
 
-    // Özel ameller genellikle tüm güne yayılır, onları her zaman gösteriyoruz
     let ozeller = v.ozeller || [];
     ozeller.forEach(o => {
         if (Number(o.durum) === 0 || Number(o.durum) === 3) {
@@ -762,7 +763,7 @@ function getEksikler(v) {
         }
     });
 
-    return e.length > 0 ? e.join('') : "<span style='color:#2ecc71; font-weight:bold;'>🌟 Şu ana kadar her şey yolunda!</span>";
+    return e.length > 0 ? e.join('') : "<span style='color:#2ecc71; font-weight:bold;'>🌟 Harika! Eksik görünmüyor.</span>";
 }
 const vakitSaatleri = {
     0: 4,  // Sabah (Örn: 04:00'den itibaren sorumlu)
