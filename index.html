@@ -576,38 +576,58 @@ window.showModernReport = () => {
         mesaj = "Acil müdahale lazım! Manevi batarya çok zayıfladı. 🚨";
     }
 
-    let barGradient = `linear-gradient(270deg, ${mRenk}, #ffffff55, ${mRenk})`;
+   // ... (Fonksiyonun başındaki puan hesaplama kısımları aynı kalıyor) ...
+
+    let barGradient = `linear-gradient(90deg, ${mRenk}, #ffffff, ${mRenk})`; // Daha canlı bir geçiş
 
     let h = `
-    <div style="text-align:center; padding:15px; background: rgba(0,0,0,0.2); border-radius: 20px;">
-        <div style="font-size:11px; opacity:0.6; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">GÜNLÜK MANEVİ ENERJİ</div>
-        <div style="font-size:36px; font-weight:900; color:${mRenk}; text-shadow: 0 0 15px ${mRenk}; transition: all 0.5s ease;">%${bPuan}</div>
+    <div style="text-align:center; padding:15px; background: rgba(0,0,0,0.3); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:5px; color:#fff;">GÜNLÜK MANEVİ ENERJİ</div>
+        <div style="font-size:42px; font-weight:900; color:${mRenk}; text-shadow: 0 0 20px ${mRenk}, 0 0 40px ${mRenk}66; transition: all 0.5s ease;">%${bPuan}</div>
         
-        <div style="width:100%; height:25px; background:rgba(255,255,255,0.05); border-radius:12px; margin:20px 0; overflow:hidden; border:2px solid rgba(255,255,255,0.1); position:relative;">
+        <div style="width:100%; height:30px; background:rgba(255,255,255,0.1); border-radius:15px; margin:20px 0; overflow:hidden; border:1px solid rgba(255,255,255,0.2); position:relative; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+            
             <div style="
                 width:${bPuan}%; 
                 height:100%; 
-                background:${barGradient}; 
-                background-size: 200% 200%;
-                border-radius:10px; 
-                transition:width 1s ease-in-out;
+                background:${mRenk}; 
+                border-radius:15px; 
+                transition:width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 position:absolute;
                 top:0; left:0;
-                --bar-ana-renk: ${mRenk};
-                animation: barParilti 3s infinite ease-in-out;
+                box-shadow: 0 0 20px ${mRenk}; /* Barın dışına taşan parlama */
+                z-index: 1;
             ">
                 <div style="
                     position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-                    background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
-                    background-size: 40px 40px;
-                    animation: cizgiAkis 2s linear infinite;
+                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+                    background-size: 200% 100%;
+                    animation: barParilti 2s infinite linear;
                 "></div>
             </div>
         </div>
 
-        <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; border-left:4px solid ${mRenk}; font-size:13px; line-height:1.6;">
+        <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:15px; border:1px solid ${mRenk}66; color: white; font-size:14px; line-height:1.5; box-shadow: inset 0 0 10px ${mRenk}33;">
             ${mesaj}
         </div>
+
+        ```
+
+### Neyi Değiştirdik?
+
+1.  **Daha Az Şeffaflık:** Barın ana rengini (`background: ${mRenk};`) doğrudan verdik. Eskiden gradient içinde şeffaflık olduğu için alttaki gri zemin rengi "kirli" bir görüntü yapıyordu.
+2.  **Yüksek Parlama (Glow):** `box-shadow: 0 0 20px ${mRenk};` ekleyerek barın etrafında o rengin halesini oluşturduk. Bu, barın zeminden kopup öne çıkmasını sağlar.
+3.  **Neon Etkisi:** Yazı tipindeki `text-shadow` değerini artırdık. %90 yeşilse, ekran adeta yeşil bir ışık saçacak.
+4.  **Cubic-Bezier Geçişi:** Bar dolarken daha "akıcı" ve premium bir animasyonla dolacak.
+
+### Küçük Bir CSS Notu:
+Eğer hala gri geliyorsa, `<style>` kısmındaki `@keyframes barParilti` kodunu şu şekilde sadeleştirin:
+
+```css
+@keyframes barParilti {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
 
         <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
             <div style="background:var(--card); padding:12px; border-radius:15px; border: 1px solid rgba(255,255,255,0.05);">
