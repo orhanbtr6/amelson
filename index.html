@@ -96,7 +96,22 @@
     from { background-position: 40px 0; }
     to { background-position: 0 0; }
 }
-    </style>
+@keyframes mermiAkis {
+    0% {
+        left: -100%;
+        opacity: 0;
+    }
+    30% {
+        opacity: 1;
+    }
+    70% {
+        opacity: 1;
+    }
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}    </style>
 </head>
 <body ontouchstart="hTS(event)" ontouchend="hTE(event)">
 <div class="container">
@@ -596,35 +611,49 @@ window.showModernReport = () => {
     let barGradient = `linear-gradient(90deg, ${mRenk}, #ffffff, ${mRenk})`; // Daha canlı bir geçiş
 
     let h = `
+    // ... (bPuan, mRenk gibi hesaplamaların yapıldığı üst kısım aynı kalıyor)
+
+    let h = `
     <div style="text-align:center; padding:15px; background: rgba(0,0,0,0.3); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
         <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:5px; color:#fff;">GÜNLÜK MANEVİ ENERJİ</div>
         <div style="font-size:42px; font-weight:900; color:${mRenk}; text-shadow: 0 0 20px ${mRenk}, 0 0 40px ${mRenk}66; transition: all 0.5s ease;">%${bPuan}</div>
         
-        <div style="width:100%; height:30px; background:rgba(255,255,255,0.1); border-radius:15px; margin:20px 0; overflow:hidden; border:1px solid rgba(255,255,255,0.2); position:relative; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+        <div style="width:100%; height:32px; background:rgba(255,255,255,0.08); border-radius:16px; margin:20px 0; overflow:hidden; border:1px solid rgba(255,255,255,0.2); position:relative; box-shadow: 0 0 15px rgba(0,0,0,0.4);">
             
             <div style="
                 width:${bPuan}%; 
                 height:100%; 
                 background:${mRenk}; 
-                border-radius:15px; 
-                transition:width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                border-radius:16px; 
+                transition:width 1.5s cubic-bezier(0.23, 1, 0.32, 1);
                 position:absolute;
                 top:0; left:0;
-                box-shadow: 0 0 20px ${mRenk}; /* Barın dışına taşan parlama */
+                box-shadow: 0 0 25px ${mRenk}88;
                 z-index: 1;
+                overflow: hidden;
             ">
                 <div style="
-                    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-                    background-size: 200% 100%;
-                    animation: barParilti 2s infinite linear;
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(
+                        90deg, 
+                        transparent, 
+                        rgba(255, 255, 255, 0) 0%, 
+                        rgba(255, 255, 255, 0.6) 50%, 
+                        rgba(255, 255, 255, 0) 100%
+                    );
+                    animation: mermiAkis 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
                 "></div>
             </div>
         </div>
 
-        <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:15px; border:1px solid ${mRenk}66; color: white; font-size:14px; line-height:1.5; box-shadow: inset 0 0 10px ${mRenk}33;">
+        <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:15px; border:1px solid ${mRenk}66; color: white; font-size:14px; line-height:1.5;">
             ${mesaj}
         </div>
+// ... (Dün/Bugün butonları ve eksikler listesiyle devam ediyor)
 
 
         <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
