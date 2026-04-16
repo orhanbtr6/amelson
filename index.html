@@ -538,8 +538,9 @@ window.showModernReport = () => {
     dunTarih.setDate(dunTarih.getDate() - 1);
     let dunVeri = JSON.parse(localStorage.getItem(getLocalKey(dunTarih)));
 
-    let bPuan = hesaplaPuan(bugunVeri);
-    let dPuan = dunVeri ? hesaplaPuan(dunVeri) : 0;
+// showModernReport içindeki şu iki satırı güncelleyin:
+    let bPuan = hesaplaPuan(bugunVeri, getLocalKey(seciliTarih));
+    let dPuan = dunVeri ? hesaplaPuan(dunVeri, getLocalKey(dunTarih)) : 0;
 
     let mesaj = "";
     let mRenk = ""; 
@@ -639,48 +640,44 @@ window.showModernReport = () => {
     document.getElementById('statModal').style.display = 'flex';
 };
 // Yardımcı Fonksiyonlar
-function hesaplaPuan(v) {
+function hesaplaPuan(v, hedefTarihKey) { // hedefTarihKey parametresini ekledik
     if (!v) return 0;
     let p = 0;
     let toplamPuanPayi = 0;
 
     let simdi = new Date();
     let suAnkiSaat = simdi.getHours();
-    let seciliTarihStr = getLocalKey(seciliTarih);
-    let bugunStr = getLocalKey(new Date());
-    let bugunMu = (seciliTarihStr === bugunStr);
+    
+    // Bugünün anahtarını al (Örn: "2026-04-16")
+    let bugunKey = getLocalKey(new Date());
+    
+    // Eğer hesaplanan gün BUGÜN ise saat kontrolü yap, DEĞİLSE (geçmişse) tüm vakitleri say
+    let bugunMu = (hedefTarihKey === bugunKey);
 
     v.vakitler.forEach((vk, index) => {
         let f = Number(vk.durumlar[0]);
         let s = Number(vk.durumlar[1]);
         let t = Number(vk.durumlar[2]);
 
-        // Sabah namazı (index 0) her zaman aktiftir. 
-        // Diğerleri saatine göre devreye girer.
-        let vakitGeldiMi = (index === 0) || !bugunMu || (suAnkiSaat >= vakitSaatleri[index]);
+        // KRİTİK DÜZELTME: 
+        // Eğer geçmiş bir güne bakıyorsak vakitGeldiMi her zaman TRUE olmalı.
+        let vakitGeldiMi = !bugunMu || (index === 0) || (suAnkiSaat >= vakitSaatleri[index]);
 
         if (vakitGeldiMi) {
             toplamPuanPayi += 18; 
-            
             if (f === 1 || f === 2) p += 12; else if (f === 4) p += 6;
             if (s === 1 || s === 2) p += 4; else if (s === 4) p += 2;
             if (t === 1 || t === 2) p += 2; else if (t === 4) p += 1;
         }
     });
 
-    // Özel amelleri puanlamaya her zaman dahil ediyoruz
     toplamPuanPayi += 10;
     let ozeller = v.ozeller || [];
     let yapilanOzel = ozeller.filter(o => Number(o.durum) > 0).length;
-    
-    if (ozeller.length > 0) {
-        // Özel amellerin toplam içindeki ağırlığını koruyoruz
-        p += (yapilanOzel / ozeller.length) * 10;
-    }
+    if (ozeller.length > 0) p += (yapilanOzel / ozeller.length) * 10;
 
     if (toplamPuanPayi === 0) return 0;
-    let sonuc = Math.round((p / toplamPuanPayi) * 100);
-    return Math.min(sonuc, 100);
+    return Math.min(Math.round((p / toplamPuanPayi) * 100), 100);
 }
 function getEksikler(v) {
     let e = [];
