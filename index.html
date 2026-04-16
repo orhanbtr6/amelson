@@ -611,23 +611,6 @@ window.showModernReport = () => {
             ${mesaj}
         </div>
 
-        ```
-
-### Neyi Değiştirdik?
-
-1.  **Daha Az Şeffaflık:** Barın ana rengini (`background: ${mRenk};`) doğrudan verdik. Eskiden gradient içinde şeffaflık olduğu için alttaki gri zemin rengi "kirli" bir görüntü yapıyordu.
-2.  **Yüksek Parlama (Glow):** `box-shadow: 0 0 20px ${mRenk};` ekleyerek barın etrafında o rengin halesini oluşturduk. Bu, barın zeminden kopup öne çıkmasını sağlar.
-3.  **Neon Etkisi:** Yazı tipindeki `text-shadow` değerini artırdık. %90 yeşilse, ekran adeta yeşil bir ışık saçacak.
-4.  **Cubic-Bezier Geçişi:** Bar dolarken daha "akıcı" ve premium bir animasyonla dolacak.
-
-### Küçük Bir CSS Notu:
-Eğer hala gri geliyorsa, `<style>` kısmındaki `@keyframes barParilti` kodunu şu şekilde sadeleştirin:
-
-```css
-@keyframes barParilti {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-}
 
         <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
             <div style="background:var(--card); padding:12px; border-radius:15px; border: 1px solid rgba(255,255,255,0.05);">
