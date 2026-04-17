@@ -691,60 +691,51 @@ function hesaplaPuan(v, hedefTarihKey) {
 
     let simdi = new Date();
     let suAnkiSaat = simdi.getHours();
-    
-    // TARİH KONTROLÜ (Garantili yöntem)
-    let bugun = new Date(); bugun.setHours(0,0,0,0);
-    
-    // hedefTarihKey string ise düzgünce Date objesine çevirip saatleri sıfırlıyoruz
-    let secili = new Date(hedefTarihKey); 
-    if(isNaN(secili)) { // Eğer tarih objesi değilse manuel key'den oluştur
-        let parts = hedefTarihKey.split('-');
-        secili = new Date(parts[0], parts[1]-1, parts[2]);
-    }
-    secili.setHours(0,0,0,0);
+    let bugunStr = getLocalKey(simdi); 
 
     v.vakitler.forEach((vk, index) => {
         let f = Number(vk.durumlar[0]);
         let s = Number(vk.durumlar[1]);
         let t = Number(vk.durumlar[2]);
 
-        let vakitGeldiMi = false;
-
-        if (secili.getTime() > bugun.getTime()) {
-            vakitGeldiMi = false;
-        } else if (secili.getTime() < bugun.getTime()) {
-            // GEÇMİŞ GÜN: Kesinlikle hepsi true
-            vakitGeldiMi = true;
-        } else {
-            // BUGÜN: Saat kontrolü
-            vakitGeldiMi = (index === 0) || (suAnkiSaat >= vakitSaatleri[index]);
-        }
+        // Vaktin gelip gelmediğini kontrol et
+        let vakitGeldiMi = (hedefTarihKey < bugunStr) || (index === 0) || (hedefTarihKey === bugunStr && suAnkiSaat >= vakitSaatleri[index]);
 
         if (vakitGeldiMi) {
-            toplamPuanPayi += 18;
-            if (f === 1 || f === 2) p += 12; else if (f === 4) p += 6;
-            if (s === 1 || s === 2) p += 4; else if (s === 4) p += 2;
-            if (t === 1 || t === 2) p += 2; else if (t === 4) p += 1;
+            // KRİTİK DÜZELTME: Vakit geldiyse bu 18 puan mutlaka paydaya eklenmeli!
+            toplamPuanPayi += 18; 
+
+            // Farz Puanı (12 üzerinden)
+            if (f === 1 || f === 2) p += 12; 
+            else if (f === 4) p += 6; // Kaza ise yarım puan (6)
+            
+            // Sünnet Puanı (4 üzerinden)
+            if (s === 1 || s === 2) p += 4; 
+            else if (s === 4) p += 2; // Sünnet kaza/sonradan ise 2
+            
+            // Tesbihat Puanı (2 üzerinden)
+            if (t === 1 || t === 2) p += 2; 
+            else if (t === 4) p += 1; // Tesbihat sonradan ise 1
         }
     });
 
-    // ÖZEL AMELLER (3 sayısını ve diğerlerini kapsayan düzeltme)
+    // Özel Ameller (10 Puanlık Sabit Pay)
     toplamPuanPayi += 10;
     let ozeller = v.ozeller || [];
-    
-    // Sadece 0, boş veya tanımsız olmayan her şeyi "yapıldı" sayar
-    // Puanlama içindeki özel amel satırı
     let yapilanOzel = ozeller.filter(o => {
-        return o.durum !== 0 && o.durum !== "0" && o.durum !== "" && o.durum !== null && o.durum !== undefined;
+        let d = String(o.durum).trim();
+        return d !== "" && d !== "0" && d !== "null";
     }).length;
 
     if (ozeller.length > 0) {
         p += (yapilanOzel / ozeller.length) * 10;
     }
 
-    return toplamPuanPayi === 0 ? 0 : Math.min(Math.round((p / toplamPuanPayi) * 100), 100);
+    if (toplamPuanPayi === 0) return 0;
+    // Matematiksel olarak (Alınan Puan / Olması Gereken Puan) * 100
+    return Math.min(Math.round((p / toplamPuanPayi) * 100), 100);
 }
-function getEksikler(v) {
+    function getEksikler(v) {
     let e = [];
     let simdi = new Date();
     let suAnkiSaat = simdi.getHours();
