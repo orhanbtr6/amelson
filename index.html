@@ -692,7 +692,7 @@ function hesaplaPuan(v, hedefTarihKey) {
     let simdi = new Date();
     let suAnkiSaat = simdi.getHours();
     
-    // BUGÜNÜN TARİHİNİ SİZİN FORMATINIZDA ALALIM (YYYY-MM-DD)
+    // TARİH KONTROLÜ: Sizin getLocalKey fonksiyonunuzla aynı mantıkta
     let bugunStr = getLocalKey(simdi); 
 
     v.vakitler.forEach((vk, index) => {
@@ -700,27 +700,26 @@ function hesaplaPuan(v, hedefTarihKey) {
         let s = Number(vk.durumlar[1]);
         let t = Number(vk.durumlar[2]);
 
-        // MANTIĞI SADELEŞTİRDİK:
-        // Eğer hedefTarihKey bugünden küçükse (geçmişse) vakit her türlü gelmiştir.
-        // Bugünse saat kontrolü yapılır.
+        // MANTIĞI SADELEŞTİRDİK: 
+        // Geçmiş günse (hedefTarihKey < bugunStr) her şey gelmiştir.
+        // Bugünse saatine bakılır.
         let vakitGeldiMi = (hedefTarihKey < bugunStr) || (index === 0) || (hedefTarihKey === bugunStr && suAnkiSaat >= vakitSaatleri[index]);
 
         if (vakitGeldiMi) {
             toplamPuanPayi += 18; 
-            // Puanları tek tek ekle
             if (f === 1 || f === 2) p += 12; else if (f === 4) p += 6;
             if (s === 1 || s === 2) p += 4;  else if (s === 4) p += 2;
             if (t === 1 || t === 2) p += 2;  else if (t === 4) p += 1;
         }
     });
 
-    // ÖZEL AMELLER (10 Puan Payı)
     toplamPuanPayi += 10;
     let ozeller = v.ozeller || [];
     
-    // Filtreleme mantığını en basit hale getirdik: 0 değilse ve boş değilse yapıldı say.
+    // 3 ve diğer sayıların puan getirmesi için: 0 veya boş değilse puan ver.
     let yapilanOzel = ozeller.filter(o => {
-        return o.durum != 0 && o.durum != "" && o.durum != null;
+        let d = String(o.durum).trim();
+        return d !== "" && d !== "0" && d !== "null";
     }).length;
 
     if (ozeller.length > 0) {
@@ -728,19 +727,16 @@ function hesaplaPuan(v, hedefTarihKey) {
     }
 
     if (toplamPuanPayi === 0) return 0;
-    let sonuc = Math.round((p / toplamPuanPayi) * 100);
-    return Math.min(sonuc, 100);
+    return Math.min(Math.round((p / toplamPuanPayi) * 100), 100);
 }
-function getEksikler(v) {
+    function getEksikler(v) {
     let e = [];
     let simdi = new Date();
     let suAnkiSaat = simdi.getHours();
-    
-    let bugun = new Date(); bugun.setHours(0,0,0,0);
-    let secili = new Date(seciliTarih); secili.setHours(0,0,0,0);
+    let bugunStr = getLocalKey(simdi);
+    let hedefTarihStr = getLocalKey(seciliTarih);
 
-    // Eğer bakılan gün gelecek bir günse hiçbir eksik gösterme
-    if (secili > bugun) {
+    if (hedefTarihStr > bugunStr) {
         return "<span style='color:#3498db;'>⏳ Bu gün henüz başlamadı.</span>";
     }
 
@@ -749,36 +745,28 @@ function getEksikler(v) {
         let s = Number(vk.durumlar[1]);
         let t = Number(vk.durumlar[2]);
         
-        // Geçmiş gün mü yoksa bugün mü kontrolü
-        let vakitGeldiMi = (secili < bugun) || (index === 0) || (suAnkiSaat >= vakitSaatleri[index]);
+        let vakitGeldiMi = (hedefTarihStr < bugunStr) || (index === 0) || (suAnkiSaat >= vakitSaatleri[index]);
 
         if (vakitGeldiMi) {
+            // Farz kaza (4) olsa bile eksik listesinde gözükmesin istiyorsanız f===0||f===3 kalmalı
             if (f === 0 || f === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.2); border:1px solid #e74c3c; border-radius:8px; margin:2px; font-size:11px; color:#ff7675;">🚨 ${vk.ad.split(' ')[0]} Farz</span>`);
             if (s === 0 || s === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(243,156,18,0.1); border:1px solid #f39c12; border-radius:8px; margin:2px; font-size:11px; color:#fab1a0;">🔸 ${vk.ad.split(' ')[0]} Sünnet</span>`);
             if (t === 0 || t === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); border-radius:8px; margin:2px; font-size:11px; opacity:0.8;">📿 ${vk.ad.split(' ')[0]} Tesbihat</span>`);
         }
     });
 
-    // getEksikler fonksiyonu içindeki özel amel kısmı
     let ozeller = v.ozeller || [];
     ozeller.forEach(o => {
-        // DURUM KONTROLÜ: Sadece boş veya 0 ise eksik say, 3 ise yapıldı say!
-        let d = o.durum;
-        let yapildiMi = (d !== 0 && d !== "0" && d !== "" && d !== null && d !== undefined);
-
+        let d = String(o.durum).trim();
+        // 3 sayısı ve diğerleri girildiyse eksik listesinden düşür:
+        let yapildiMi = (d !== "" && d !== "0" && d !== "null");
         if (!yapildiMi) {
             e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(52,152,219,0.1); border:1px solid #3498db; border-radius:8px; margin:2px; font-size:11px; color:#74b9ff;">✨ ${o.ad}</span>`);
         }
     });
+
     return e.length > 0 ? e.join('') : "<span style='color:#2ecc71; font-weight:bold;'>🌟 Harika! Eksik görünmüyor.</span>";
 }
-const vakitSaatleri = {
-    0: 4,  // Sabah (Örn: 04:00'den itibaren sorumlu)
-    1: 12, // Öğle (13:00)
-    2: 15, // İkindi (16:30 gibi)
-    3: 18, // Akşam (19:30 gibi)
-    4: 20  // Yatsı (21:00)
-};
 </script>
 </body>
 </html>
