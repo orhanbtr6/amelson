@@ -692,9 +692,16 @@ function hesaplaPuan(v, hedefTarihKey) {
     let simdi = new Date();
     let suAnkiSaat = simdi.getHours();
     
-    // Tarih karşılaştırması için saatleri sıfırlayarak alıyoruz
+    // TARİH KONTROLÜ (Garantili yöntem)
     let bugun = new Date(); bugun.setHours(0,0,0,0);
-    let secili = new Date(hedefTarihKey); secili.setHours(0,0,0,0);
+    
+    // hedefTarihKey string ise düzgünce Date objesine çevirip saatleri sıfırlıyoruz
+    let secili = new Date(hedefTarihKey); 
+    if(isNaN(secili)) { // Eğer tarih objesi değilse manuel key'den oluştur
+        let parts = hedefTarihKey.split('-');
+        secili = new Date(parts[0], parts[1]-1, parts[2]);
+    }
+    secili.setHours(0,0,0,0);
 
     v.vakitler.forEach((vk, index) => {
         let f = Number(vk.durumlar[0]);
@@ -703,14 +710,13 @@ function hesaplaPuan(v, hedefTarihKey) {
 
         let vakitGeldiMi = false;
 
-        if (secili > bugun) {
-            // GELECEK GÜN: Hiçbir vakit gelmedi
+        if (secili.getTime() > bugun.getTime()) {
             vakitGeldiMi = false;
-        } else if (secili < bugun) {
-            // GEÇMİŞ GÜN: Tüm vakitler geldi
+        } else if (secili.getTime() < bugun.getTime()) {
+            // GEÇMİŞ GÜN: Kesinlikle hepsi true
             vakitGeldiMi = true;
         } else {
-            // BUGÜN: Saat kontrolü yap
+            // BUGÜN: Saat kontrolü
             vakitGeldiMi = (index === 0) || (suAnkiSaat >= vakitSaatleri[index]);
         }
 
@@ -722,10 +728,19 @@ function hesaplaPuan(v, hedefTarihKey) {
         }
     });
 
+    // ÖZEL AMELLER (3 sayısını ve diğerlerini kapsayan düzeltme)
     toplamPuanPayi += 10;
     let ozeller = v.ozeller || [];
-    let yapilanOzel = ozeller.filter(o => Number(o.durum) > 0).length;
-    if (ozeller.length > 0) p += (yapilanOzel / ozeller.length) * 10;
+    
+    // Sadece 0, boş veya tanımsız olmayan her şeyi "yapıldı" sayar
+    let yapilanOzel = ozeller.filter(o => {
+        let d = o.durum;
+        return d !== 0 && d !== "0" && d !== "" && d !== null && d !== undefined;
+    }).length;
+
+    if (ozeller.length > 0) {
+        p += (yapilanOzel / ozeller.length) * 10;
+    }
 
     return toplamPuanPayi === 0 ? 0 : Math.min(Math.round((p / toplamPuanPayi) * 100), 100);
 }
