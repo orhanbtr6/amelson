@@ -733,9 +733,9 @@ function hesaplaPuan(v, hedefTarihKey) {
     let ozeller = v.ozeller || [];
     
     // Sadece 0, boş veya tanımsız olmayan her şeyi "yapıldı" sayar
+    // Puanlama içindeki özel amel satırı
     let yapilanOzel = ozeller.filter(o => {
-        let d = o.durum;
-        return d !== 0 && d !== "0" && d !== "" && d !== null && d !== undefined;
+        return o.durum !== 0 && o.durum !== "0" && o.durum !== "" && o.durum !== null && o.durum !== undefined;
     }).length;
 
     if (ozeller.length > 0) {
@@ -772,13 +772,17 @@ function getEksikler(v) {
         }
     });
 
+    // getEksikler fonksiyonu içindeki özel amel kısmı
     let ozeller = v.ozeller || [];
     ozeller.forEach(o => {
-        if (Number(o.durum) === 0 || Number(o.durum) === 3) {
+        // DURUM KONTROLÜ: Sadece boş veya 0 ise eksik say, 3 ise yapıldı say!
+        let d = o.durum;
+        let yapildiMi = (d !== 0 && d !== "0" && d !== "" && d !== null && d !== undefined);
+
+        if (!yapildiMi) {
             e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(52,152,219,0.1); border:1px solid #3498db; border-radius:8px; margin:2px; font-size:11px; color:#74b9ff;">✨ ${o.ad}</span>`);
         }
     });
-
     return e.length > 0 ? e.join('') : "<span style='color:#2ecc71; font-weight:bold;'>🌟 Harika! Eksik görünmüyor.</span>";
 }
 const vakitSaatleri = {
