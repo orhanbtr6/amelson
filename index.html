@@ -9,57 +9,6 @@
         :root { --bg: #0b3d59; --card: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #228b22; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; --today-border: #666666; }
         * { box-sizing: border-box; }
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-        body {
-    background: var(--bg);
-    color: white;
-    font-family: sans-serif;
-    margin: 0;
-    padding: 10px;
-    /* Kaymaları engellemek için kritik satırlar */
-    overflow-x: hidden; 
-    width: 100vw;
-}
-
-.container {
-    width: 100%;
-    max-width: 500px;
-    margin: auto;
-    /* Alttaki butonlara çarpmaması için boşluk */
-    padding-bottom: 120px; 
-}
-
-/* Kartların içindeki yazıların taşmasını engellemek için */
-.vakit-card {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Footer'ı her ekrana sabitlemek için */
-.footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #072a3d;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    z-index: 1000;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
-}
-
-/* Input'un diğer butonları sıkıştırmaması için */
-#habInp {
-    flex: 1;
-    min-width: 0; /* Mobilde taşmayı önler */
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-}
         .container { width: 100%; max-width: 500px; margin: auto; padding-bottom: 150px; }
         .main-title-container { text-align: center; margin: 18px 0; cursor: pointer; }
         .main-title { display: inline-block; font-size: 22px; font-weight: 800; color: #a5d3ff; letter-spacing: 1.8px; text-transform: uppercase; text-shadow: 0 0 15px rgba(165,211,255,0.5); }
@@ -224,7 +173,8 @@
         <button class="nav-btn" style="width:100%;" onclick="importData()">📂 Geri Yükle</button>
     </div>
 </div>
- <div class="footer">
+
+<div class="footer">
     <input type="text" id="habInp" placeholder="Yeni amel/görev...">
     <button class="nav-btn" style="background:var(--dark-green); font-weight:bold;" onclick="yeniEkle()">EKLE</button>
     <button id="micBtn" onclick="window.sesDinle()" style="background:none; border:none; font-size:22px; cursor:pointer; transition: 0.3s;">🎤</button>
@@ -234,7 +184,11 @@
     <div class="nav-item" style="flex:1; display:flex; flex-direction:column; align-items:center; cursor:pointer;">
         <button onclick="event.stopPropagation(); openSettings()" style="background:none; border:none; font-size:22px;">⚙️</button>
     </div>
-</div>   
+</div>
+
+<div onclick="window.showModernReport()" style="position: fixed; bottom: 85px; right: 20px; width: 50px; height: 50px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 999; border: 2px solid rgba(255,255,255,0.2);">
+    ⚡
+</div>
 <script>
     let xS = null;
     function hTS(e) { xS = e.touches[0].clientX; }
