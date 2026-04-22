@@ -224,50 +224,17 @@
         <button class="nav-btn" style="width:100%;" onclick="importData()">📂 Geri Yükle</button>
     </div>
 </div>
-    <div class="footer" style="
-    position: fixed; 
-    bottom: 0; 
-    left: 0; 
-    width: 100%; 
-    background: #072a3d; 
-    padding: 8px 12px; 
-    display: flex; 
-    align-items: center; 
-    z-index: 1000;
-    box-shadow: 0 -2px 15px rgba(0,0,0,0.6);
-    border-top: 1px solid rgba(255,255,255,0.1);
-    box-sizing: border-box;
-">
-    <div style="flex: 1; display: flex; align-items: center; margin-right: 8px;">
-        <input type="text" id="habInp" placeholder="Yeni amel/görev..." style="
-            width: 100%; 
-            padding: 12px; 
-            border-radius: 10px; 
-            border: none; 
-            background: rgba(255,255,255,0.1); 
-            color: white; 
-            font-size: 15px;
-            outline: none;
-        ">
-    </div>
+ <div class="footer">
+    <input type="text" id="habInp" placeholder="Yeni amel/görev...">
+    <button class="nav-btn" style="background:var(--dark-green); font-weight:bold;" onclick="yeniEkle()">EKLE</button>
+    <button id="micBtn" onclick="window.sesDinle()" style="background:none; border:none; font-size:22px; cursor:pointer; transition: 0.3s;">🎤</button>
+    
+    <div class="menu-item" onclick="window.analizEt()" title="Analiz">📊</div>
 
-    <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
-        <button onclick="yeniEkle()" style="
-            background: var(--dark-green); 
-            color: white; 
-            border: none; 
-            padding: 10px 14px; 
-            border-radius: 10px; 
-            font-weight: bold; 
-            cursor: pointer;
-            font-size: 13px;
-        ">EKLE</button>
-        
-        <span onclick="window.sesDinle()" style="font-size: 22px; cursor: pointer;">🎤</span>
-        <span onclick="window.analizEt()" style="font-size: 22px; cursor: pointer;">📊</span>
-        <span onclick="event.stopPropagation(); openSettings()" style="font-size: 22px; cursor: pointer;">⚙️</span>
+    <div class="nav-item" style="flex:1; display:flex; flex-direction:column; align-items:center; cursor:pointer;">
+        <button onclick="event.stopPropagation(); openSettings()" style="background:none; border:none; font-size:22px;">⚙️</button>
     </div>
-</div>
+</div>   
 <script>
     let xS = null;
     function hTS(e) { xS = e.touches[0].clientX; }
