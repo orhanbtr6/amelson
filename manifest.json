@@ -1,15 +1,22 @@
 {
-  "name": "Amel Defteri Pro",
-  "short_name": "Amel Defteri Pro",
-  "description": "Günlük ibadet ve amel takip defteri.",
+  "name": "Amel Defteri PRO",
+  "short_name": "Amel Defteri",
+  "description": "Günlük ibadet ve manevi gelişim takip çetelesi.",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
   "background_color": "#0b3d59",
   "theme_color": "#0b3d59",
+  "orientation": "portrait",
+  "lang": "tr-TR",
   "icons": [
     {
-      "src": "./amel_icon.png",
+      "src": "amel_icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "amel_icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
