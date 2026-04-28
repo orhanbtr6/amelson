@@ -2,7 +2,7 @@ const cacheName = 'amel-v22-23';
 const assets = [
   './',
   './index.html',
-  './logo.png' // Manifest'teki isimle BİREBİR aynı olmalı
+  './amel_icon.png' // Manifest'teki isimle BİREBİR aynı olmalı
 ];
 
 // Kurulum: Dosyaları hafızaya al
