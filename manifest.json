@@ -1,6 +1,6 @@
 {
   "name": "Amel Defteri Pro",
-  "short_name": "AmelDefteri",
+  "short_name": "Amel Defteri Pro",
   "description": "Günlük ibadet ve amel takip defteri.",
   "start_url": "./index.html",
   "scope": "./",
