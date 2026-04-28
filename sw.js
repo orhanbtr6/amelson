@@ -2,7 +2,7 @@ const cacheName = 'amel-v14-6';
 const assets = [
   './',
   './index.html',
-  'https://raw.githubusercontent.com/orhanbtr6/amelson/refs/heads/main/amel_icon.png'
+  './amel_icon.png'
 ];
 
 self.addEventListener('install', e => {
