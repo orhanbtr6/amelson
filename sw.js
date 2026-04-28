@@ -2,7 +2,7 @@ const cacheName = 'amel-v14-6';
 const assets = [
   './',
   './index.html',
-  'https://cdn-icons-png.flaticon.com/512/2913/2913520.png'
+  'https://github.com/orhanbtr6/amelson/blob/main/amel_icon.png'
 ];
 
 self.addEventListener('install', e => {
