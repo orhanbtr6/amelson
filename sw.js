@@ -20,3 +20,7 @@ self.addEventListener('fetch', e => {
     })
   );
 });
+self.addEventListener('fetch', function(event) {
+  // Bu boş olsa bile fetch olayını dinlemesi Chrome'u ikna eder.
+  event.respondWith(fetch(event.request));
+});
