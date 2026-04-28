@@ -9,7 +9,7 @@
   "theme_color": "#0b3d59",
   "icons": [
     {
-      "src": "amel_icon.png",
+      "src": "./amel_icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
