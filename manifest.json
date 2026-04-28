@@ -9,17 +9,11 @@
   "orientation": "portrait",
   "lang": "tr-TR",
   "icons": [
-    {
-      "src": "amel_icon.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "amel_icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+  {
+  "src": "amel_icon.png",
+  "sizes": "512x512",
+  "type": "image/png",
+  "purpose": "any"
+}
   ]
 }
