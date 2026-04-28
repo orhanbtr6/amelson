@@ -8,7 +8,7 @@
   "theme_color": "#0b3d59",
   "icons": [
     {
-      "src": "https://github.com/orhanbtr6/amelson/blob/main/amel.ico",
+      "src": "amel.ico",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
