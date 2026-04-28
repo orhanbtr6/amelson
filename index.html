@@ -825,7 +825,9 @@ const vakitSaatleri = {
     // Service Worker Kaydı
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').then(reg => {
+        // Yolun başına ./ ekleyerek mevcut klasörde kalmasını sağlıyoruz
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then(reg => {
             console.log('Servis işçisi hazır!', reg);
         }).catch(err => {
             console.log('Servis işçisi hatası:', err);
