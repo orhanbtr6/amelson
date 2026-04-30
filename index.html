@@ -574,42 +574,72 @@ for (let b = 0; b < baslangicBoslugu; b++) {
 };
 
     window.showGeneralReport = () => {
-        const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
-        let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-        let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label-full">Vakit</th>`;
-        for (let d = 1; d <= sonGun; d++) table += `<th style="font-size:7px;">${d}</th>`;
-        table += `</tr></thead><tbody>`;
-        vakitler.forEach((vAd, vIdx) => {
-            table += `<tr><td class="v-row-label-full">${vAd.split(" ")[0]}</td>`;
-            for (let d = 1; d <= sonGun; d++) {
-                let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
-                table += `<td class="s${(v && v.vakitler[vIdx]) ? v.vakitler[vIdx].durumlar[0] : 0}"></td>`;
+    const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+    document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
+    
+    let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+    let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label-full">Vakit</th>`;
+    for (let d = 1; d <= sonGun; d++) table += `<th style="font-size:7px;">${d}</th>`;
+    table += `</tr></thead><tbody>`;
+    
+    vakitler.forEach((vAd, vIdx) => {
+        table += `<tr><td class="v-row-label-full">${vAd.split(" ")[0]}</td>`;
+        for (let d = 1; d <= sonGun; d++) {
+            let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
+            table += `<td class="s${(v && v.vakitler[vIdx]) ? v.vakitler[vIdx].durumlar[0] : 0}"></td>`;
+        }
+        table += `</tr>`;
+    });
+    table += `</tbody></table></div>`;
+
+    // PAZARTESİ - PAZAR SABİT GÜN İSİMLERİ SATIRI
+    const gunAdlari = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pa"];
+    let gunBasliklari = `<div style="display:flex; margin-left:60px; justify-content:space-between; margin-bottom:5px;">`;
+    gunAdlari.forEach(g => {
+        gunBasliklari += `<div style="width:14%; text-align:center; font-size:11px; color:#a5d3ff; font-weight:bold;">${g}</div>`;
+    });
+    gunBasliklari += `</div>`;
+
+    // HAFTALIK VERİ HESAPLAMA (Mevcut mantığın korundu)
+    let today = new Date(); 
+    let dayOfW = today.getDay(); 
+    let diff = today.getDate() - dayOfW + (dayOfW === 0 ? -6 : 1);
+    let monday = new Date(today.setDate(diff)); 
+    let qTrend = [[],[],[],[],[]];
+
+    vakitler.forEach((v, vIdx) => {
+        for (let i = 0; i < 7; i++) {
+            let d = new Date(monday); d.setDate(monday.getDate() + i);
+            let vT = JSON.parse(localStorage.getItem(getLocalKey(d)));
+            let q = 'rgba(255,255,255,0.05)';
+            if(vT && vT.vakitler[vIdx]) {
+                if(vT.vakitler[vIdx].durumlar[1] > 0 && vT.vakitler[vIdx].durumlar[2] > 0) q = 'var(--light-green)';
+                else if(vT.vakitler[vIdx].durumlar[1] > 0) q = 'var(--orange)';
+                else if(vT.vakitler[vIdx].durumlar[0] > 0) q = 'var(--red)';
             }
-            table += `</tr>`;
-        });
-        table += `</tbody></table></div>`;
-        let today = new Date(); let dayOfW = today.getDay(); let diff = today.getDate() - dayOfW + (dayOfW === 0 ? -6 : 1);
-        let monday = new Date(today.setDate(diff)); let qTrend = [[],[],[],[],[]];
-        vakitler.forEach((v, vIdx) => {
-            for (let i = 0; i < 7; i++) {
-                let d = new Date(monday); d.setDate(monday.getDate() + i);
-                let vT = JSON.parse(localStorage.getItem(getLocalKey(d)));
-                let q = 'rgba(255,255,255,0.05)';
-                if(vT && vT.vakitler[vIdx]) {
-                    if(vT.vakitler[vIdx].durumlar[1] > 0 && vT.vakitler[vIdx].durumlar[2] > 0) q = 'var(--light-green)';
-                    else if(vT.vakitler[vIdx].durumlar[1] > 0) q = 'var(--orange)';
-                    else if(vT.vakitler[vIdx].durumlar[0] > 0) q = 'var(--red)';
-                }
-                qTrend[vIdx].push(q);
-            }
-        });
-        let analiz = `<div style="margin-top:15px; font-size:11px;"><b>Haftalık Vakit Kalitesi:</b>`;
-        vakitler.forEach((v, i) => { analiz += `<div style="margin:8px 0;">${v.split(" ")[0]} <div class="quality-line">${qTrend[i].map(c => `<div class="q-dot" style="background:${c}"></div>`).join('')}</div></div>`; });
-        document.getElementById('calGrid').innerHTML = table + analiz;
-        document.getElementById('statModal').style.display = 'flex';
-        document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
-    };
+            qTrend[vIdx].push(q);
+        }
+    });
+
+    // ANALİZ KISMI - GÜN İSİMLERİ EKLENMİŞ HALİ
+    let analiz = `<div style="margin-top:20px; font-size:13px;"><b>Haftalık Vakit Kalitesi:</b><br><br>`;
+    analiz += gunBasliklari; // Gün isimlerini buraya yerleştirdik
+    
+    vakitler.forEach((v, i) => { 
+        analiz += `<div style="display:flex; align-items:center; margin:10px 0;">
+            <div style="width:60px; font-size:12px;">${v.split(" ")[0]}</div>
+            <div class="quality-line" style="flex:1; display:flex; justify-content:space-between;">
+                ${qTrend[i].map(c => `<div class="q-dot" style="background:${c}; width:12px; height:12px; border-radius:50%;"></div>`).join('')}
+            </div>
+        </div>`; 
+    });
+    analiz += `</div>`;
+
+    document.getElementById('calGrid').innerHTML = table + analiz;
+    modalAcildi(); // Geri tuşu kontrolü için
+    document.getElementById('statModal').style.display = 'flex';
+    document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
+};
 
     window.yeniEkle = () => { pendingName = document.getElementById('habInp').value; if(!pendingName) return; document.getElementById('pendingAmelAd').innerText = `"${pendingName}" için tip seçiniz:`; document.getElementById('typeModal').style.display = 'flex'; };
 window.finalEkle = (tip) => { 
