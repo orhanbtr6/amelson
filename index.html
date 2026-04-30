@@ -318,7 +318,8 @@
             } else { count++; }
         }
         return count >= 2;
-    }window.analizEt = function() {
+    }
+    window.analizEt = function() {
     let veriler = [];
     let bugun = new Date();
     const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
@@ -367,7 +368,7 @@
 
     // ... (Geri kalan görselleştirme kodları aynı kalacak) ...
     // ... document.getElementById('statTitle').innerText = "GELİŞMİŞ KARNE"; ...
-};
+
 
     const sonOrt = Math.round(stats.son.puan / (stats.son.gun * 5 || 1));
     const onceOrt = Math.round(stats.once.puan / (stats.once.gun * 5 || 1));
@@ -425,7 +426,8 @@
     document.getElementById('statTitle').innerText = "GELİŞMİŞ KARNE";
     document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
-};function alertBox(color, title, text) {
+};
+    function alertBox(color, title, text) {
     return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
                 <b style="font-size:12px; color:var(--${color});">${title}</b><br><span style="font-size:11px; opacity:0.8;">${text}</span>
             </div>`;
