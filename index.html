@@ -283,65 +283,115 @@ window.analizEt = function() {
     let veriler = [];
     let bugun = new Date();
     const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
+    
+    // 1. Veri Toplama (Son 30 Gün)
     for (let i = 0; i < 30; i++) {
         let d = new Date(); d.setDate(bugun.getDate() - i);
         let k = getLocalKey(d);
         let v = JSON.parse(localStorage.getItem(k));
         if (v) veriler.push({ fark: i, veri: v });
     }
-    if (veriler.length < 3) { alert("Analiz için birkaç günlük veri girişi yapılmış olmalı hocam."); return; }
+
+    if (veriler.length < 3) { 
+        alert("Analiz için en az 3 günlük veri girişi gerekli hocam."); 
+        return; 
+    }
+
+    // 2. İstatistik Yapısı (Derinleştirilmiş)
     let stats = {
-        son: { cemaat: 0, sunnet: 0, tesbihat: 0, kaza: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 },
-        once: { cemaat: 0, sunnet: 0, tesbihat: 0, kaza: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 }
+        son: { cemaat: 0, vaktinde: 0, sonradan: 0, kaza: 0, sunnet: 0, tesbihat: 0, vakitBazli: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 },
+        once: { cemaat: 0, vaktinde: 0, sonradan: 0, kaza: 0, sunnet: 0, tesbihat: 0, vakitBazli: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 }
     };
+
     veriler.forEach(item => {
         let s = (item.fark < 15) ? stats.son : stats.once;
         s.gun++;
+        
         item.veri.vakitler.forEach((v, idx) => {
-            if (v.durumlar[0] === 2) s.cemaat++;
+            // Renk ve Durum Analizi
+            if (v.durumlar[0] === 2) { s.cemaat++; s.vaktinde++; } // Açık Yeşil
+            else if (v.durumlar[0] === 1) s.vaktinde++;           // Yeşil
+            else if (v.durumlar[0] === 3) s.sonradan++;           // Turuncu
+            else if (v.durumlar[0] === 4) { s.kaza++; s.vakitBazli[idx]++; } // Kırmızı
+            
             if (v.durumlar[1] > 0) s.sunnet++;
             if (v.durumlar[2] > 0) s.tesbihat++;
-            if (v.durumlar[0] === 4) s.kaza[idx]++;
-            let p = (v.durumlar[0] === 1 || v.durumlar[0] === 2 ? 50 : (v.durumlar[0] === 4 ? 30 : 0));
-            p += (v.durumlar[1] > 0 ? 25 : 0) + (v.durumlar[2] > 0 ? 25 : 0);
+
+            // Dinamik Puanlama (Cemaat Bonuslu)
+            let p = (v.durumlar[0] === 2 ? 60 : (v.durumlar[0] === 1 ? 50 : (v.durumlar[0] === 3 ? 35 : 20)));
+            p += (v.durumlar[1] > 0 ? 20 : 0) + (v.durumlar[2] > 0 ? 20 : 0);
             s.puan += p;
         });
+
         item.veri.ozeller.forEach(o => {
             if (!s.ozeller[o.ad]) s.ozeller[o.ad] = { yapildi: 0, miktar: 0 };
             if (o.durum > 0) s.ozeller[o.ad].yapildi++;
             if (o.tip === 'sayi') s.ozeller[o.ad].miktar += Number(o.durum || 0);
         });
     });
+
     const sonOrt = Math.round(stats.son.puan / (stats.son.gun * 5 || 1));
     const onceOrt = Math.round(stats.once.puan / (stats.once.gun * 5 || 1));
-    let h = `<div style="text-align:left; font-size:13px; color:#eee; max-height:70vh; overflow-y:auto; padding-right:5px;">`;
-    h += `<h3 style="color:#a5d3ff; text-align:center; margin-bottom:15px;">📊 BÜTÜNCÜL MANEVİ ANALİZ</h3>`;
-    h += `<div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:11px; opacity:0.7;">GENEL DİSİPLİN PUANI</span>
-                <b style="color:${sonOrt >= onceOrt ? 'var(--light-green)' : 'var(--red)'}; font-size:18px;">%${sonOrt} ${sonOrt >= onceOrt ? '↑' : '↓'}</b>
-            </div>
+    const farkPuan = sonOrt - onceOrt;
+
+    // 3. Görselleştirme (UI)
+    let h = `<div style="text-align:left; font-size:13px; color:#eee; max-height:75vh; overflow-y:auto; padding-right:5px;">`;
+    h += `<h3 style="color:var(--light-green); text-align:center; margin-bottom:15px;">🤖 YZ MANEVİ KARNE</h3>`;
+
+    // Ana Skor Kartı
+    h += `<div style="background:linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); padding:15px; border-radius:15px; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1); text-align:center;">
+            <div style="font-size:11px; opacity:0.7; margin-bottom:5px;">MANEVİ VERİMLİLİK ENDEKSİ</div>
+            <div style="font-size:32px; font-weight:bold; color:${farkPuan >= 0 ? '#2ecc71' : '#e74c3c'};">%${sonOrt}</div>
+            <div style="font-size:12px; margin-top:5px;">${farkPuan >= 0 ? '↗️ Gelişim trendindesiniz' : '↘️ İstikrar kaybı gözlemlendi'} (${farkPuan > 0 ? '+'+farkPuan : farkPuan})</div>
           </div>`;
-    vakitAdlari.forEach((ad, i) => { if (stats.son.kaza[i] > stats.once.kaza[i]) h += alertBox("orange", `🟠 ${ad} Namazı Alarmı`, `Son 15 günde ${ad} vaktini vaktinde kılmak yerine "Kaza" (turuncu) olarak tamamlama eğiliminiz artmış.`); });
-    if (stats.son.cemaat < stats.once.cemaat) h += alertBox("red", "🔻 Cemaat Kaybı", "Cemaatle yapılan ibadet istikrarında bir gevşeme tespit edildi.");
-    if (stats.son.sunnet < stats.once.sunnet) h += alertBox("blue", "📋 Sünnet Eksikliği", "Vakitlerin içindeki sünnet oranlarında düşüş var.");
-    h += `<div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;"><b style="color:var(--blue); font-size:14px;">🎯 Özel Ameller & Alışkanlıklar</b></div>`;
-    h += `<div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">`;
-    for (let ad in stats.son.ozeller) {
-        let d = stats.son.ozeller[ad], eskiD = stats.once.ozeller[ad] || { yapildi: 0 };
-        let oran = Math.round((d.yapildi / stats.son.gun) * 100), eskiOran = Math.round((eskiD.yapildi / (stats.once.gun || 1)) * 100);
-        let fark = oran - eskiOran;
-        h += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;"><span>${ad}</span><b style="color:${fark >= 0 ? 'var(--light-green)' : 'var(--red)'}">%${oran} ${fark > 0 ? '(+'+fark+')' : (fark < 0 ? '('+fark+')' : '')}</b></div>
-                <div style="font-size:10px; opacity:0.6; margin-top:4px;">${d.miktar > 0 ? 'Toplam: ' + d.miktar + ' birim' : 'İstikrar Takibi'}</div>
+
+    // Kritik Uyarılar (Renk Bazlı)
+    vakitAdlari.forEach((ad, i) => { 
+        if (stats.son.vakitBazli[i] > stats.once.vakitBazli[i]) {
+            h += `<div style="background:rgba(231,76,60,0.1); border-left:4px solid #e74c3c; padding:10px; border-radius:8px; margin-bottom:10px;">
+                    <b style="color:#e74c3c;">⚠️ ${ad} Vakti Riskte:</b> Bu vakitte kaza (kırmızı) oranı artıyor. Programınızı bu vakte göre revize edin.
+                  </div>`;
+        }
+    });
+
+    // Cemaat ve Sünnet Analizi
+    if (stats.son.cemaat < stats.once.cemaat) {
+        h += `<div style="background:rgba(144,238,144,0.1); border-left:4px solid #90ee90; padding:10px; border-radius:8px; margin-bottom:10px;">
+                <b style="color:#90ee90;">⭐ Cemaat Uyarısı:</b> Altın yıldız sayınızda düşüş var. Cemaat bereketi genel puanınızı %20 artırır.
               </div>`;
     }
-    h += `</div><div style="margin-top:20px; padding:12px; background:rgba(52,152,219,0.1); border-radius:10px; font-size:12px; border-left:4px solid var(--blue);"><b>🤖 YZ Tavsiyesi:</b> ${sonOrt >= onceOrt ? "Mevcut düzeniniz çok iyi, özellikle yükselen amellere odaklanarak bu ivmeyi koruyun." : "Bu ara genel bir yorgunluk olabilir. Özel amellerden birini seçip ona 3 gün asılmak sizi eski formunuza döndürecektir."}</div></div>`;
+
+    // Özel Ameller Bölümü
+    h += `<div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;"><b style="color:var(--orange); font-size:14px;">🎯 Amel İstikrar Takibi</b></div>`;
+    h += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">`;
+    for (let ad in stats.son.ozeller) {
+        let d = stats.son.ozeller[ad], eskiD = stats.once.ozeller[ad] || { yapildi: 0 };
+        let oran = Math.round((d.yapildi / stats.son.gun) * 100);
+        let eskiOran = Math.round((eskiD.yapildi / (stats.once.gun || 1)) * 100);
+        let fark = oran - eskiOran;
+        h += `<div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:10px; border-bottom:2px solid ${fark >= 0 ? '#2ecc71' : '#e74c3c'}">
+                <div style="font-size:11px; opacity:0.8;">${ad}</div>
+                <b style="font-size:14px;">%${oran} <small style="font-size:9px;">${fark >= 0 ? '↑' : '↓'}</small></b>
+              </div>`;
+    }
+    h += `</div>`;
+
+    // YZ Stratejik Tavsiye
+    let tavsiye = "";
+    if (sonOrt > 80) tavsiye = "Muazzam bir istikrar. Mevcut düzeni bozmadan, 'Cemaat' oranını artırarak kemale ulaştırabilirsiniz.";
+    else if (farkPuan < 0) tavsiye = "Genel bir düşüş var. Arşivdeki amelleri azaltıp sadece farzlara ve cemaate odaklanarak 3 günlük bir 'ihya süreci' başlatın.";
+    else tavsiye = "Gelişiminiz umut verici. Özellikle kaçırdığınız sünnetleri tamamlarsanız puanınız hızla yükselecektir.";
+
+    h += `<div style="margin-top:20px; padding:12px; background:rgba(52,152,219,0.1); border-radius:10px; font-size:12px; border:1px solid var(--blue); line-height:1.4;">
+            <b style="color:var(--blue);">🤖 YZ Stratejik Tavsiyesi:</b><br>${tavsiye}
+          </div>`;
+
+    h += `</div>`;
+
     document.getElementById('statTitle').innerText = "GELİŞMİŞ KARNE";
     document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
 };
-
 function alertBox(color, title, text) {
     return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
                 <b style="font-size:12px; color:var(--${color});">${title}</b><br><span style="font-size:11px; opacity:0.8;">${text}</span>
