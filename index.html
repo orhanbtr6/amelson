@@ -426,6 +426,9 @@
     document.getElementById('statTitle').innerText = "GELİŞMİŞ KARNE";
     document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
+        // window.analizEt ve window.showHelp fonksiyonlarının sonuna ekleyin:
+modalAcildi(); 
+document.getElementById('statModal').style.display = 'flex';
 };
     function alertBox(color, title, text) {
     return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
@@ -827,6 +830,9 @@ window.showModernReport = () => {
     document.getElementById('statTitle').innerText = "GÜNLÜK ANALİZ";
     document.getElementById('calGrid').innerHTML = h;
     document.getElementById('statModal').style.display = 'flex';
+    // window.analizEt ve window.showHelp fonksiyonlarının sonuna ekleyin:
+modalAcildi(); 
+document.getElementById('statModal').style.display = 'flex';
 };
 // Yardımcı Fonksiyonlar
 function hesaplaPuan(v, hedefTarihKey) {
@@ -928,6 +934,22 @@ const vakitSaatleri = {
     3: 18, // Akşam (19:30 gibi)
     4: 20  // Yatsı (21:00)
 };
+    // Geri tuşu kontrol mekanizması
+window.addEventListener('popstate', function (event) {
+    const modal = document.getElementById('statModal');
+    if (modal && modal.style.display === 'flex') {
+        // Eğer modal açıksa, geri tuşuyla sadece modalı kapat
+        modal.style.display = 'none';
+        // Uygulamadan çıkış yapılmasın diye geçmişte bir adım ileri atıyoruz
+        history.pushState(null, null, window.location.pathname);
+    }
+}, false);
+
+// Herhangi bir modal açıldığında geçmişe "sanal" bir sayfa ekleyelim
+// Bu fonksiyonu modalı açtığınız her yerde (analizEt, showHelp vb.) kullanmalısınız
+function modalAcildi() {
+    history.pushState(null, null, window.location.pathname);
+}
     // Service Worker Kaydı
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
