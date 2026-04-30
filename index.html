@@ -318,33 +318,33 @@
             } else { count++; }
         }
         return count >= 2;
-    }
-window.analizEt = function() {
+    }window.analizEt = function() {
     let veriler = [];
     let bugun = new Date();
     const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
     
-    // Veri Toplama (Son 14 Gün üzerinden 7+7 kıyaslama)
-    for (let i = 0; i < 14; i++) {
+    // Saat Kontrolü: 23:00'dan önceyse analizi dünden (1 gün öncesinden) başlat
+    let baslangicGunu = (bugun.getHours() < 23) ? 1 : 0;
+
+    for (let i = baslangicGunu; i < (14 + baslangicGunu); i++) {
         let d = new Date(); d.setDate(bugun.getDate() - i);
         let k = getLocalKey(d);
         let v = JSON.parse(localStorage.getItem(k));
-        if (v) veriler.push({ fark: i, veri: v });
+        if (v) veriler.push({ fark: i - baslangicGunu, veri: v });
     }
 
     if (veriler.length < 3) { 
-        alert("Haftalık kıyaslama için en az 3 günlük veri girişi yapılmış olmalı hocam."); 
+        alert("Haftalık kıyaslama için en az 3 günlük tam veri girişi gerekli hocam."); 
         return; 
     }
 
-    // İstatistik Yapısı (7 Günlük Periyotlar)
     let stats = {
-        son: { cemaat: 0, vaktinde: 0, kaza: 0, vakitler: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 },
-        once: { cemaat: 0, vaktinde: 0, kaza: 0, vakitler: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 }
+        son: { cemaat: 0, vaktinde: 0, vakitler: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 },
+        once: { cemaat: 0, vaktinde: 0, vakitler: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 }
     };
 
     veriler.forEach(item => {
-        // 0-6 gün "bu hafta", 7-13 gün "geçen hafta"
+        // Artık 0-6 arası her zaman "tamamlanmış" son 7 günü temsil eder
         let s = (item.fark < 7) ? stats.son : stats.once;
         s.gun++;
         
@@ -352,10 +352,8 @@ window.analizEt = function() {
             if (v.durumlar[0] === 2) s.cemaat++;
             if (v.durumlar[0] === 1 || v.durumlar[0] === 2) {
                 s.vaktinde++;
-                s.vakitler[idx]++; // Her vakit için vaktinde kılma sayısını tut
+                s.vakitler[idx]++;
             }
-            if (v.durumlar[0] === 4) s.kaza++;
-
             let p = (v.durumlar[0] === 2 ? 60 : (v.durumlar[0] === 1 ? 50 : (v.durumlar[0] === 3 ? 35 : 20)));
             p += (v.durumlar[1] > 0 ? 20 : 0) + (v.durumlar[2] > 0 ? 20 : 0);
             s.puan += p;
@@ -366,6 +364,10 @@ window.analizEt = function() {
             if (o.durum > 0) s.ozeller[o.ad].yapildi++;
         });
     });
+
+    // ... (Geri kalan görselleştirme kodları aynı kalacak) ...
+    // ... document.getElementById('statTitle').innerText = "GELİŞMİŞ KARNE"; ...
+};
 
     const sonOrt = Math.round(stats.son.puan / (stats.son.gun * 5 || 1));
     const onceOrt = Math.round(stats.once.puan / (stats.once.gun * 5 || 1));
