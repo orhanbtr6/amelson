@@ -622,19 +622,27 @@ for (let b = 0; b < baslangicBoslugu; b++) {
     });
 
     // ANALİZ KISMI - GÜN İSİMLERİ EKLENMİŞ HALİ
+    // ANALİZ KISMI - KÖŞELERİ YUVARLATILMIŞ DİKDÖRTGEN YAPISI
     let analiz = `<div style="margin-top:20px; font-size:13px;"><b>Haftalık Vakit Kalitesi:</b><br><br>`;
-    analiz += gunBasliklari; // Gün isimlerini buraya yerleştirdik
+    analiz += gunBasliklari; 
     
     vakitler.forEach((v, i) => { 
-        analiz += `<div style="display:flex; align-items:center; margin:10px 0;">
-            <div style="width:60px; font-size:12px;">${v.split(" ")[0]}</div>
-            <div class="quality-line" style="flex:1; display:flex; justify-content:space-between;">
-                ${qTrend[i].map(c => `<div class="q-dot" style="background:${c}; width:12px; height:12px; border-radius:50%;"></div>`).join('')}
+        analiz += `<div style="display:flex; align-items:center; margin:6px 0;">
+            <div style="width:60px; font-size:12px; color:var(--light-green); font-weight:500;">${v.split(" ")[0]}</div>
+            <div class="quality-line" style="flex:1; display:flex; justify-content:space-between; gap:4px;">
+                ${qTrend[i].map(c => `
+                    <div style="
+                        background:${c}; 
+                        flex:1; 
+                        height:18px; 
+                        border-radius:4px; 
+                        border: 1px solid rgba(255,255,255,0.05);
+                        transition: all 0.3s ease;
+                    "></div>`).join('')}
             </div>
         </div>`; 
     });
     analiz += `</div>`;
-
     document.getElementById('calGrid').innerHTML = table + analiz;
     modalAcildi(); // Geri tuşu kontrolü için
     document.getElementById('statModal').style.display = 'flex';
