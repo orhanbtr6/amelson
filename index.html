@@ -479,48 +479,56 @@ window.analizEt = function() {
     }
 
     function render() {
-        localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
-        document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
-        document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
-        const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
-        gunlukVeriler.vakitler.forEach((v, vIdx) => {
-    let p = 0; 
-    const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
+    localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
+    document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+    document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
     
-    // Yüzde Hesaplama Mantığını Netleştirelim
-    if (f === 1) p += 40;      // Vaktinde
-    else if (f === 2) p += 50; // Cemaat
-    else if (f === 4) p += 20; // Fasılalı/Uyarı (Sarı)
-    else if (f === 3) p += 10; // Kaza (Kırmızıya yakın)
+    const vDiv = document.getElementById('vakitList'); 
+    vDiv.innerHTML = '';
 
-    if (s > 0) p += 25;        // Sünnet
-    if (t > 0) p += 25;        // Tesbihat
-    
-    if (p > 100) p = 100;
+    gunlukVeriler.vakitler.forEach((v, vIdx) => {
+        let p = 0; 
+        const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
+        
+        // Yüzde Hesaplama
+        if (f === 1) p += 40;      // Vaktinde
+        else if (f === 2) p += 50; // Cemaat
+        else if (f === 4) p += 20; // Fasılalı/Uyarı (Sarı)
+        else if (f === 3) p += 10; // Kaza (Kırmızıya yakın)
 
-    // RENK BELİRLEME (Esas hata buradaydı)
-    let bCol;
-    if (f === 0 && s === 0 && t === 0) {
-        bCol = "rgba(255,255,255,0.2)"; // Hiç dokunulmamışsa gri
-    } else if (f === 3) {
-        bCol = "#e74c3c"; // Kaza işaretlendiyse direkt KIRMIZI
-    } else if (f === 4) {
-        bCol = "#f39c12"; // Fasılalı işaretlendiyse direkt TURUNCU/SARI
-    } else if (p === 100 || f === 2) {
-        bCol = "#90ee90"; // Tam puan veya cemaat ise AÇIK YEŞİL
-    } else {
-        bCol = "#228b22"; // Diğer olumlu durumlar KOYU YEŞİL
-    }
+        if (s > 0) p += 25;        // Sünnet
+        if (t > 0) p += 25;        // Tesbihat
+        if (p > 100) p = 100;
 
-    // Kart sınıfını belirleme (CSS sınıflarınızla uyumlu)
-    let boxClass = "";
-    if (f === 1 && p === 100) boxClass = "vakit-success";
-    else if (f === 2) boxClass = "vakit-soft";
-    else if (f === 3) boxClass = "vakit-danger"; // Kaza -> Kırmızı
-    else if (f === 4) boxClass = "vakit-warn";   // Fasılalı -> Sarı
-        vDiv.innerHTML += `<div class="habit-card">
+        // RENK BELİRLEME
+        let bCol;
+        if (f === 0 && s === 0 && t === 0) {
+            bCol = "rgba(255,255,255,0.2)";
+        } else if (f === 3) {
+            bCol = "#e74c3c"; // Kırmızı
+        } else if (f === 4) {
+            bCol = "#f39c12"; // Sarı/Turuncu
+        } else if (p === 100 || f === 2) {
+            bCol = "#90ee90"; // Açık Yeşil
+        } else {
+            bCol = "#228b22"; // Koyu Yeşil
+        }
+
+        // Kart sınıfı
+        let boxClass = "";
+        if (f === 1 && p === 100) boxClass = "vakit-success";
+        else if (f === 2) boxClass = "vakit-soft";
+        else if (f === 3) boxClass = "vakit-danger";
+        else if (f === 4) boxClass = "vakit-warn";
+
+        // UYARI VERİSİ KONTROLÜ (Hata buradaydı, getVakitWarning gibi bir fonksiyonunuz olduğunu varsayıyorum)
+        // Eğer wData değişkenini dışarıdan almıyorsanız burayı boş geçiyoruz
+        let warningHtml = (typeof getVakitWarning === 'function' && getVakitWarning(vIdx)) ? `<span class="warning-blink" onclick="window.showVDetail(event, ${vIdx})">⚠️</span>` : '';
+
+        vDiv.innerHTML += `
+            <div class="habit-card">
                 <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
-                    ${wData ? `<span class="warning-blink" onclick="window.showVDetail(event, ${vIdx})">⚠️</span>` : ''}
+                    ${warningHtml}
                     <span class="vakit-ad">${vakitler[vIdx]}</span>
                 </div>
                 <div class="circles-row">
@@ -529,42 +537,37 @@ window.analizEt = function() {
                 <div class="progress-zone" style="position:relative;">
                     <div style="font-size:11px; font-weight:bold;">%${p}</div>
                     <div class="progress-bg"><div class="progress-bar" style="width:${p}%; background:${bCol}"></div></div>
-                    ${cemaatMi ? `<span style="position:absolute; top:-10px; right:-2px; font-size:14px; color:#ffeb3b; text-shadow: 0 0 3px #000;">⭐</span>` : ''}
-                </div></div>`;
-        });
-       const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
-        gunlukVeriler.ozeller.forEach((o, oIdx) => {
-            if (o.arsiv) return;
+                    ${f === 2 ? `<span style="position:absolute; top:-10px; right:-2px; font-size:14px; color:#ffeb3b; text-shadow: 0 0 3px #000;">⭐</span>` : ''}
+                </div>
+            </div>`;
+    });
 
-            // Kontrol: Sayı 0'dan büyükse veya renk dairesi seçilmişse (durum 0 değilse)
-            const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
-            
-            const card = document.createElement('div');
-            
-            // Tasarımın bozulmaması için ana sınıfı ekliyoruz
-            card.classList.add('ozel-kart');
-            
-            // Eğer yapıldıysa yeşil sınıfını ekliyoruz
-            if (isDone) {
-                card.classList.add('yapildi');
-            }
-            
-            card.style.position = 'relative';
+    const oDiv = document.getElementById('ozelList'); 
+    oDiv.innerHTML = "";
 
-            let ctrl = o.tip === 'sayi' ? 
-                `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
-                `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-            
-            let wHtml = getOzelWarning(oIdx) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
-            
-            card.innerHTML = `
-                <span class="arsiv-mini-btn" onclick="event.stopPropagation(); window.arsivle('${o.id}')" title="Arşivle" style="position:absolute; top:-2px; right:-2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">📦</span>
-                ${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}
-            `;
-            oDiv.appendChild(card);
-        });
-    }
+    gunlukVeriler.ozeller.forEach((o, oIdx) => {
+        if (o.arsiv) return;
 
+        const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
+        const card = document.createElement('div');
+        card.classList.add('ozel-kart');
+        if (isDone) card.classList.add('yapildi');
+        card.style.position = 'relative';
+
+        let ctrl = o.tip === 'sayi' ? 
+            `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
+            `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
+        
+        // ÖZEL UYARI KONTROLÜ
+        let wHtml = (typeof getOzelWarning === 'function' && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
+        
+        card.innerHTML = `
+            <span class="arsiv-mini-btn" onclick="event.stopPropagation(); window.arsivle('${o.id}')" title="Arşivle" style="position:absolute; top:-2px; right:-2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">📦</span>
+            ${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}
+        `;
+        oDiv.appendChild(card);
+    });
+}
     window.showHeatmap = (id, tip, subIdx = null) => {
     currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
     let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
