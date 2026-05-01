@@ -351,59 +351,68 @@ window.analizEt = function() {
         let s = (item.fark < 7) ? stats.son : stats.once;
         s.gun++;
         item.veri.vakitler.forEach((v, idx) => {
-            let durum = parseInt(v.durumlar[0]);
-            if (durum === 1 || durum === 2) { s.vaktinde++; s.vakitler[idx].vaktinde++; }
-            else if (durum === 3) { s.kaza++; s.vakitler[idx].kaza++; }
-            else if (durum === 0) { s.hic++; s.vakitler[idx].hic++; }
+            // KRİTİK DÜZELTME: Durumu netleştiriyoruz
+            let durum = Number(v.durumlar[0]); 
 
-            if (parseInt(v.durumlar[1]) > 0) { s.sunnet++; s.vakitler[idx].sunnet++; }
-            if (parseInt(v.durumlar[2]) > 0) { s.tesbihat++; s.vakitler[idx].tesbihat++; }
+            if (durum === 1 || durum === 2) { 
+                // YEŞİL veya MAVİ (Cemaat) -> Vaktinde
+                s.vaktinde++; 
+                s.vakitler[idx].vaktinde++; 
+            } else if (durum === 3) { 
+                // TURUNCU -> Sadece Sonradan (Kaza) artmalı
+                s.kaza++; 
+                s.vakitler[idx].kaza++; 
+            } else if (durum === 0) { 
+                // KIRMIZI -> Sadece Kılınmadı artmalı
+                s.hic++; 
+                s.vakitler[idx].hic++; 
+            }
+
+            // Sünnet ve Tesbihat
+            if (Number(v.durumlar[1]) > 0) { s.sunnet++; s.vakitler[idx].sunnet++; }
+            if (Number(v.durumlar[2]) > 0) { s.tesbihat++; s.vakitler[idx].tesbihat++; }
         });
 
-        // ÖZEL AMELLER BURADA OKUNUYOR (SİLİNMEDİ)
+        // Özel Ameller
         if (item.veri.ozeller) {
             item.veri.ozeller.forEach(o => {
                 if (!s.ozeller[o.ad]) s.ozeller[o.ad] = { yapildi: 0 };
-                if (parseInt(o.durum) > 0) s.ozeller[o.ad].yapildi++;
+                if (Number(o.durum) > 0) s.ozeller[o.ad].yapildi++;
             });
         }
     });
 
     let yorumlar = [];
     
-    // 1. Rehavet Analizi (Özellikle belirttiğiniz vakitler için)
-    let rehavetVakitleri = [];
-    vakitAdlari.forEach((ad, i) => {
-        let sunnetFark = stats.son.vakitler[i].sunnet - stats.once.vakitler[i].sunnet;
-        let tesbihFark = stats.son.vakitler[i].tesbihat - stats.once.vakitler[i].tesbihat;
-        if (sunnetFark <= -2 || tesbihFark <= -2) rehavetVakitleri.push(ad);
-    });
-    if (rehavetVakitleri.length > 0) {
-        yorumlar.push(`⚠️ <b style="color:#f39c12;">${rehavetVakitleri.join(" ve ")}</b> vakitlerinde sünnet/tesbihat noktasında bir rehavet görülüyor.`);
+    // YORUM MANTIĞI SIFIRDAN KURULDU
+    if (rehavetAnalizi(stats, vakitAdlari).length > 0) {
+        yorumlar.push(`⚠️ ${rehavetAnalizi(stats, vakitAdlari).join(", ")} vakitlerinde rehavet seziliyor.`);
     }
 
-    // 2. Kaza ve Boş Vakit Uyarıları
-    if (stats.son.kaza > 0) yorumlar.push(`🔸 Bu hafta <b style="color:#f39c12;">${stats.son.kaza} vakit</b> sonradan (turuncu) kılınmış. Vaktinde edaya odaklanmalı.`);
-    if (stats.son.hic > 0) yorumlar.push(`❌ Dikkat: <b style="color:#e74c3c;">${stats.son.hic} vakit</b> tamamen boş geçilmiş.`);
+    if (stats.son.hic > 0) {
+        yorumlar.push(`❌ Dikkat: Bu hafta <b style="color:#e74c3c;">${stats.son.hic} vakit</b> namaz kılınmamış (kırmızı).`);
+    }
 
-    // 3. Özel Amel Başarı Yorumu
+    if (stats.son.kaza > 0) {
+        yorumlar.push(`🔸 Bu hafta <b style="color:#f39c12;">${stats.son.kaza} vakit</b> namaz sonradan (turuncu) kılınmış.`);
+    }
+
     let artisOzel = Object.keys(stats.son.ozeller).find(ad => stats.son.ozeller[ad].yapildi > (stats.once.ozeller[ad]?.yapildi || 0));
-    if (artisOzel) yorumlar.push(`✨ <b>${artisOzel}</b> amelindeki gayretiniz bu hafta artış göstermiş, tebrikler.`);
+    if (artisOzel) yorumlar.push(`✨ <b>${artisOzel}</b> amelindeki artış sevindirici.`);
 
-    // HTML RAPOR OLUŞTURMA
+    // GÖSTERGE TASARIMI (Sizin ekran görüntüsüne uygun)
     let h = `<div style="text-align:left; color:#eee; max-height:80vh; overflow-y:auto; padding-right:10px;">`;
-    h += `<h3 style="color:#2ecc71; text-align:center; margin-bottom:20px; font-size:20px;">📊 TAM KAPSAMLI MANEVİ ANALİZ</h3>`;
+    h += `<h3 style="color:#2ecc71; text-align:center; margin-bottom:20px; font-size:20px;">📊 HAFTALIK MANEVİ ANALİZ</h3>`;
 
     h += `<div style="background:rgba(52,152,219,0.12); padding:15px; border-radius:18px; border-left:5px solid #3498db; margin-bottom:20px; font-size:14px; line-height:1.6;">
-            ${yorumlar.length > 0 ? yorumlar.join(" <br><br> ") : "Her şey yolunda, istikrarınız daim olsun."}
+            ${yorumlar.length > 0 ? yorumlar.join(" <br><br> ") : "İstikrarınız korunuyor."}
           </div>`;
 
-    // NAMAZ VAKİTLERİ BÖLÜMÜ
     vakitAdlari.forEach((ad, i) => {
         let suan = stats.son.vakitler[i];
         let eski = stats.once.vakitler[i];
         h += `<div style="background:var(--card); padding:12px; border-radius:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);">
-                <b style="color:#3498db; font-size:16px; display:block; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);">${ad.toUpperCase()}</b>
+                <b style="color:#3498db; font-size:16px; display:block; margin-bottom:8px;">${ad.toUpperCase()} <span style="float:right; font-size:11px; opacity:0.5;">Kıyaslamalı Veri</span></b>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                     <div style="font-size:13px; color:#2ecc71;">Vaktinde: <b>${suan.vaktinde}</b> ${getFark(suan.vaktinde, eski.vaktinde)}</div>
                     <div style="font-size:13px; color:#f39c12;">Sonradan: <b>${suan.kaza}</b> ${getFark(suan.kaza, eski.kaza, true)}</div>
@@ -413,8 +422,7 @@ window.analizEt = function() {
               </div>`;
     });
 
-    // ÖZEL AMELLER BÖLÜMÜ (TEKRAR EKLENDİ)
-    h += `<b style="color:#f1c40f; font-size:17px; display:block; margin:20px 0 10px 5px;">✨ Özel Amel Analizi</b>`;
+    h += `<b style="color:#f1c40f; font-size:17px; display:block; margin:20px 0 10px 5px;">✨ Özel Ameller</b>`;
     for (let ad in stats.son.ozeller) {
         let d = stats.son.ozeller[ad];
         let eskiD = stats.once.ozeller[ad] || { yapildi: 0 };
@@ -423,8 +431,15 @@ window.analizEt = function() {
                 <span style="color:#2ecc71; font-weight:bold; font-size:14px;">${d.yapildi}/7 Gün ${getFark(d.yapildi, eskiD.yapildi)}</span>
               </div>`;
     }
-
     h += `</div>`;
+
+    function rehavetAnalizi(st, adlar) {
+        let m = [];
+        adlar.forEach((ad, i) => {
+            if ((st.son.vakitler[i].sunnet - st.once.vakitler[i].sunnet) <= -2) m.push(ad);
+        });
+        return m;
+    }
 
     function getFark(s, e, ters = false) {
         let f = s - e;
@@ -433,7 +448,7 @@ window.analizEt = function() {
         return `<span style="color:${renk}; font-size:11px; font-weight:bold;">(${f > 0 ? '+' : ''}${f})</span>`;
     }
 
-    document.getElementById('statTitle').innerText = "GELİŞMİŞ ANALİZ";
+    document.getElementById('statTitle').innerText = "MANEVİ ANALİZ";
     document.getElementById('calGrid').innerHTML = h;
     modalAcildi(); 
     document.getElementById('statModal').style.display = 'flex';
