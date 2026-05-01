@@ -324,7 +324,7 @@
     let bugun = new Date();
     const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
     
-    // Saat Kontrolü: 23:00'dan önceyse analizi dünden (1 gün öncesinden) başlat
+    // Saat 23:00'dan önceyse analizi dünden başlat (Bugünü yarım saymasın)
     let baslangicGunu = (bugun.getHours() < 23) ? 1 : 0;
 
     for (let i = baslangicGunu; i < (14 + baslangicGunu); i++) {
@@ -335,100 +335,92 @@
     }
 
     if (veriler.length < 3) { 
-        alert("Haftalık kıyaslama için en az 3 günlük tam veri girişi gerekli hocam."); 
+        alert("Hocam, gelişim analizi için en az 3 günlük tam veri girişi yapılmış olmalı."); 
         return; 
     }
 
     let stats = {
-        son: { cemaat: 0, vaktinde: 0, vakitler: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 },
-        once: { cemaat: 0, vaktinde: 0, vakitler: [0,0,0,0,0], ozeller: {}, puan: 0, gun: 0 }
+        son: { cemaat: 0, vaktinde: 0, vakitler: [0,0,0,0,0], ozeller: {}, gun: 0 },
+        once: { cemaat: 0, vaktinde: 0, vakitler: [0,0,0,0,0], ozeller: {}, gun: 0 }
     };
 
     veriler.forEach(item => {
-        // Artık 0-6 arası her zaman "tamamlanmış" son 7 günü temsil eder
         let s = (item.fark < 7) ? stats.son : stats.once;
         s.gun++;
-        
         item.veri.vakitler.forEach((v, idx) => {
             if (v.durumlar[0] === 2) s.cemaat++;
-            if (v.durumlar[0] === 1 || v.durumlar[0] === 2) {
-                s.vaktinde++;
-                s.vakitler[idx]++;
-            }
-            let p = (v.durumlar[0] === 2 ? 60 : (v.durumlar[0] === 1 ? 50 : (v.durumlar[0] === 3 ? 35 : 20)));
-            p += (v.durumlar[1] > 0 ? 20 : 0) + (v.durumlar[2] > 0 ? 20 : 0);
-            s.puan += p;
+            if (v.durumlar[0] === 1 || v.durumlar[0] === 2) { s.vaktinde++; s.vakitler[idx]++; }
         });
-
         item.veri.ozeller.forEach(o => {
             if (!s.ozeller[o.ad]) s.ozeller[o.ad] = { yapildi: 0 };
             if (o.durum > 0) s.ozeller[o.ad].yapildi++;
         });
     });
 
-    // ... (Geri kalan görselleştirme kodları aynı kalacak) ...
-    // ... document.getElementById('statTitle').innerText = "GELİŞMİŞ KARNE"; ...
+    // --- SÖZEL RAPOR OLUŞTURMA ---
+    let h = `<div style="text-align:left; font-size:15px; color:#eee; max-height:80vh; overflow-y:auto; padding-right:5px;">`;
+    h += `<h3 style="color:var(--light-green); text-align:center; margin-bottom:15px; font-size:18px;">🤖 HAFTALIK GELİŞİM RAPORU</h3>`;
 
+    // 1. Özet Karne Kartı
+    let basariMesaji = stats.son.vaktinde >= stats.once.vaktinde ? 
+        "Bu hafta manevi istikrarınızda bir yükseliş gözlemlendi." : 
+        "Bu hafta biraz yorgunluk olmuş, toparlanma vaktidir hocam.";
 
-    const sonOrt = Math.round(stats.son.puan / (stats.son.gun * 5 || 1));
-    const onceOrt = Math.round(stats.once.puan / (stats.once.gun * 5 || 1));
-    const farkPuan = sonOrt - onceOrt;
-
-    let h = `<div style="text-align:left; font-size:13px; color:#eee; max-height:75vh; overflow-y:auto; padding-right:5px;">`;
-    h += `<h3 style="color:var(--light-green); text-align:center; margin-bottom:15px;">🤖 HAFTALIK YZ ANALİZİ</h3>`;
-
-    // Ana Skor Kartı
-    h += `<div style="background:linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); padding:12px; border-radius:15px; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1); text-align:center;">
-            <div style="font-size:10px; opacity:0.7;">HAFTALIK GELİŞİM SKORU</div>
-            <div style="font-size:28px; font-weight:bold; color:${farkPuan >= 0 ? '#2ecc71' : '#e74c3c'};">%${sonOrt} <small style="font-size:14px;">(${farkPuan >= 0 ? '+'+farkPuan : farkPuan})</small></div>
+    h += `<div style="background:rgba(52,152,219,0.15); padding:15px; border-radius:15px; border:1px solid var(--blue); margin-bottom:20px;">
+            <div style="font-size:13px; color:var(--blue); font-weight:bold; margin-bottom:5px;">ÖZET DEĞERLENDİRME</div>
+            <div style="line-height:1.4;">${basariMesaji}</div>
           </div>`;
 
-    // 🎯 Namaz Performans Kıyaslama (Vakit Bazlı)
-    h += `<b style="color:var(--blue); font-size:14px;">🕌 Namaz Disiplini (Haftalık Kıyas)</b>`;
-    h += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin:10px 0 20px 0;">`;
+    // 2. Namaz Performansı (Kaçta Kaç)
+    h += `<b style="color:var(--blue); font-size:16px;">🕌 Namaz Disiplini (Haftalık)</b>`;
+    h += `<div style="display:flex; flex-direction:column; gap:8px; margin:10px 0 25px 0;">`;
+    
     vakitAdlari.forEach((ad, i) => {
-        let buHafta = Math.round((stats.son.vakitler[i] / (stats.son.gun || 1)) * 100);
-        let gecenHafta = Math.round((stats.once.vakitler[i] / (stats.once.gun || 1)) * 100);
+        let buHafta = stats.son.vakitler[i];
+        let gecenHafta = stats.once.vakitler[i];
         let fark = buHafta - gecenHafta;
-        h += `<div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:10px; border-left:3px solid ${fark >= 0 ? '#2ecc71' : '#e74c3c'}">
-                <div style="font-size:11px; opacity:0.8;">${ad}</div>
-                <b style="font-size:13px;">%${buHafta} ${fark > 0 ? '↑' : (fark < 0 ? '↓' : '→')}</b>
+        let farkMetni = fark > 0 ? `<span style="color:#2ecc71; font-size:12px;">(+${fark} gün arttı)</span>` : 
+                       (fark < 0 ? `<span style="color:#e74c3c; font-size:12px;">(-${Math.abs(fark)} gün azaldı)</span>` : 
+                       `<span style="color:#aaa; font-size:11px;">(Stabil)</span>`);
+
+        h += `<div style="background:rgba(255,255,255,0.05); padding:10px 15px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <span style="font-size:14px; display:block;">${ad}</span>
+                    ${farkMetni}
+                </div>
+                <b style="font-size:18px; color:var(--light-green);">${buHafta}/${stats.son.gun} <small style="font-size:11px; opacity:0.6;">Gün</small></b>
               </div>`;
     });
     h += `</div>`;
 
-    // 🎯 Özel Ameller Kıyaslama
-    h += `<b style="color:var(--orange); font-size:14px;">✨ Özel Ameller (İstikrar)</b>`;
-    h += `<div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">`;
+    // 3. Özel Ameller (Kıyaslamalı)
+    h += `<b style="color:var(--orange); font-size:16px;">✨ Özel Amellerin Takibi</b>`;
+    h += `<div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">`;
+    
     for (let ad in stats.son.ozeller) {
-        let d = stats.son.ozeller[ad], eskiD = stats.once.ozeller[ad] || { yapildi: 0 };
-        let oran = Math.round((d.yapildi / stats.son.gun) * 100);
-        let eskiOran = Math.round((eskiD.yapildi / (stats.once.gun || 1)) * 100);
-        let fark = oran - eskiOran;
-        h += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
-                <span>${ad}</span>
-                <b style="color:${fark >= 0 ? '#2ecc71' : '#e74c3c'}">%${oran} (${fark >= 0 ? '+'+fark : fark})</b>
+        let d = stats.son.ozeller[ad];
+        let eskiD = stats.once.ozeller[ad] || { yapildi: 0 };
+        let fark = d.yapildi - eskiD.yapildi;
+        
+        h += `<div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border-left:4px solid ${fark >= 0 ? '#2ecc71' : '#e74c3c'}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:14px;">${ad}</span>
+                    <b style="font-size:16px;">${d.yapildi}/7 Gün</b>
+                </div>
+                <div style="font-size:12px; opacity:0.7; margin-top:4px;">
+                    ${fark > 0 ? `Geçen haftadan <b>${fark} gün daha fazla</b> yaptınız. 👏` : 
+                     (fark < 0 ? `Geçen haftaya göre <b>${Math.abs(fark)} gün fire</b> verilmiş.` : `Geçen haftaki istikrarınız devam ediyor.`)}
+                </div>
               </div>`;
     }
     h += `</div>`;
 
-    // YZ Stratejik Tavsiye
-    let tavsiye = (farkPuan >= 0) 
-        ? "Geçen haftaya göre daha disiplinli bir grafik çiziyorsunuz. Özellikle yükselişe geçen vakitlerdeki enerjinizi diğer amellere de yansıtın."
-        : "Bu hafta genel bir yavaşlama seziliyor. Özellikle gerileyen vakitleri tekrar 'Yeşil'e çevirmek için küçük hatırlatıcılar kullanabilirsiniz.";
-
-    h += `<div style="margin-top:20px; padding:12px; background:rgba(52,152,219,0.1); border-radius:10px; font-size:12px; border:1px solid var(--blue);">
-            <b style="color:var(--blue);">🤖 YZ Tavsiyesi:</b><br>${tavsiye}
-          </div>`;
-
     h += `</div>`;
 
-    document.getElementById('statTitle').innerText = "GELİŞMİŞ KARNE";
+    document.getElementById('statTitle').innerText = "GELİŞMİŞ HAFTALIK KARNE";
     document.getElementById('calGrid').innerHTML = h;
+    modalAcildi(); 
     document.getElementById('statModal').style.display = 'flex';
-        // window.analizEt ve window.showHelp fonksiyonlarının sonuna ekleyin:
-modalAcildi(); 
-document.getElementById('statModal').style.display = 'flex';
 };
     function alertBox(color, title, text) {
     return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
