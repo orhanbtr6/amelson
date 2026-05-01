@@ -342,7 +342,6 @@
         once: { cemaat: 0, vaktinde: 0, sunnet: 0, tesbihat: 0, vakitler: [], gun: 0 }
     };
 
-    // Vakit bazlı detaylı takip için dizileri hazırla
     for(let i=0; i<5; i++) {
         stats.son.vakitler[i] = { vaktinde: 0, cemaat: 0, sunnet: 0, tesbihat: 0 };
         stats.once.vakitler[i] = { vaktinde: 0, cemaat: 0, sunnet: 0, tesbihat: 0 };
@@ -359,17 +358,18 @@
         });
     });
 
-    let h = `<div style="text-align:left; font-size:14px; color:#eee; max-height:80vh; overflow-y:auto; padding-right:5px;">`;
-    h += `<h3 style="color:var(--light-green); text-align:center; margin-bottom:15px; font-size:18px;">🤖 HAFTALIK MANEVİ ANALİZ</h3>`;
+    // Font boyutları büyütüldü: 14px -> 16px, Başlıklar 18px -> 20px
+    let h = `<div style="text-align:left; font-size:16px; color:#eee; max-height:80vh; overflow-y:auto; padding-right:10px;">`;
+    h += `<h3 style="color:var(--light-green); text-align:center; margin-bottom:20px; font-size:22px; letter-spacing:1px;">🤖 HAFTALIK MANEVİ ANALİZ</h3>`;
 
-    // 1. KRİTİK DEĞİŞİM ÖZETİ
+    // 1. KRİTİK DEĞİŞİM ÖZETİ (Yazılar %15 büyütüldü)
     let cemaatFark = stats.son.cemaat - stats.once.cemaat;
     let tesbihatFark = stats.son.tesbihat - stats.once.tesbihat;
     
-    h += `<div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); margin-bottom:20px; font-size:13px; line-height:1.5;">`;
-    if(cemaatFark < 0) h += `<div style="color:var(--red); margin-bottom:5px;">⚠️ <b>Cemaat Uyarısı:</b> Geçen haftaya göre cemaatle kılınan namaz sayısı <b>${Math.abs(cemaatFark)}</b> azaldı.</div>`;
-    if(tesbihatFark < 0) h += `<div style="color:var(--orange);">⚠️ <b>Disiplin Notu:</b> Tesbihatlarda <b>${Math.abs(tesbihatFark)}</b> vakitlik bir aksama görüldü.</div>`;
-    if(cemaatFark >= 0 && tesbihatFark >= 0) h += `<div style="color:var(--light-green);">✅ Manevi disiplin ve cemaat hassasiyeti bu hafta ivme kazanmış görünüyor.</div>`;
+    h += `<div style="background:rgba(255,255,255,0.05); padding:18px; border-radius:15px; border:1px solid rgba(255,255,255,0.15); margin-bottom:25px; font-size:15px; line-height:1.6;">`;
+    if(cemaatFark < 0) h += `<div style="color:var(--red); margin-bottom:8px;">⚠️ <b>Cemaat Uyarısı:</b> Geçen haftaya göre cemaatle kılınan namaz sayısı <b style="font-size:18px;">${Math.abs(cemaatFark)}</b> vakit azaldı.</div>`;
+    if(tesbihatFark < 0) h += `<div style="color:var(--orange);">⚠️ <b>Disiplin Notu:</b> Tesbihatlarda <b style="font-size:18px;">${Math.abs(tesbihatFark)}</b> vakitlik bir aksama görüldü.</div>`;
+    if(cemaatFark >= 0 && tesbihatFark >= 0) h += `<div style="color:var(--light-green); font-size:16px;">✅ Manevi disiplin ve cemaat hassasiyeti bu hafta ivme kazanmış görünüyor.</div>`;
     h += `</div>`;
 
     // 2. VAKİT BAZLI DETAYLI ANALİZ
@@ -377,17 +377,17 @@
         let suan = stats.son.vakitler[i];
         let eski = stats.once.vakitler[i];
         
-        h += `<div style="background:var(--card); padding:12px; border-radius:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.08);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <b style="color:var(--blue); font-size:15px;">${ad.toUpperCase()}</b>
-                    <span style="font-size:12px; opacity:0.7;">7 Günlük Karnesi</span>
+        h += `<div style="background:var(--card); padding:15px; border-radius:18px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px;">
+                    <b style="color:var(--blue); font-size:18px;">${ad.toUpperCase()}</b>
+                    <span style="font-size:13px; opacity:0.8;">Haftalık Karne</span>
                 </div>
                 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                    <div style="font-size:12px;">Vaktinde: <b>${suan.vaktinde}/7</b> ${getFark(suan.vaktinde, eski.vaktinde)}</div>
-                    <div style="font-size:12px;">Cemaat: <b>${suan.cemaat}/7</b> ${getFark(suan.cemaat, eski.cemaat)}</div>
-                    <div style="font-size:12px;">Sünnet: <b>${suan.sunnet}/7</b> ${getFark(suan.sunnet, eski.sunnet)}</div>
-                    <div style="font-size:12px;">Tesbihat: <b>${suan.tesbihat}/7</b> ${getFark(suan.tesbihat, eski.tesbihat)}</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <div style="font-size:14px;">Vaktinde: <b style="font-size:16px;">${suan.vaktinde}/7</b> ${getFark(suan.vaktinde, eski.vaktinde)}</div>
+                    <div style="font-size:14px;">Cemaat: <b style="font-size:16px;">${suan.cemaat}/7</b> ${getFark(suan.cemaat, eski.cemaat)}</div>
+                    <div style="font-size:14px;">Sünnet: <b style="font-size:16px;">${suan.sunnet}/7</b> ${getFark(suan.sunnet, eski.sunnet)}</div>
+                    <div style="font-size:14px;">Tesbihat: <b style="font-size:16px;">${suan.tesbihat}/7</b> ${getFark(suan.tesbihat, eski.tesbihat)}</div>
                 </div>
               </div>`;
     });
@@ -396,9 +396,9 @@
 
     function getFark(s, e) {
         let f = s - e;
-        if(f > 0) return `<span style="color:#2ecc71; font-size:10px;">(+${f} ↑)</span>`;
-        if(f < 0) return `<span style="color:#e74c3c; font-size:10px;">(${f} ↓)</span>`;
-        return `<span style="color:#aaa; font-size:10px;">(±0)</span>`;
+        if(f > 0) return `<span style="color:#2ecc71; font-size:12px; font-weight:bold;">(+${f} ↑)</span>`;
+        if(f < 0) return `<span style="color:#e74c3c; font-size:12px; font-weight:bold;">(${f} ↓)</span>`;
+        return `<span style="color:#aaa; font-size:12px;">(±0)</span>`;
     }
 
     document.getElementById('statTitle').innerText = "GELİŞMİŞ ANALİZ RAPORU";
