@@ -362,54 +362,59 @@
         });
     });
 
-    // --- DİNAMİK YORUM MOTORU ---
+    // --- GELİŞMİŞ DİNAMİK ANALİZ MOTORU ---
     let yorumlar = [];
     const son = stats.son;
     const once = stats.once;
 
-    // 1. Vaktinde Kılma ve Cemaat Yorumu
-    if (son.vaktinde >= 30) {
-        yorumlar.push("Namazlarınızı vaktinde eda etme konusundaki hassasiyetiniz takdire şayan.");
-    } else if (son.vaktinde > once.vaktinde) {
-        yorumlar.push("Namazları vaktinde kılma gayretinizde geçen haftaya göre güzel bir ivme var.");
+    // Korelasyon 1: Farz Tam ama Sünnet/Tesbihat Eksikse
+    let hızlıVakitler = [];
+    vakitAdlari.forEach((v, i) => {
+        if(son.vakitler[i].vaktinde >= 5 && (son.vakitler[i].sunnet < 4 || son.vakitler[i].tesbihat < 4)) {
+            hızlıVakitler.push(v);
+        }
+    });
+
+    if (hızlıVakitler.length > 0) {
+        yorumlar.push(`Namazları vaktinde kılıyorsunuz ancak özellikle ${hızlıVakitler.slice(0,2).join(" ve ")} vakitlerinde sünnet veya tesbihatları biraz hızlı geçiyor gibisiniz. Namazın ruhu olan bu detaylara tutunmak huzuru artıracaktır.`);
     }
 
+    // Korelasyon 2: Sünnet/Tesbihat Artışı (Teşvik)
+    let sunnetArtis = son.sunnet - once.sunnet;
+    let tesbihArtis = son.tesbihat - once.tesbihat;
+    
+    if (sunnetArtis > 0 || tesbihArtis > 0) {
+        yorumlar.push(`Bu hafta sünnet ve tesbihat disiplininizde ${sunnetArtis + tesbihArtis} vakitlik bir gayret artışı görüyorum; bu manevi uyanışın en güzel işaretidir.`);
+    } else if (sunnetArtis < 0 || tesbihArtis < 0) {
+        yorumlar.push(`Sünnetler ve tesbihatlar farzların zırhıdır. Bu hafta bu zırhta ${Math.abs(sunnetArtis + tesbihArtis)} vakitlik küçük bir delik açılmış, aman dikkat.`);
+    }
+
+    // Korelasyon 3: Cemaat ve Vaktinde Kılma Dengesi
     if (son.cemaat < once.cemaat) {
-        yorumlar.push(`Ancak cemaatle kılınan namaz sayısında ${once.cemaat - son.cemaat} vakitlik bir azalma göze çarpıyor, bu kaleyi terk etmemeye çalışın.`);
-    } else if (son.cemaat > once.cemaat) {
-        yorumlar.push(`Cemaatle buluşma azminizdeki artış haftanın en güzel haberi.`);
+        yorumlar.push(`Cemaatle namaz sayınızda düşüş var. Unutmayın, cemaatle kılınan namaz sadece sevabı değil, istikrarı da korur.`);
     }
 
-    // 2. Sünnet ve Tesbihat Yorumu
-    let eksikTesbihatVakitleri = vakitAdlari.filter((v, i) => son.vakitler[i].tesbihat < 4);
-    if (son.tesbihat >= 30) {
-        yorumlar.push("Tesbihatları eksiksiz yerine getirerek vakitlerinizi manevi bir zırhla kuşatmışsınız.");
-    } else if (eksikTesbihatVakitleri.length > 0) {
-        yorumlar.push(`Özellikle ${eksikTesbihatVakitleri.slice(0,2).join(" ve ")} vakitlerinin tesbihatlarına biraz daha özen göstererek manevi derinliği artırabilirsiniz.`);
+    // Korelasyon 4: Kusursuz Vakitler
+    let tamVakitler = vakitAdlari.filter((v, i) => son.vakitler[i].vaktinde === 7 && son.vakitler[i].sunnet === 7 && son.vakitler[i].tesbihat === 7);
+    if (tamVakitler.length > 0) {
+        yorumlar.push(`${tamVakitler.join(", ")} vakitlerindeki tam istikrarınız haftanın parlayan yıldızı olmuş.`);
     }
-
-    if (son.sunnet < 25) {
-        yorumlar.push("Sünnet namazları, farzların koruyucusudur; yoğunluk arasında bu ikramları kaçırmamaya gayret edin.");
-    }
-
-    // Yorumları birleştirip şık bir kutuya koyalım
-    let genelDegerlendirme = yorumlar.join(" ");
 
     let h = `<div style="text-align:left; font-size:16px; color:#eee; max-height:80vh; overflow-y:auto; padding-right:10px;">`;
-    h += `<h3 style="color:var(--light-green); text-align:center; margin-bottom:20px; font-size:22px;">🤖 HAFTALIK DEĞERLENDİRME</h3>`;
+    h += `<h3 style="color:var(--light-green); text-align:center; margin-bottom:20px; font-size:22px;">🤖 HAFTALIK MANEVİ ANALİZ</h3>`;
 
     h += `<div style="background:rgba(52,152,219,0.1); padding:20px; border-radius:18px; border-left:5px solid var(--blue); margin-bottom:25px; font-size:16px; line-height:1.7; color:#fff;">
-            ${genelDegerlendirme || "Verileriniz analiz ediliyor, amellerinizde istikrar dileriz."}
+            ${yorumlar.length > 0 ? yorumlar.join(" <br><br> ") : "Amellerinizde istikrar dileriz, veri girişi arttıkça analiz derinleşecektir."}
           </div>`;
 
-    // 2. VAKİT BAZLI DETAYLI ANALİZ (Önceki şık yapı korundu)
+    // VAKİT BAZLI KARTLAR
     vakitAdlari.forEach((ad, i) => {
         let suan = son.vakitler[i];
         let eski = once.vakitler[i];
         h += `<div style="background:var(--card); padding:15px; border-radius:18px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px;">
                     <b style="color:var(--blue); font-size:18px;">${ad.toUpperCase()}</b>
-                    <span style="font-size:13px; opacity:0.8;">7 Günlük Durum</span>
+                    <span style="font-size:13px; opacity:0.8;">Haftalık Karne</span>
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                     <div style="font-size:14px;">Vaktinde: <b style="font-size:16px;">${suan.vaktinde}/7</b> ${getFark(suan.vaktinde, eski.vaktinde)}</div>
@@ -420,20 +425,6 @@
               </div>`;
     });
 
-    // 3. ÖZEL AMELLER
-    h += `<b style="color:var(--orange); font-size:18px; display:block; margin:25px 0 15px 5px;">✨ Özel Amel Analizi</b>`;
-    for (let ad in son.ozeller) {
-        let d = son.ozeller[ad];
-        let eskiD = once.ozeller[ad] || { yapildi: 0 };
-        let fark = d.yapildi - eskiD.yapildi;
-        h += `<div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:12px; border-left:5px solid ${fark >= 0 ? '#2ecc71' : '#e74c3c'}">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:16px; font-weight:bold;">${ad}</span>
-                    <b style="font-size:18px; color:var(--light-green);">${d.yapildi}/7 Gün</b>
-                </div>
-              </div>`;
-    }
-
     h += `</div>`;
 
     function getFark(s, e) {
@@ -443,7 +434,7 @@
         return `<span style="color:#aaa; font-size:12px;">(±0)</span>`;
     }
 
-    document.getElementById('statTitle').innerText = "HAFTALIK MANEVİ KARNE";
+    document.getElementById('statTitle').innerText = "GELİŞMİŞ ANALİZ RAPORU";
     document.getElementById('calGrid').innerHTML = h;
     modalAcildi(); 
     document.getElementById('statModal').style.display = 'flex';
