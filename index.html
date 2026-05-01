@@ -350,41 +350,66 @@
     veriler.forEach(item => {
         let s = (item.fark < 7) ? stats.son : stats.once;
         s.gun++;
-        // Namaz verileri
         item.veri.vakitler.forEach((v, idx) => {
             if (v.durumlar[0] === 1 || v.durumlar[0] === 2) { s.vaktinde++; s.vakitler[idx].vaktinde++; }
             if (v.durumlar[0] === 2) { s.cemaat++; s.vakitler[idx].cemaat++; }
             if (v.durumlar[1] > 0) { s.sunnet++; s.vakitler[idx].sunnet++; }
             if (v.durumlar[2] > 0) { s.tesbihat++; s.vakitler[idx].tesbihat++; }
         });
-        // Özel amel verileri
         item.veri.ozeller.forEach(o => {
             if (!s.ozeller[o.ad]) s.ozeller[o.ad] = { yapildi: 0 };
             if (o.durum > 0) s.ozeller[o.ad].yapildi++;
         });
     });
 
+    // --- DİNAMİK YORUM MOTORU ---
+    let yorumlar = [];
+    const son = stats.son;
+    const once = stats.once;
+
+    // 1. Vaktinde Kılma ve Cemaat Yorumu
+    if (son.vaktinde >= 30) {
+        yorumlar.push("Namazlarınızı vaktinde eda etme konusundaki hassasiyetiniz takdire şayan.");
+    } else if (son.vaktinde > once.vaktinde) {
+        yorumlar.push("Namazları vaktinde kılma gayretinizde geçen haftaya göre güzel bir ivme var.");
+    }
+
+    if (son.cemaat < once.cemaat) {
+        yorumlar.push(`Ancak cemaatle kılınan namaz sayısında ${once.cemaat - son.cemaat} vakitlik bir azalma göze çarpıyor, bu kaleyi terk etmemeye çalışın.`);
+    } else if (son.cemaat > once.cemaat) {
+        yorumlar.push(`Cemaatle buluşma azminizdeki artış haftanın en güzel haberi.`);
+    }
+
+    // 2. Sünnet ve Tesbihat Yorumu
+    let eksikTesbihatVakitleri = vakitAdlari.filter((v, i) => son.vakitler[i].tesbihat < 4);
+    if (son.tesbihat >= 30) {
+        yorumlar.push("Tesbihatları eksiksiz yerine getirerek vakitlerinizi manevi bir zırhla kuşatmışsınız.");
+    } else if (eksikTesbihatVakitleri.length > 0) {
+        yorumlar.push(`Özellikle ${eksikTesbihatVakitleri.slice(0,2).join(" ve ")} vakitlerinin tesbihatlarına biraz daha özen göstererek manevi derinliği artırabilirsiniz.`);
+    }
+
+    if (son.sunnet < 25) {
+        yorumlar.push("Sünnet namazları, farzların koruyucusudur; yoğunluk arasında bu ikramları kaçırmamaya gayret edin.");
+    }
+
+    // Yorumları birleştirip şık bir kutuya koyalım
+    let genelDegerlendirme = yorumlar.join(" ");
+
     let h = `<div style="text-align:left; font-size:16px; color:#eee; max-height:80vh; overflow-y:auto; padding-right:10px;">`;
-    h += `<h3 style="color:var(--light-green); text-align:center; margin-bottom:20px; font-size:22px;">🤖 HAFTALIK MANEVİ ANALİZ</h3>`;
+    h += `<h3 style="color:var(--light-green); text-align:center; margin-bottom:20px; font-size:22px;">🤖 HAFTALIK DEĞERLENDİRME</h3>`;
 
-    // 1. KRİTİK DEĞİŞİM ÖZETİ
-    let cemaatFark = stats.son.cemaat - stats.once.cemaat;
-    let tesbihatFark = stats.son.tesbihat - stats.once.tesbihat;
-    
-    h += `<div style="background:rgba(255,255,255,0.05); padding:18px; border-radius:15px; border:1px solid rgba(255,255,255,0.15); margin-bottom:25px; font-size:15px; line-height:1.6;">`;
-    if(cemaatFark < 0) h += `<div style="color:var(--red); margin-bottom:8px;">⚠️ <b>Cemaat Uyarısı:</b> Cemaat katılımı geçen haftaya göre <b style="font-size:18px;">${Math.abs(cemaatFark)}</b> vakit azaldı.</div>`;
-    if(tesbihatFark < 0) h += `<div style="color:var(--orange);">⚠️ <b>Disiplin Notu:</b> Tesbihatlarda <b style="font-size:18px;">${Math.abs(tesbihatFark)}</b> vakitlik bir aksama görüldü.</div>`;
-    if(cemaatFark >= 0 && tesbihatFark >= 0) h += `<div style="color:var(--light-green); font-size:16px;">✅ Temel disiplin ve cemaat hassasiyeti bu hafta ivme kazanmış görünüyor.</div>`;
-    h += `</div>`;
+    h += `<div style="background:rgba(52,152,219,0.1); padding:20px; border-radius:18px; border-left:5px solid var(--blue); margin-bottom:25px; font-size:16px; line-height:1.7; color:#fff;">
+            ${genelDegerlendirme || "Verileriniz analiz ediliyor, amellerinizde istikrar dileriz."}
+          </div>`;
 
-    // 2. VAKİT BAZLI DETAYLI ANALİZ
+    // 2. VAKİT BAZLI DETAYLI ANALİZ (Önceki şık yapı korundu)
     vakitAdlari.forEach((ad, i) => {
-        let suan = stats.son.vakitler[i];
-        let eski = stats.once.vakitler[i];
+        let suan = son.vakitler[i];
+        let eski = once.vakitler[i];
         h += `<div style="background:var(--card); padding:15px; border-radius:18px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px;">
                     <b style="color:var(--blue); font-size:18px;">${ad.toUpperCase()}</b>
-                    <span style="font-size:13px; opacity:0.8;">Haftalık Karne</span>
+                    <span style="font-size:13px; opacity:0.8;">7 Günlük Durum</span>
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                     <div style="font-size:14px;">Vaktinde: <b style="font-size:16px;">${suan.vaktinde}/7</b> ${getFark(suan.vaktinde, eski.vaktinde)}</div>
@@ -395,21 +420,16 @@
               </div>`;
     });
 
-    // 3. ÖZEL AMELLER (Yorumlu ve Büyük Yazılı)
+    // 3. ÖZEL AMELLER
     h += `<b style="color:var(--orange); font-size:18px; display:block; margin:25px 0 15px 5px;">✨ Özel Amel Analizi</b>`;
-    for (let ad in stats.son.ozeller) {
-        let d = stats.son.ozeller[ad];
-        let eskiD = stats.once.ozeller[ad] || { yapildi: 0 };
+    for (let ad in son.ozeller) {
+        let d = son.ozeller[ad];
+        let eskiD = once.ozeller[ad] || { yapildi: 0 };
         let fark = d.yapildi - eskiD.yapildi;
-        
         h += `<div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:12px; border-left:5px solid ${fark >= 0 ? '#2ecc71' : '#e74c3c'}">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-size:16px; font-weight:bold;">${ad}</span>
                     <b style="font-size:18px; color:var(--light-green);">${d.yapildi}/7 Gün</b>
-                </div>
-                <div style="font-size:14px; opacity:0.8; margin-top:6px; line-height:1.4;">
-                    ${fark > 0 ? `Geçen haftaya oranla gelişim göstererek performans <b>${fark} gün artırıldı.</b>` : 
-                     (fark < 0 ? `Bu alanda geçen haftaya göre <b>${Math.abs(fark)} gün eksiklik</b> gözlemlendi.` : `Geçen haftaki istikrar seviyesi korunuyor.`)}
                 </div>
               </div>`;
     }
@@ -423,7 +443,7 @@
         return `<span style="color:#aaa; font-size:12px;">(±0)</span>`;
     }
 
-    document.getElementById('statTitle').innerText = "GELİŞMİŞ ANALİZ RAPORU";
+    document.getElementById('statTitle').innerText = "HAFTALIK MANEVİ KARNE";
     document.getElementById('calGrid').innerHTML = h;
     modalAcildi(); 
     document.getElementById('statModal').style.display = 'flex';
