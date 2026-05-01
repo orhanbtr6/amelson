@@ -333,7 +333,7 @@ window.analizEt = function() {
     }
 
     if (veriler.length < 3) { 
-        alert("Gelişim analizi için en az 3 günlük veri gerekli."); 
+        alert("Analiz için en az 3 günlük veri gerekli."); 
         return; 
     }
 
@@ -351,86 +351,60 @@ window.analizEt = function() {
         let s = (item.fark < 7) ? stats.son : stats.once;
         s.gun++;
         item.veri.vakitler.forEach((v, idx) => {
-            // FARZ ANALİZİ (Renk/Durum Okuma)
-            if (v.durumlar[0] === 1 || v.durumlar[0] === 2) { 
-                s.vaktinde++; s.vakitler[idx].vaktinde++; 
-            } else if (v.durumlar[0] === 3) { 
-                // TURUNCU: Sonradan kılınan (Kaza)
-                s.kaza++; s.vakitler[idx].kaza++; 
-            } else if (v.durumlar[0] === 0) { 
-                // KIRMIZI: Hiç kılınmayan
-                s.hic++; s.vakitler[idx].hic++; 
-            }
+            let durum = parseInt(v.durumlar[0]);
+            if (durum === 1 || durum === 2) { s.vaktinde++; s.vakitler[idx].vaktinde++; }
+            else if (durum === 3) { s.kaza++; s.vakitler[idx].kaza++; }
+            else if (durum === 0) { s.hic++; s.vakitler[idx].hic++; }
 
-            // SÜNNET ANALİZİ
-            if (v.durumlar[1] > 0) { s.sunnet++; s.vakitler[idx].sunnet++; }
-            
-            // TESBİHAT ANALİZİ
-            if (v.durumlar[2] > 0) { s.tesbihat++; s.vakitler[idx].tesbihat++; }
+            if (parseInt(v.durumlar[1]) > 0) { s.sunnet++; s.vakitler[idx].sunnet++; }
+            if (parseInt(v.durumlar[2]) > 0) { s.tesbihat++; s.vakitler[idx].tesbihat++; }
         });
 
-        // ÖZEL AMELLER ANALİZİ
-        item.veri.ozeller.forEach(o => {
-            if (!s.ozeller[o.ad]) s.ozeller[o.ad] = { yapildi: 0 };
-            if (o.durum > 0) s.ozeller[o.ad].yapildi++;
-        });
+        // ÖZEL AMELLER BURADA OKUNUYOR (SİLİNMEDİ)
+        if (item.veri.ozeller) {
+            item.veri.ozeller.forEach(o => {
+                if (!s.ozeller[o.ad]) s.ozeller[o.ad] = { yapildi: 0 };
+                if (parseInt(o.durum) > 0) s.ozeller[o.ad].yapildi++;
+            });
+        }
     });
 
     let yorumlar = [];
     
-    // 1. REHAVET VE VAKİT HASSAİYETİ (Yatsı örneğindeki gibi)
-    let rehavetMesajlari = [];
+    // 1. Rehavet Analizi (Özellikle belirttiğiniz vakitler için)
+    let rehavetVakitleri = [];
     vakitAdlari.forEach((ad, i) => {
-        let suanSunnet = stats.son.vakitler[i].sunnet;
-        let eskiSunnet = stats.once.vakitler[i].sunnet;
-        let suanTesbih = stats.son.vakitler[i].tesbihat;
-        let eskiTesbih = stats.once.vakitler[i].tesbihat;
-
-        // Eğer sünnet veya tesbihat 2 veya daha fazla düşmüşse rehavet teşhisi koy
-        if ((suanSunnet - eskiSunnet) <= -2 || (suanTesbih - eskiTesbih) <= -2) {
-            rehavetMesajlari.push(ad);
-        }
+        let sunnetFark = stats.son.vakitler[i].sunnet - stats.once.vakitler[i].sunnet;
+        let tesbihFark = stats.son.vakitler[i].tesbihat - stats.once.vakitler[i].tesbihat;
+        if (sunnetFark <= -2 || tesbihFark <= -2) rehavetVakitleri.push(ad);
     });
-
-    if (rehavetMesajlari.length > 0) {
-        yorumlar.push(`Dikkat: <b style="color:#f39c12;">${rehavetMesajlari.join(", ")}</b> vakitlerinde sünnet ve tesbihat disiplininde bir gevşeme (rehavet) seziliyor. Namazı bütünlüğüyle korumaya odaklanmalısın.`);
+    if (rehavetVakitleri.length > 0) {
+        yorumlar.push(`⚠️ <b style="color:#f39c12;">${rehavetVakitleri.join(" ve ")}</b> vakitlerinde sünnet/tesbihat noktasında bir rehavet görülüyor.`);
     }
 
-    // 2. KIRMIZI ALARM (Kılınmayan Namazlar)
-    if (stats.son.hic > 0) {
-        yorumlar.push(`Bu hafta <b style="color:#e74c3c;">${stats.son.hic} vakit</b> namazın tamamen boş kaldığı görülüyor. Bu durum manevi kalenizde ciddi bir gedik açabilir.`);
-    }
+    // 2. Kaza ve Boş Vakit Uyarıları
+    if (stats.son.kaza > 0) yorumlar.push(`🔸 Bu hafta <b style="color:#f39c12;">${stats.son.kaza} vakit</b> sonradan (turuncu) kılınmış. Vaktinde edaya odaklanmalı.`);
+    if (stats.son.hic > 0) yorumlar.push(`❌ Dikkat: <b style="color:#e74c3c;">${stats.son.hic} vakit</b> tamamen boş geçilmiş.`);
 
-    // 3. TURUNCU ANALİZİ (Sonradan Kılınanlar)
-    if (stats.son.kaza > 0) {
-        let kazaVakitleri = vakitAdlari.filter((v, i) => stats.son.vakitler[i].kaza > 0);
-        yorumlar.push(`Namazların sonradan (kaza) eda edilme alışkanlığı özellikle ${kazaVakitleri.join(", ")} vakitlerinde yoğunlaşmış. Vaktinde eda, namazın nurunu artırır.`);
-    }
-
-    // 4. BAŞARI VE GELİŞİM
+    // 3. Özel Amel Başarı Yorumu
     let artisOzel = Object.keys(stats.son.ozeller).find(ad => stats.son.ozeller[ad].yapildi > (stats.once.ozeller[ad]?.yapildi || 0));
-    if (artisOzel) {
-        yorumlar.push(`Tebrikler: "${artisOzel}" özel ameli konusundaki istikrarınızda artış var.`);
-    }
+    if (artisOzel) yorumlar.push(`✨ <b>${artisOzel}</b> amelindeki gayretiniz bu hafta artış göstermiş, tebrikler.`);
 
-    // HTML ÇIKTI OLUŞTURMA
+    // HTML RAPOR OLUŞTURMA
     let h = `<div style="text-align:left; color:#eee; max-height:80vh; overflow-y:auto; padding-right:10px;">`;
-    h += `<h3 style="color:#2ecc71; text-align:center; margin-bottom:20px; font-size:22px;">⚖️ HAFTALIK MANEVİ DENGE RAPORU</h3>`;
+    h += `<h3 style="color:#2ecc71; text-align:center; margin-bottom:20px; font-size:20px;">📊 TAM KAPSAMLI MANEVİ ANALİZ</h3>`;
 
-    h += `<div style="background:rgba(52,152,219,0.12); padding:20px; border-radius:18px; border-left:5px solid #3498db; margin-bottom:25px; font-size:15px; line-height:1.7;">
-            ${yorumlar.length > 0 ? yorumlar.join(" <br><br> ") : "Sistemde herhangi bir negatif sapma görülmedi, istikrarlı ilerliyorsunuz."}
+    h += `<div style="background:rgba(52,152,219,0.12); padding:15px; border-radius:18px; border-left:5px solid #3498db; margin-bottom:20px; font-size:14px; line-height:1.6;">
+            ${yorumlar.length > 0 ? yorumlar.join(" <br><br> ") : "Her şey yolunda, istikrarınız daim olsun."}
           </div>`;
 
-    // VAKİT KARTLARI
+    // NAMAZ VAKİTLERİ BÖLÜMÜ
     vakitAdlari.forEach((ad, i) => {
         let suan = stats.son.vakitler[i];
         let eski = stats.once.vakitler[i];
-        h += `<div style="background:var(--card); padding:15px; border-radius:18px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:5px;">
-                    <b style="color:#3498db; font-size:17px;">${ad.toUpperCase()}</b>
-                    <span style="font-size:12px; opacity:0.6;">Kıyaslamalı Veri</span>
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        h += `<div style="background:var(--card); padding:12px; border-radius:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);">
+                <b style="color:#3498db; font-size:16px; display:block; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);">${ad.toUpperCase()}</b>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                     <div style="font-size:13px; color:#2ecc71;">Vaktinde: <b>${suan.vaktinde}</b> ${getFark(suan.vaktinde, eski.vaktinde)}</div>
                     <div style="font-size:13px; color:#f39c12;">Sonradan: <b>${suan.kaza}</b> ${getFark(suan.kaza, eski.kaza, true)}</div>
                     <div style="font-size:13px; color:#e74c3c;">Kılınmadı: <b>${suan.hic}</b> ${getFark(suan.hic, eski.hic, true)}</div>
@@ -439,15 +413,14 @@ window.analizEt = function() {
               </div>`;
     });
 
-    // ÖZEL AMELLER
-    h += `<b style="color:#f1c40f; font-size:17px; display:block; margin:20px 0 10px 5px;">✨ Özel Ameller</b>`;
+    // ÖZEL AMELLER BÖLÜMÜ (TEKRAR EKLENDİ)
+    h += `<b style="color:#f1c40f; font-size:17px; display:block; margin:20px 0 10px 5px;">✨ Özel Amel Analizi</b>`;
     for (let ad in stats.son.ozeller) {
         let d = stats.son.ozeller[ad];
         let eskiD = stats.once.ozeller[ad] || { yapildi: 0 };
-        let fark = d.yapildi - eskiD.yapildi;
-        h += `<div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                <span>${ad}</span>
-                <span style="color:#2ecc71; font-weight:bold;">${d.yapildi}/7 Gün ${getFark(d.yapildi, eskiD.yapildi)}</span>
+        h += `<div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:14px;">${ad}</span>
+                <span style="color:#2ecc71; font-weight:bold; font-size:14px;">${d.yapildi}/7 Gün ${getFark(d.yapildi, eskiD.yapildi)}</span>
               </div>`;
     }
 
@@ -455,12 +428,12 @@ window.analizEt = function() {
 
     function getFark(s, e, ters = false) {
         let f = s - e;
-        if(f === 0) return `<small style="color:#888;">(0)</small>`;
+        if(f === 0) return `<span style="color:#888; font-size:11px;">(0)</span>`;
         let renk = (f > 0) ? (ters ? '#e74c3c' : '#2ecc71') : (ters ? '#2ecc71' : '#e74c3c');
-        return `<small style="color:${renk}; font-weight:bold;">(${f > 0 ? '+' : ''}${f})</small>`;
+        return `<span style="color:${renk}; font-size:11px; font-weight:bold;">(${f > 0 ? '+' : ''}${f})</span>`;
     }
 
-    document.getElementById('statTitle').innerText = "MANEVİ GELİŞİM ANALİZİ";
+    document.getElementById('statTitle').innerText = "GELİŞMİŞ ANALİZ";
     document.getElementById('calGrid').innerHTML = h;
     modalAcildi(); 
     document.getElementById('statModal').style.display = 'flex';
