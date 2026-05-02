@@ -354,7 +354,7 @@ window.analizEt = function() {
                 case 1: s.vaktinde++; s.vakitler[idx].vaktinde++; break;
                 case 2: s.cemaat++; s.vakitler[idx].cemaat++; break;
                 case 3: 
-                case 0: // Boş bırakılan da kazaya kalmış sayıldı
+                case 0: // Boş bırakılan da borçtur, kaza sayıldı
                     s.kaza++; s.vakitler[idx].kaza++; break;
                 case 4: 
                 default: s.hic++; s.vakitler[idx].hic++; break;
@@ -373,7 +373,7 @@ window.analizEt = function() {
     });
 
     let yorumlar = [];
-    const hadisler = {
+    const hadislerNamaz = {
         0: "Sabah namazının iki rekatı, dünyadan ve dünyadaki her şeyden daha hayırlıdır. (Müslim)",
         1: "Kim öğle namazından önce dört, sonra da iki rekat kılmaya devam ederse Allah onu cehenneme haram kılar. (Nesâî)",
         2: "İkindi namazını terk edenin ameli boşa gider. (Buhârî)",
@@ -386,19 +386,31 @@ window.analizEt = function() {
     
     if (sorunluVakitler.length > 0) {
         let vakitIndeks = vakitAdlari.indexOf(sorunluVakitler[0]);
-        yorumlar.push(`⚠️ **Dikkat:** Son hafta özellikle **${sorunluVakitler.join(", ")}** vakitlerinde aksamalar görülüyor. Peygamber Efendimiz (sav) buyuruyor ki: *"${hadisler[vakitIndeks]}"*`);
+        yorumlar.push(`⚠️ **Namaz Analizi:** Son hafta **${sorunluVakitler.join(", ")}** vakitlerinde aksamalar görülüyor. Efendimiz (sav) buyuruyor: *"${hadislerNamaz[vakitIndeks]}"*`);
     } else {
-        yorumlar.push(`✅ **Maşallah:** Son 7 gün içinde tüm namazlarını vaktinde ikame ettin. "Namaz dinin direğidir." Bu yolda istikrarını koru.`);
+        yorumlar.push(`✅ **Maşallah:** Tüm namazlar vaktinde ikame edildi. "Namaz dinin direğidir." İstikrarın daim olsun.`);
     }
 
-    // --- ÖZEL AMEL ANALİZİ ---
-    let gevseyenAmeller = [];
+    // --- ÖZEL AMEL ANALİZİ (Gelişime Dayalı) ---
+    let gevseyenler = [];
+    let gelisenler = [];
     for (let ad in stats.son.ozeller) {
-        if (stats.son.ozeller[ad].yapildi < 7) gevseyenAmeller.push(ad);
+        let sonHafta = stats.son.ozeller[ad].yapildi;
+        let oncekiHafta = (stats.once.ozeller[ad]) ? stats.once.ozeller[ad].yapildi : 0;
+
+        if (sonHafta < oncekiHafta) {
+            gevseyenler.push(ad);
+        } else if (sonHafta > oncekiHafta || (sonHafta === 7 && oncekiHafta === 7)) {
+            gelisenler.push(ad);
+        }
     }
 
-    if (gevseyenAmeller.length > 0) {
-        yorumlar.push(`📉 **Özel Amel Özeti:** Son hafta **${gevseyenAmeller.join(", ")}** amellerinde bazı eksiklikler (toplam ${gevseyenAmeller.length} amelde gevşeme) var.`);
+    if (gevseyenler.length > 0) {
+        yorumlar.push(`📉 **Dikkat:** Geçen haftaya oranla **${gevseyenler.join(", ")}** amellerinde bir gevşeme var. Amellerin hayırlısı, az da olsa devamlı olanıdır.`);
+    } 
+    
+    if (gelisenler.length > 0) {
+        yorumlar.push(`🌟 **Gelişim:** **${gelisenler.join(", ")}** amellerindeki gayretin artmış veya tam puanla devam ediyor. Rabbimiz buyuruyor: *"İnsan için ancak çalıştığının karşılığı vardır." (Necm, 39)*`);
     }
 
     // --- GÖRSEL RAPOR ---
@@ -444,8 +456,7 @@ window.analizEt = function() {
     document.getElementById('calGrid').innerHTML = h;
     modalAcildi(); 
     document.getElementById('statModal').style.display = 'flex';
-};
-    function alertBox(color, title, text) {
+};    function alertBox(color, title, text) {
     return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
                 <b style="font-size:12px; color:var(--${color});">${title}</b><br><span style="font-size:11px; opacity:0.8;">${text}</span>
             </div>`;
