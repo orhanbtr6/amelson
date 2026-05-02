@@ -320,6 +320,13 @@
         return count >= 2;
     }
 window.analizEt = function() {
+    let ilkGiris = localStorage.getItem('ilkGiris');
+let gunFarki = (new Date().getTime() - ilkGiris) / (1000 * 60 * 60 * 24);
+
+if (gunFarki < 3) {
+    // Henüz 3 gün dolmadıysa analiz yerine teşvik mesajı göster
+    yorumlar.push("🌟 **Yolculuk Başlıyor:** Manevi rehberine hoş geldin! Analizlerin sağlıklı oluşabilmesi için ilk 3 gün verilerini girmeye odaklan.");
+}
     let veriler = [];
     let bugun = new Date();
     const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
