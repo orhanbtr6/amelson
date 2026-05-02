@@ -417,7 +417,7 @@ window.analizEt = function() {
     let h = `<div style="text-align:left; color:#eee; max-height:80vh; overflow-y:auto; padding-right:10px;">`;
     h += `<h3 style="color:#2ecc71; text-align:center; font-size:20px; border-bottom:1px solid #333; padding-bottom:10px;">📊 HAFTALIK MANEVİ ANALİZ</h3>`;
 
-    h += `<div style="background:rgba(52,152,219,0.1); padding:15px; border-radius:18px; border:1px solid #3498db; margin-bottom:20px; font-size:14px; line-height:1.6;">
+    h += `<div style="background:rgba(52,152,219,0.1); padding:15px; border-radius:18px; border:1px solid #3498db; margin-bottom:20px; font-size:15px; line-height:1.6;">
             ${yorumlar.join(" <hr style='opacity:0.1; margin:10px 0;'> ")}
           </div>`;
 
@@ -425,7 +425,7 @@ window.analizEt = function() {
         let sn = stats.son.vakitler[i];
         let on = stats.once.vakitler[i];
         h += `<div style="background:var(--card); padding:12px; border-radius:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);">
-                <b style="color:#3498db; font-size:16px;">${ad.toUpperCase()}</b>
+                <b style="color:#3498db; font-size:17px;">${ad.toUpperCase()}</b>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px;">
                     <div style="font-size:12px; color:#2ecc71;">Cemaat: <b>${sn.cemaat}</b> ${getF(sn.cemaat, on.cemaat)}</div>
                     <div style="font-size:12px; color:#a3e4d7;">Vaktinde: <b>${sn.vaktinde}</b> ${getF(sn.vaktinde, on.vaktinde)}</div>
@@ -440,7 +440,7 @@ window.analizEt = function() {
         let d = stats.son.ozeller[ad];
         let ed = stats.once.ozeller[ad] || { yapildi: 0 };
         h += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:14px;">${ad}</span>
+                <span style="font-size:15px;">${ad}</span>
                 <span style="color:#2ecc71; font-weight:bold;">${d.yapildi}/7 Gün ${getF(d.yapildi, ed.yapildi)}</span>
               </div>`;
     }
