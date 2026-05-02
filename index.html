@@ -347,14 +347,27 @@ window.analizEt = function() {
     veriler.forEach(item => {
         let s = (item.fark < 7) ? stats.son : stats.once;
         item.veri.vakitler.forEach((v, idx) => {
-            let farzDurum = String(v.durumlar[0]); 
+            // Veriyi sayıya zorlayarak kesin kontrol sağlıyoruz
+            let farzVal = parseInt(v.durumlar[0]); 
             
-            // 4 Seçenekli Yeni Düzen (0: Boş/Kırmızı, 1: Yeşil/Vaktinde, 2: Açık Yeşil/Cemaat, 3: Turuncu/Kaza)
-            // Not: Senin sistemindeki sayısal karşılıklara göre burayı kontrol etmelisin.
-            if (farzDurum === "0") { s.hic++; s.vakitler[idx].hic++; } 
-            else if (farzDurum === "3") { s.kaza++; s.vakitler[idx].kaza++; }
-            else if (farzDurum === "2") { s.cemaat++; s.vakitler[idx].cemaat++; }
-            else if (farzDurum === "1") { s.vaktinde++; s.vakitler[idx].vaktinde++; }
+            // 0: Boş/Kırmızı (Eksik)
+            // 1: Turuncu (Kaza) - Önceki kodda bu kısım karışıyordu
+            // 2: Yeşil (Vaktinde)
+            // 3: Açık Yeşil (Cemaat)
+            
+            if (farzVal === 0 || isNaN(farzVal)) { 
+                s.hic++; 
+                s.vakitler[idx].hic++; 
+            } else if (farzVal === 1) { 
+                s.kaza++; 
+                s.vakitler[idx].kaza++; 
+            } else if (farzVal === 2) { 
+                s.vaktinde++; 
+                s.vakitler[idx].vaktinde++; 
+            } else if (farzVal === 3) { 
+                s.cemaat++; 
+                s.vakitler[idx].cemaat++; 
+            }
 
             if (parseInt(v.durumlar[1]) > 0) { s.sunnet++; s.vakitler[idx].sunnet++; }
             if (parseInt(v.durumlar[2]) > 0) { s.tesbihat++; s.vakitler[idx].tesbihat++; }
@@ -370,19 +383,18 @@ window.analizEt = function() {
 
     let yorumlar = [];
     
-    // 1. Namaz İkaz ve Teşvikleri
+    // Namaz İkaz ve Teşvikleri (Hiyerarşik Kontrol)
     if (stats.son.hic > 0) {
-        yorumlar.push(`🚨 **İkaz:** Haftalık tabloda eksik namazlar görünüyor. Namaz, müminin miracıdır; dünyevi hiçbir meşgale seni bu huzurdan alıkoymamalı. Eksiklerini telafi etmeye gayret etmelisin.`);
-    } else if (stats.son.kaza > 5) {
-        yorumlar.push(`🟠 **Teşvik:** Namazlarını kaza ederek de olsa tamamlaman güzel; ancak vaktin bereketinden mahrum kalmamak için zamanlamaya daha fazla dikkat etmelisin.`);
-    } else if (stats.son.cemaat > 10) {
-        yorumlar.push(`✨ **Maşallah:** Cemaatle namaz konusundaki hassasiyetin çok değerli. Kalbi mescitlere bağlı olanların manevi derecesi her daim yüksektir. Bu yolda sabit kalmanı dilerim.`);
+        yorumlar.push(`🚨 **İkaz:** Haftalık tabloda eksik namazlar görünüyor. Namaz, müminin miracıdır; hiçbir meşgale seni bu huzurdan alıkoymamalı. Eksiklerini telafi etmeye gayret etmelisin.`);
+    } else if (stats.son.kaza > 0) {
+        yorumlar.push(`🟠 **Teşvik:** Namazlarını kaza ederek (turuncu) tamamlaman bir sorumluluk bilincidir; ancak vaktin bereketine yetişmek için zaman yönetimini gözden geçirmelisin.`);
+    } else if (stats.son.cemaat > 5) {
+        yorumlar.push(`✨ **Maşallah:** Cemaate devam etme hassasiyetin çok kıymetli. Kalbi mescitlere bağlı olanların manevi istikameti her daim kavidir.`);
     } else {
-        yorumlar.push(`✅ **Tebrik:** Namazlarını vaktinde ikame etme gayretin takdire şayan. Bu istikrar, manevi yükselişin en büyük anahtarıdır.`);
+        yorumlar.push(`✅ **Tebrik:** Namazlarını vaktinde ikame etme gayretin takdire şayan. Bu istikrar, manevi yükselişin en sağlam basamağıdır.`);
     }
 
-    // 2. Genel Amel Değerlendirmesi
-    yorumlar.push(`📝 **Genel Değerlendirme:** Günlük özel amellerinde gösterdiğin süreklilik, iç dünyandaki disiplini yansıtıyor. Az da olsa devamlı olan amelin bereketine odaklanarak yoluna devam etmelisin.`);
+    yorumlar.push(`📝 **Genel Değerlendirme:** Günlük özel amellerindeki süreklilik, iç disiplinini yansıtıyor. Az da olsa devamlı olan amelin bereketine odaklanarak yoluna devam etmelisin.`);
 
     // --- GÖRSEL RAPOR OLUŞTURMA ---
     let h = `<div style="text-align:left; color:#eee; max-height:80vh; overflow-y:auto; padding-right:10px;">`;
@@ -398,15 +410,15 @@ window.analizEt = function() {
         h += `<div style="background:var(--card); padding:12px; border-radius:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);">
                 <b style="color:#3498db; font-size:16px;">${ad.toUpperCase()}</b>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px;">
-                    <div style="font-size:13px; color:#2ecc71;">Cemaat: <b>${sn.cemaat}</b> ${getF(sn.cemaat, on.cemaat)}</div>
-                    <div style="font-size:13px; color:#a3e4d7;">Vaktinde: <b>${sn.vaktinde}</b> ${getF(sn.vaktinde, on.vaktinde)}</div>
-                    <div style="font-size:13px; color:#f39c12;">Kaza: <b>${sn.kaza}</b> ${getF(sn.kaza, on.kaza, true)}</div>
-                    <div style="font-size:13px; color:#e74c3c;">Eksik: <b>${sn.hic}</b> ${getF(sn.hic, on.hic, true)}</div>
+                    <div style="font-size:12px; color:#2ecc71;">Cemaat: <b>${sn.cemaat}</b> ${getF(sn.cemaat, on.cemaat)}</div>
+                    <div style="font-size:12px; color:#a3e4d7;">Vaktinde: <b>${sn.vaktinde}</b> ${getF(sn.vaktinde, on.vaktinde)}</div>
+                    <div style="font-size:12px; color:#f39c12;">Kaza: <b>${sn.kaza}</b> ${getF(sn.kaza, on.kaza, true)}</div>
+                    <div style="font-size:12px; color:#e74c3c;">Eksik: <b>${sn.hic}</b> ${getF(sn.hic, on.hic, true)}</div>
                 </div>
               </div>`;
     });
 
-    h += `<b style="color:#f1c40f; font-size:17px; display:block; margin:20px 0 10px 5px;">🌟 Özel Amel Takibi</b>`;
+    h += `<b style="color:#f1c40f; font-size:17px; display:block; margin:20px 0 10px 5px;">🌟 Özel Amel Durumu</b>`;
     for (let ad in stats.son.ozeller) {
         let d = stats.son.ozeller[ad];
         let ed = stats.once.ozeller[ad] || { yapildi: 0 };
