@@ -27,7 +27,7 @@
         .warning-blink { position: absolute; top: -8px; right: -5px; font-size: 14px; animation: blink 0.8s infinite; cursor: help; z-index: 5; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
         .circles-row { display: flex; gap: 8px; align-items: center; }
-        .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(45, 74, 62, 0.2); cursor: pointer; }
+        .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
         .label-text { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 4px; color: #a5d3ff; display: block; text-align: center; cursor: pointer; }
         .progress-zone { width: 85px; text-align: center; margin-left: 5px; }
         .progress-bg { background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; overflow: hidden; margin: 4px 0; }
@@ -158,25 +158,31 @@
     }
 }    </style>
     <style>
- :root {
-    --bg: #f4f7f1; /* Çok açık krem/yeşil arası arka plan */
-    --card-bg: rgba(255, 255, 255, 0.85); /* Yarı şeffaf beyaz */
-    --text-color: #2f4f4f; /* Koyu füme/yeşil metin */
-     --text-main: #2d4a3e; 
-    --text-sub: #5a7d6e;
-    --accent-green: #2ecc71;
-    --accent: #7ca982; /* Yumuşak yeşil */
-    --gold: #d4af37; /* Başlık ve detaylar için altın rengi */
-    --shadow: 0 8px 20px rgba(0,0,0,0.05); /* Çok hafif gölge */
-}
+    :root { 
+        /* Yeşil temaya uygun yeni renk paleti */
+        --bg: #062619; 
+        --card: rgba(255, 255, 255, 0.07); 
+        --glass-border: rgba(255, 255, 255, 0.12);
+        --light-green: #90ee90; 
+        --dark-green: #3F914E; 
+        --red: #e74c3c; 
+        --orange: #f39c12; 
+        --blue: #3498db; 
+        --today-border: #90ee90; 
+    }
 
-body {
-    background: #e0e5d1; /* Alt katman rengi */
-    background-image: url('arka.png'); /* Gönderdiğin desenli görsel */
-    background-size: cover;
-    background-attachment: fixed;
-    color: var(--text-color);
-    font-family: 'Segoe UI', Tahoma, sans-serif;
+    * { box-sizing: border-box; }
+
+    body {
+    margin: 0;
+    padding: 10px;
+    color: white;
+    font-family: sans-serif;
+    /* Kaymayı önlemek için ana arka plan rengi */
+    background-color: #2C3E50; 
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Arka planı ayrı bir katmanda sabitleyelim */
@@ -195,35 +201,9 @@ body {
         text-transform: uppercase; 
         text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
     }
-.habit-card {
-    background: var(--card-bg);
-    color: var(--text-main) !important;
-    backdrop-filter: blur(5px);
-    border-radius: 20px;
-    padding: 15px;
-    margin-bottom: 12px;
-    border: 1px solid rgba(255,255,255,0.5);
-    box-shadow: var(--shadow);
-    display: flex;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-}
 
-/* Kartın soluna hafif bir islami motif deseni eklemek için (görseldeki gibi) */
-.habit-card::before {
-    content: "";
-    position: absolute;
-    left: -10px;
-    top: -10px;
-    width: 60px;
-    height: 60px;
-    background: url('motif-light.png'); /* Hafif bir motif görseli */
-    opacity: 0.1;
-    pointer-events: none;
-}
     /* Kartlarda Cam Efekti (Glassmorphism) */
-    .nav-header, .ozel-kart { 
+    .habit-card, .nav-header, .ozel-kart { 
         background: var(--card); 
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
@@ -239,45 +219,50 @@ body {
     /* Footer yüksekliği kadar boşluk bırak ki son kart kapanmasın */
     padding-bottom: 100px; 
 }
-.label-text, .vakit-ad {
-    /* Farz, Sünnet, Tesbihat yazıları için */
-    color: var(--text-sub) !important;
-    font-weight: 600;
-}
+
 .footer {
     position: fixed;
-    bottom: 20px; /* Alttan biraz boşluk bırakıyoruz */
+    bottom: 0;
     left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 450px;
-    background: rgba(245, 245, 235, 0.9);
-    backdrop-filter: blur(15px);
-    border-radius: 40px; /* Tam oval yapı */
-    padding: 8px 15px;
+    transform: translateX(-50%); /* Ortalamayı garanti eder */
+    width: 100%;
+    max-width: 500px; /* Container ile aynı genişlik */
+    background: rgba(5, 26, 38, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 15px;
     display: flex;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    border: 1px solid white;
+    justify-content: space-around; /* Elemanları dengeli yayar */
+    gap: 8px;
+    z-index: 2000;
+    border-radius: 20px 20px 0 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
 }
 
+/* Giriş alanı daha esnek olsun */
 #habInp {
-    background: transparent;
+    flex: 1; 
+    min-width: 0; 
+    padding: 12px;
+    border-radius: 10px;
     border: none;
-    padding: 10px;
-    flex: 1;
-    color: #333;
-    outline: none;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-size: 14px;
 }
 
-.footer-btn {
-    background: var(--accent);
-    color: white;
-    border-radius: 25px;
-    padding: 8px 18px;
-    border: none;
-    font-weight: bold;
-}
+    .footer-btn {
+        background: var(--dark-green);
+        border: none;
+        color: white;
+        font-weight: bold;
+        padding: 10px 15px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
     .footer-icon {
         font-size: 22px;
         cursor: pointer;
