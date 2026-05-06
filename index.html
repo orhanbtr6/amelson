@@ -654,7 +654,7 @@ if (gunFarki < 3) {
             `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
         
         // --- DÜZENLEME: Özel amel uyarısı sadece eski kullanıcıda görünsün ---
-        let wHtml = (toplamKayitliGun > 0 && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
+        let wHtml = (getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
         
         card.innerHTML = `
             <span class="arsiv-mini-btn" onclick="event.stopPropagation(); window.arsivle('${o.id}')" title="Arşivle" style="position:absolute; top:-2px; right:-2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">📦</span>
