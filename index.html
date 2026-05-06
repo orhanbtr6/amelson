@@ -610,7 +610,9 @@ if (gunFarki < 3) {
     document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
 
     // --- YENİ KONTROL: Sistemde kayıtlı gün var mı? ---
-    const toplamKayitliGun = Object.keys(localStorage).filter(key => key.startsWith('amel_data_')).length;
+   // Eski satır yerine bunu kullanın:
+const toplamKayitliGun = Object.keys(localStorage).some(key => key.includes('amel_data_')); 
+// .some() yöntemi, en az bir tane kayıt bulursa true döner ve daha hızlıdır.
     // -------------------------------------------------
 
     const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
@@ -654,7 +656,7 @@ if (gunFarki < 3) {
             `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
         
         // --- DÜZENLEME: Özel amel uyarısı sadece eski kullanıcıda görünsün ---
-        let wHtml = (getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
+        let wHtml = (toplamKayitliGun > 0 && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
         
         card.innerHTML = `
             <span class="arsiv-mini-btn" onclick="event.stopPropagation(); window.arsivle('${o.id}')" title="Arşivle" style="position:absolute; top:-2px; right:-2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">📦</span>
