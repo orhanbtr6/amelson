@@ -307,27 +307,48 @@ if (gunFarki < 3) {
             </div>`;
 }
     function veriYukle() {
-        const key = getLocalKey(seciliTarih);
-        const kaydedilmis = JSON.parse(localStorage.getItem(key));
-        const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
-        const globalListe = getGlobalOzeller().filter(g => {
-            if(!g.eklenmeTarihi) return !g.arsiv;
-            return !g.arsiv && seciliTarihStr >= g.eklenmeTarihi;
+    const key = getLocalKey(seciliTarih);
+    const kaydedilmis = JSON.parse(localStorage.getItem(key));
+    const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
+    
+    // Cihazdaki mevcut global listeyi al
+    let globalListe = getGlobalOzeller();
+
+    if (kaydedilmis) {
+        gunlukVeriler = kaydedilmis;
+
+        // --- KRİTİK DÜZELTME BAŞLANGICI ---
+        // Yedekten gelen amelleri cihazın global listesine de işle ki görünür olsunlar
+        let degisiklikVar = false;
+        gunlukVeriler.ozeller.forEach(yedekAmel => {
+            const varMi = globalListe.some(g => g.id === yedekAmel.id);
+            if (!varMi) {
+                globalListe.push({
+                    id: yedekAmel.id,
+                    ad: yedekAmel.ad,
+                    tip: yedekAmel.tip,
+                    eklenmeTarihi: yedekAmel.eklenmeTarihi || seciliTarihStr,
+                    arsiv: false
+                });
+                degisiklikVar = true;
+            }
         });
-        if (kaydedilmis) {
-            gunlukVeriler = kaydedilmis;
-            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.id === o.id));
-            globalListe.forEach(g => { 
-                if(!gunlukVeriler.ozeller.some(o => o.id === g.id)) gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)}); 
-            });
-        } else {
-            gunlukVeriler = { 
-                vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
-                ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
-            };
+
+        if (degisiklikVar) {
+            localStorage.setItem('amel_global_ozeller', JSON.stringify(globalListe));
         }
-        render();
+        // --- KRİTİK DÜZELTME BİTİŞİ ---
+
+    } else {
+        // Eğer o güne ait kayıt yoksa global listeden boş şablon oluştur
+        const aktifGlobalListe = globalListe.filter(g => !g.arsiv && (!g.eklenmeTarihi || seciliTarihStr >= g.eklenmeTarihi));
+        gunlukVeriler = { 
+            vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
+            ozeller: aktifGlobalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
+        };
     }
+    render();
+}
 function render() {
     localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
     document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
