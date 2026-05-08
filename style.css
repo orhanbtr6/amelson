@@ -11,7 +11,7 @@
         .nav-header { background: var(--card); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1.5px solid #1e88e5; border-radius: 15px; padding: 12px; margin-bottom: 8px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
 .habit-card:hover, .ozel-kart:hover { border-color: #64b5f6; box-shadow: 0 0 15px rgba(30, 136, 229, 0.4); transition: 0.3s; }
         .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 6px; border: 1px solid #1e88e5; display: flex; align-items: center; justify-content: space-between; gap: 5px; }
-
+.active-vakit { border: 2px solid #1e88e5 !important; box-shadow: 0 0 15px rgba(30, 136, 229, 0.5) !important; transform: scale(1.01); transition: all 0.3s ease; }
         .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(30, 136, 229, 0.3); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); position: relative !important; cursor: pointer; transition: all 0.3s ease; }
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
         .vakit-success { background: var(--dark-green) !important; border-color: #fff !important; }
