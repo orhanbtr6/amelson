@@ -80,12 +80,7 @@
 
     <button class="footer-icon" onclick="openSettings()" title="Ayarlar">⚙️</button>
 </div>
-
-
-
-<div onclick="window.showModernReport()" style="position: fixed; bottom: 85px; right: 20px; width: 50px; height: 50px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 999; border: 2px solid rgba(255,255,255,0.2);">
-    ⚡
-</div>
+<div onclick="window.showModernReport()" style="position: fixed; bottom: 85px; right: 20px; width: 50px; height: 50px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 999; border: 2px solid rgba(255,255,255,0.2);">⚡</div>
 <script>
     let xS = null;
     function hTS(e) { xS = e.touches[0].clientX; }
@@ -237,7 +232,6 @@ if (gunFarki < 3) {
         3: "Akşam namazı gündüzün vitridir; acele ediniz. (Tirmizî)",
         4: "Yatsı ve sabah namazlarındaki sevabı bilselerdi, emekleyerek de olsa gelirlerdi. (Buhârî)"
     };
-
     // --- NAMAZ ANALİZİ ---
     let sorunluVakitler = stats.son.vakitler.map((v, i) => (v.kaza > 0 || v.hic > 0) ? vakitAdlari[i] : null).filter(n => n);
     
@@ -261,15 +255,12 @@ if (gunFarki < 3) {
             gelisenler.push(ad);
         }
     }
-
     if (gevseyenler.length > 0) {
         yorumlar.push(`📉 **Dikkat:** Geçen haftaya oranla **${gevseyenler.join(", ")}** amellerinde bir gevşeme var. Amellerin hayırlısı, az da olsa devamlı olanıdır.`);
     } 
-    
     if (gelisenler.length > 0) {
         yorumlar.push(`🌟 **Gelişim:** **${gelisenler.join(", ")}** amellerindeki gayretin artmış veya tam puanla devam ediyor. Rabbimiz buyuruyor: *"İnsan için ancak çalıştığının karşılığı vardır." (Necm, 39)*`);
     }
-
     // --- GÖRSEL RAPOR ---
     let h = `<div style="text-align:left; color:#eee; max-height:80vh; overflow-y:auto; padding-right:10px;">`;
     h += `<h3 style="color:#2ecc71; text-align:center; font-size:20px; border-bottom:1px solid #333; padding-bottom:10px;">📊 HAFTALIK MANEVİ ANALİZ</h3>`;
@@ -277,7 +268,6 @@ if (gunFarki < 3) {
     h += `<div style="background:rgba(52,152,219,0.1); padding:15px; border-radius:18px; border:1px solid #3498db; margin-bottom:20px; font-size:15px; line-height:1.6;">
             ${yorumlar.join(" <hr style='opacity:0.1; margin:10px 0;'> ")}
           </div>`;
-
     vakitAdlari.forEach((ad, i) => {
         let sn = stats.son.vakitler[i];
         let on = stats.once.vakitler[i];
@@ -291,7 +281,6 @@ if (gunFarki < 3) {
                 </div>
               </div>`;
     });
-
     h += `<b style="color:#f1c40f; font-size:17px; display:block; margin:20px 0 10px 5px;">🌟 Özel Amel Durumu</b>`;
     for (let ad in stats.son.ozeller) {
         let d = stats.son.ozeller[ad];
@@ -308,7 +297,6 @@ if (gunFarki < 3) {
         let r = (f > 0) ? (t ? '#e74c3c' : '#2ecc71') : (t ? '#2ecc71' : '#e74c3c');
         return `<small style="color:${r}; font-weight:bold;">(${f > 0 ? '+' : ''}${f})</small>`;
     }
-
     document.getElementById('statTitle').innerText = "DETAYLI ANALİZ";
     document.getElementById('calGrid').innerHTML = h;
     modalAcildi(); 
@@ -340,18 +328,15 @@ if (gunFarki < 3) {
         }
         render();
     }
-
    function render() {
     localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
     document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
-
     // --- YENİ KONTROL: Sistemde kayıtlı gün var mı? ---
    // Eski satır yerine bunu kullanın:
 const toplamKayitliGun = Object.keys(localStorage).some(key => key.includes('amel_data_')); 
 // .some() yöntemi, en az bir tane kayıt bulursa true döner ve daha hızlıdır.
     // -------------------------------------------------
-
     const vDiv = document.getElementById('vakitList'); vDiv.innerHTML = '';
     gunlukVeriler.vakitler.forEach((v, vIdx) => {
         let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
@@ -378,7 +363,6 @@ const toplamKayitliGun = Object.keys(localStorage).some(key => key.includes('ame
                 ${cemaatMi ? `<span style="position:absolute; top:-10px; right:-2px; font-size:14px; color:#ffeb3b; text-shadow: 0 0 3px #000;">⭐</span>` : ''}
             </div></div>`;
     });
-
     const oDiv = document.getElementById('ozelList'); oDiv.innerHTML = "";
     gunlukVeriler.ozeller.forEach((o, oIdx) => {
         if (o.arsiv) return;
@@ -424,14 +408,11 @@ let h = `<div class="genel-wrapper">
             </tr>
         </thead>
         <tr>`;
-
 // Ayın ilk gününden önceki boş kutucuklar
 for (let b = 0; b < baslangicBoslugu; b++) {
     h += `<td style="background:transparent; border:none;"></td>`;
 }
-
 // ... geri kalan d döngüsü aynı kalıyor ...
-
     for(let d=1; d<=sonGun; d++) {
         let isToday = isTodayCheck(d, raporTarih.getMonth(), raporTarih.getFullYear());
         let val = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
@@ -456,11 +437,9 @@ for (let b = 0; b < baslangicBoslugu; b++) {
     document.getElementById('statModal').style.display = 'flex';
     document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
 };
-
     window.showGeneralReport = () => {
     const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
     document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
-    
     let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
     let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label-full">Vakit</th>`;
     for (let d = 1; d <= sonGun; d++) table += `<th style="font-size:7px;">${d}</th>`;
@@ -475,7 +454,6 @@ for (let b = 0; b < baslangicBoslugu; b++) {
         table += `</tr>`;
     });
     table += `</tbody></table></div>`;
-
     // PAZARTESİ - PAZAR SABİT GÜN İSİMLERİ SATIRI
     const gunAdlari = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pa"];
     let gunBasliklari = `<div style="display:flex; margin-left:60px; justify-content:space-between; margin-bottom:5px;">`;
@@ -483,14 +461,12 @@ for (let b = 0; b < baslangicBoslugu; b++) {
         gunBasliklari += `<div style="width:14%; text-align:center; font-size:11px; color:#a5d3ff; font-weight:bold;">${g}</div>`;
     });
     gunBasliklari += `</div>`;
-
     // HAFTALIK VERİ HESAPLAMA (Mevcut mantığın korundu)
     let today = new Date(); 
     let dayOfW = today.getDay(); 
     let diff = today.getDate() - dayOfW + (dayOfW === 0 ? -6 : 1);
     let monday = new Date(today.setDate(diff)); 
     let qTrend = [[],[],[],[],[]];
-
     vakitler.forEach((v, vIdx) => {
         for (let i = 0; i < 7; i++) {
             let d = new Date(monday); d.setDate(monday.getDate() + i);
@@ -504,14 +480,12 @@ for (let b = 0; b < baslangicBoslugu; b++) {
             qTrend[vIdx].push(q);
         }
     });
-
     // ANALİZ KISMI - GÜN İSİMLERİ EKLENMİŞ HALİ
     // ANALİZ KISMI - DAHA KİBAR VE KÜÇÜK DİKDÖRTGEN YAPISI
     let analiz = `<div style="margin-top:15px; font-size:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
         <b style="color:var(--blue); font-size:13px;">Haftalık Vakit Kalitesi</b><br><br>`;
     
     analiz += gunBasliklari; 
-    
     vakitler.forEach((v, i) => { 
         analiz += `<div style="display:flex; align-items:center; margin:4px 0;">
             <div style="width:55px; font-size:11px; color:#ccc;">${v.split(" ")[0]}</div>
@@ -544,7 +518,6 @@ window.finalEkle = (tip) => {
     const sabitId = pendingName.trim().toLowerCase()
                     .replace(/[^a-z0-9]/g, '') 
                     || 'id_' + Date.now(); 
-    
     const yeni = { 
         id: sabitId, 
         ad: pendingName, 
@@ -657,7 +630,7 @@ window.showModernReport = () => {
     // --- RENK VE MESAJ MANTIĞI ---
     if (saat < 13 && toplamGiris === 0) {
         mRenk = "#3498db"; // Mavi
-        mesaj = "Hayırlı sabahlar! Güne güzel bir maneviyatla başlamaya ne dersin? Sabah namazını kılarak ilk nuru alalım. ✨";
+        mesaj = "Hayırlı sabahlar! Güne güzel bir maneviyatla başlamaya ne dersin? Sabah namazını kıl ve işaretle.. ✨";
     } else if (bPuan >= 100) {
         mRenk = "#2ecc71"; // Yeşil
         mesaj = "Manevi zirvedesin! Bu nuru koru 🔥🌟";
@@ -669,65 +642,32 @@ window.showModernReport = () => {
         mesaj = "Gayretini daha da arttır, manevi basamakları çıkmalısın! 💡";
     } else if (bPuan >= 70) {
         mRenk = "#e67e22"; // Turuncu
-        mesaj = "Dikkat etmelisin, bazı ameller aksamaya başlamış. ⚠️";
+        mesaj = "Niyetleri Amellere çevirmeye devam et.. ⚠️";
     } else if (bPuan >= 50) {
         mRenk = "#9b59b6"; // Mor
         mesaj = "Toparlanma vakti! Enerjini yeniden yükseltmelisin. ✨";
     } else {
         mRenk = "#e74c3c"; // Kırmızı
-        mesaj = "Acil müdahale lazım! Manevi batarya çok zayıfladı. 🚨";
+        mesaj = "Namaz vakitlerine dikkat et.. 🚨";
     }
-
    // ... (Fonksiyonun başındaki puan hesaplama kısımları aynı kalıyor) ...
-
     let barGradient = `linear-gradient(90deg, ${mRenk}, #ffffff, ${mRenk})`; // Daha canlı bir geçiş
-
-  
-    // ... (bPuan, mRenk gibi hesaplamaların yapıldığı üst kısım aynı kalıyor)
+   // ... (bPuan, mRenk gibi hesaplamaların yapıldığı üst kısım aynı kalıyor)
 
     let h = `
     <div style="text-align:center; padding:15px; background: rgba(0,0,0,0.3); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
         <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:5px; color:#fff;">GÜNLÜK MANEVİ ENERJİ</div>
         <div style="font-size:42px; font-weight:900; color:${mRenk}; text-shadow: 0 0 20px ${mRenk}, 0 0 40px ${mRenk}66; transition: all 0.5s ease;">%${bPuan}</div>
-        
         <div style="width:100%; height:32px; background:rgba(255,255,255,0.08); border-radius:16px; margin:20px 0; overflow:hidden; border:1px solid rgba(255,255,255,0.2); position:relative; box-shadow: 0 0 15px rgba(0,0,0,0.4);">
+            <div style="width:${bPuan}%; height:100%; background:${mRenk}; border-radius:16px; transition:width 1.5s cubic-bezier(0.23, 1, 0.32, 1); position:absolute; top:0; left:0; box-shadow: 0 0 25px ${mRenk}88; z-index: 1; overflow: hidden;">
+    <div style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100%); animation: mermiAkis 2s infinite cubic-bezier(0.4, 0, 0.2, 1);"></div>
+</div>
             
-            <div style="
-                width:${bPuan}%; 
-                height:100%; 
-                background:${mRenk}; 
-                border-radius:16px; 
-                transition:width 1.5s cubic-bezier(0.23, 1, 0.32, 1);
-                position:absolute;
-                top:0; left:0;
-                box-shadow: 0 0 25px ${mRenk}88;
-                z-index: 1;
-                overflow: hidden;
-            ">
-                <div style="
-                    position: absolute;
-                    top: 0;
-                    left: -100%;
-                    width: 100%;
-                    height: 100%;
-                    background: linear-gradient(
-                        90deg, 
-                        transparent, 
-                        rgba(255, 255, 255, 0) 0%, 
-                        rgba(255, 255, 255, 0.6) 50%, 
-                        rgba(255, 255, 255, 0) 100%
-                    );
-                    animation: mermiAkis 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
-                "></div>
-            </div>
         </div>
 
         <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:15px; border:1px solid ${mRenk}66; color: white; font-size:14px; line-height:1.5;">
             ${mesaj}
         </div>
-
-
-
         <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
             <div style="background:var(--card); padding:12px; border-radius:15px; border: 1px solid rgba(255,255,255,0.05);">
                 <div style="font-size:10px; opacity:0.5;">DÜN</div>
