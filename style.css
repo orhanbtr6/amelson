@@ -8,8 +8,9 @@
         #hiddenDate { position: absolute; opacity: 0; left: 0; top: 0; width: 100%; height: 100%; cursor: pointer; z-index: 10; }
         .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 13px; }
         .info-btn { background: var(--blue); width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; }
-        .habit-card, .nav-header, .ozel-kart { background: var(--card); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1.5px solid #1e88e5; border-radius: 15px; padding: 12px; margin-bottom: 8px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+        .nav-header { background: var(--card); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1.5px solid #1e88e5; border-radius: 15px; padding: 12px; margin-bottom: 8px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
 .habit-card:hover, .ozel-kart:hover { border-color: #64b5f6; box-shadow: 0 0 15px rgba(30, 136, 229, 0.4); transition: 0.3s; }
+        .habit-card { background: var(--card); border-radius: 15px; padding: 10px; margin-bottom: 6px; border: 1px solid #1e88e5; display: flex; align-items: center; justify-content: space-between; gap: 5px; }
 
         .vakit-isim-box { padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(30, 136, 229, 0.3); min-width: 95px; text-align: center; background: rgba(255,255,255,0.05); position: relative !important; cursor: pointer; transition: all 0.3s ease; }
         .vakit-ad { font-weight: bold; font-size: 11px; color: #fff; }
@@ -37,7 +38,7 @@
         .q-dot { flex: 1; border-radius: 1px; height: 100%; }
         /* Yapılmış özel ameller için soft yeşil arka plan */
 		.ozel-kart.yapildi { background: rgba(144, 238, 144, 0.25) !important; background-image: none !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; }
-		.ozel-kart { background: var(--card); padding: 12px 4px; border-radius: 10px; text-align: center; position: relative; }
+		.ozel-kart { background: var(--card); padding: 12px 4px; border-radius: 10px; text-align: center; position: relative; border: 1.5px solid #1e88e5;}
 		.ozel-name { font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px; cursor: pointer; color: #a5d3ff; }
 		.arsiv-mini-btn { position: absolute; top: -2px; right: -2px; font-size: 12px; opacity: 0.3; cursor: pointer; padding: 5px; transition: 0.2s; z-index: 5; }
 		.arsiv-mini-btn:hover { opacity: 1; }
