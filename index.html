@@ -346,7 +346,7 @@ const toplamKayitliGun = Object.keys(localStorage).some(key => key.includes('ame
         let bCol = cemaatMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
         
         // --- DÜZENLEME: Vakit uyarısı sadece eski kullanıcıda görünsün ---
-        let wData = (toplamKayitliGun > 0) ? getWarningData(vIdx) : null; 
+        let wData = (veriler.length > 0) ? getWarningData(vIdx) : null; 
         
         let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
         vDiv.innerHTML += `<div class="habit-card">
@@ -377,7 +377,7 @@ const toplamKayitliGun = Object.keys(localStorage).some(key => key.includes('ame
             `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
         
         // --- DÜZENLEME: Özel amel uyarısı sadece eski kullanıcıda görünsün ---
-        let wHtml = (toplamKayitliGun > 0 && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
+        let wHtml = (veriler.length > 0 && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
         
         card.innerHTML = `
             <span class="arsiv-mini-btn" onclick="event.stopPropagation(); window.arsivle('${o.id}')" title="Arşivle" style="position:absolute; top:-2px; right:-2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">📦</span>
