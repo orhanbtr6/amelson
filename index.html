@@ -305,50 +305,29 @@ if (gunFarki < 3) {
     return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
                 <b style="font-size:12px; color:var(--${color});">${title}</b><br><span style="font-size:11px; opacity:0.8;">${text}</span>
             </div>`;
-}
-    function veriYukle() {
-    const key = getLocalKey(seciliTarih);
-    const kaydedilmis = JSON.parse(localStorage.getItem(key));
-    const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
-    
-    // Cihazdaki mevcut global listeyi al
-    let globalListe = getGlobalOzeller();
-
-    if (kaydedilmis) {
-        gunlukVeriler = kaydedilmis;
-
-        // --- KRİTİK DÜZELTME BAŞLANGICI ---
-        // Yedekten gelen amelleri cihazın global listesine de işle ki görünür olsunlar
-        let degisiklikVar = false;
-        gunlukVeriler.ozeller.forEach(yedekAmel => {
-            const varMi = globalListe.some(g => g.id === yedekAmel.id);
-            if (!varMi) {
-                globalListe.push({
-                    id: yedekAmel.id,
-                    ad: yedekAmel.ad,
-                    tip: yedekAmel.tip,
-                    eklenmeTarihi: yedekAmel.eklenmeTarihi || seciliTarihStr,
-                    arsiv: false
-                });
-                degisiklikVar = true;
-            }
+} function veriYukle() {
+        const key = getLocalKey(seciliTarih);
+        const kaydedilmis = JSON.parse(localStorage.getItem(key));
+        const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
+        const globalListe = getGlobalOzeller().filter(g => {
+            if(!g.eklenmeTarihi) return !g.arsiv;
+            return !g.arsiv && seciliTarihStr >= g.eklenmeTarihi;
         });
-
-        if (degisiklikVar) {
-            localStorage.setItem('amel_global_ozeller', JSON.stringify(globalListe));
+        if (kaydedilmis) {
+            gunlukVeriler = kaydedilmis;
+            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.id === o.id));
+            globalListe.forEach(g => { 
+                if(!gunlukVeriler.ozeller.some(o => o.id === g.id)) gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)}); 
+            });
+        } else {
+            gunlukVeriler = { 
+                vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
+                ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
+            };
         }
-        // --- KRİTİK DÜZELTME BİTİŞİ ---
-
-    } else {
-        // Eğer o güne ait kayıt yoksa global listeden boş şablon oluştur
-        const aktifGlobalListe = globalListe.filter(g => !g.arsiv && (!g.eklenmeTarihi || seciliTarihStr >= g.eklenmeTarihi));
-        gunlukVeriler = { 
-            vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
-            ozeller: aktifGlobalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
-        };
+        render();
     }
-    render();
-	}
+
 	function render() {
     // Veriyi kaydet
     localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
