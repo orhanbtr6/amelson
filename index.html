@@ -136,38 +136,38 @@
     function isFuture() { let today = new Date(); today.setHours(0,0,0,0); let check = new Date(seciliTarih); check.setHours(0,0,0,0); return check > today; }
 
    
-    function getWarningData(vIdx) {
+  function getWarningData(vIdx) {
     if (getLocalKey(seciliTarih) !== getLocalKey(new Date())) return null;
-    
-    const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
-    if (kayitliGunler < 3) return null;
 
-    const bugunDurum = gunlukVeriler.vakitler[vIdx].durumlar;
     let streaks = [0, 0, 0];
-
     for(let i=1; i<=3; i++) {
         let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
         let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
-        
-        if(val && val.vakitler[vIdx]) {
-            const dur = val.vakitler[vIdx].durumlar;
-            if(dur[0] === 0 || dur[0] === 3) streaks[0]++;
-            if(dur[1] === 0) streaks[1]++;
-            if(dur[2] === 0) streaks[2]++;
-        } else { 
-            // KRİTİK DEĞİŞİKLİK: 
-            // Eğer o gün hiç kayıt yoksa (null), onu "ihmal" sayma (0 artır)
-            // Böylece yeni kullanıcı geçmişe gidince bugün ünlem patlaması yaşamaz.
-            streaks[0] += 0; 
-            streaks[1] += 0; 
-            streaks[2] += 0; 
+
+        // SADECE KAYIT VARSA VE KAYIT "BOŞ TASLAK" DEĞİLSE SAY
+        // Eğer vakitlerin hepsi 0 ise, kullanıcı o gün uygulamayı açmış ama hiçbir şey girmemiş demektir.
+        if(val && val.vakitler) {
+            const vkt = val.vakitler[vIdx];
+            const dur = vkt.durumlar;
+            
+            // Eğer o günkü tüm vakitlerin farzları 0 ise, 
+            // kullanıcı o günü sadece "ziyaret" etmiştir, gerçek bir ihmal yoktur.
+            const gunlukToplamIslem = val.vakitler.reduce((toplam, v) => toplam + v.durumlar[0], 0);
+            
+            if (gunlukToplamIslem > 0) { // Kullanıcı o gün en az bir vakti işaretlemişse artık sorumludur
+                if(dur[0] === 0 || dur[0] === 3) streaks[0]++;
+                if(dur[1] === 0) streaks[1]++;
+                if(dur[2] === 0) streaks[2]++;
+            }
         }
     }
-        let fWarn = (streaks[0] >= 3 && (bugunDurum[0] === 0 || bugunDurum[0] === 3));
-        let sWarn = (streaks[1] >= 3 && bugunDurum[1] === 0);
-        let tWarn = (streaks[2] >= 3 && bugunDurum[2] === 0);
-        return (fWarn || sWarn || tWarn) ? {streaks, fWarn, sWarn, tWarn} : null;
-    }
+    
+    let fWarn = (streaks[0] >= 3);
+    let sWarn = (streaks[1] >= 3);
+    let tWarn = (streaks[2] >= 3);
+    
+    return (fWarn || sWarn || tWarn) ? {streaks, fWarn, sWarn, tWarn} : null;
+}
 
     function getOzelWarning(ozelIdx) {
         if(!signalsActive || isFuture()) return false;
