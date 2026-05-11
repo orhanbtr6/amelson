@@ -354,7 +354,7 @@ window.analizEt = function() {
     document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
     
     // KRİTİK: Anahtar kontrolünü 'amel_' olarak düzeltiyoruz (senin formatın bu)
-    const sistemdeVeriVarmi = Object.keys(localStorage).some(key => key.startsWith('amel_20')); 
+
     
     const vDiv = document.getElementById('vakitList'); 
     vDiv.innerHTML = '';
