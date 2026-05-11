@@ -187,9 +187,9 @@
         return count >= 2;
     }
 window.analizEt = function() {
+    let yorumlar = [];
     
-    
-    // 1. Verileri topla (Önce verileri toplayalım ki kaç gün veri var görelim)
+    // 1. Önce Verileri Topla
     let veriler = [];
     let bugun = new Date();
     const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
@@ -209,30 +209,21 @@ window.analizEt = function() {
         }
     }
 
-    // 2. İlk Giriş ve Çalışma Şartı Kontrolü
-    let ilkGiris = localStorage.getItem('ilkGiris');
-    if (!ilkGiris) {
-        ilkGiris = new Date().getTime();
-        localStorage.setItem('ilkGiris', ilkGiris);
-    }
-    let gunFarki = (new Date().getTime() - parseInt(ilkGiris)) / (1000 * 60 * 60 * 24);
-
-    // KRİTİK DEĞİŞİKLİK BURASI:
-    // Eğer veriler boşsa DUR.
+    // 2. KRİTİK NOKTA: Sadece HİÇ veri yoksa durdur. 
+    // Eğer 1-2 tane bile veri varsa butona basınca analiz açılsın.
     if (veriler.length === 0) {
-        alert("Analiz için henüz kaydedilmiş bir manevi faaliyet bulunamadı.");
-        return;
+        alert("Analiz için henüz hiçbir veri girişi yapılmamış.");
+        return; 
     }
 
-    // Eğer veri var ama 3 günden azsa (veya 3 farklı gün girilmemişse)
-    // Sadece uyarı mesajı ekle ama analizi DURDURMA (return yapma)
-    if (gunFarki < 3 && veriler.length < 3) {
-        // Burada return YAPMIYORUZ, sadece bir bilgilendirme notu ekliyoruz
-        yorumlar.push("🌟 **Yolculuk Başlıyor:** Verilerin henüz çok yeni (en az 3 farklı gün gerekli). Analizler şu an tam isabetli olmayabilir.");
+    // 3. Az veri olduğunda sadece uyarı notu ekle (Analizi durdurma!)
+    if (veriler.length < 3) {
+        yorumlar.push("🌟 **Yolculuk Başlıyor:** Analizlerin daha tutarlı olması için en az 3 günlük veri girişi önerilir.");
     }
 
-    // Artık kod buradan aşağıya akmaya devam eder ve veriler.length kaç olursa olsun analizi basar.
-    // ... stats hesaplamaları ve raporun geri kalanı ...
+    // --- BURADAN AŞAĞISI HESAPLAMALAR ---
+    // (stats nesnesi, döngüler ve rapor oluşturma kodların aynen devam etsin)
+    // ÖNEMLİ: Aşağıdaki kodlarda başka "if (veriler.length < 3) return;" satırı varsa mutlaka sil!
     let stats = {
         son: { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0, vakitler: [], ozeller: {} },
         once: { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0, vakitler: [], ozeller: {} }
