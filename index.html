@@ -171,13 +171,23 @@
         return count >= 2;
     }
 window.analizEt = function() {
+window.analizEt = function() {
+    let yorumlar = []; // Bunu en başa taşıdık
     let ilkGiris = localStorage.getItem('ilkGiris');
-let gunFarki = (new Date().getTime() - ilkGiris) / (1000 * 60 * 60 * 24);
+    
+    // Eğer ilk giriş kaydı yoksa (ilk kez açılıyorsa) oluştur
+    if(!ilkGiris) {
+        ilkGiris = new Date().getTime();
+        localStorage.setItem('ilkGiris', ilkGiris);
+    }
 
-if (gunFarki < 3) {
-    // Henüz 3 gün dolmadıysa analiz yerine teşvik mesajı göster
-    yorumlar.push("🌟 **Yolculuk Başlıyor:** Manevi rehberine hoş geldin! Analizlerin sağlıklı oluşabilmesi için ilk 3 gün verilerini girmeye odaklan.");
-}
+    let gunFarki = (new Date().getTime() - ilkGiris) / (1000 * 60 * 60 * 24);
+
+    if (gunFarki < 3) {
+        // Teşvik mesajını diziye ekle
+        yorumlar.push("🌟 **Yolculuk Başlıyor:** Manevi rehberine hoş geldin! Analizlerin sağlıklı oluşabilmesi için ilk 3 gün verilerini girmeye odaklan.");
+    }
+    // ... fonksiyonun geri kalanı aynı ...
     let veriler = [];
     let bugun = new Date();
     const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
@@ -337,7 +347,8 @@ if (gunFarki < 3) {
 	function render() {
     // Veriyi kaydet
     localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
-    
+    const kayitliGunler = Object.keys(localStorage).filter(key => key.startsWith('amel_20'));
+    const uyarilarAktif = kayitliGunler.length >= 3;
     // Tarih gösterimlerini güncelle
     document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
@@ -367,7 +378,8 @@ if (gunFarki < 3) {
         let bCol = cemaatMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
         
         // getWarningData'yı güvenli çağırıyoruz
-        let wData = (sistemdeVeriVarmi) ? getWarningData(vIdx) : null; 
+        
+		let wData = (uyarilarAktif) ? getWarningData(vIdx) : null;
         let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
         let activeClass = (vIdx === siradakiVakitIdx) ? "active-vakit" : "";
 
@@ -401,7 +413,7 @@ if (gunFarki < 3) {
             `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
         
         // HATA BURADAYDI: veriler.length yerine sistemdeVeriVarmi kullanıyoruz
-        let wHtml = (sistemdeVeriVarmi && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
+       let wHtml = (uyarilarAktif && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
         
         card.innerHTML = `
             <span class="arsiv-mini-btn" onclick="event.stopPropagation(); window.arsivle('${o.id}')" style="position:absolute; top:-2px; right:-2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">📦</span>
