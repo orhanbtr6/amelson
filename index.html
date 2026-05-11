@@ -605,21 +605,27 @@ window.finalEkle = (tip) => {
 }; 
     //gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum + 1) % 5
     //window.degis = (i, s, t) => { if (t === 'ozel_renk') ;gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum === 0) ? 1 : 0;} else { let d = gunlukVeriler.vakitler[i].durumlar[s]; if (s === 0) d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 4 : (d === 4) ? 3 : 0; else if (s === 1) d = (d === 0) ? 1 : (d === 1) ? 3 : 0; else d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 3 : 0; gunlukVeriler.vakitler[i].durumlar[s] = d; } render(); };
-    window.degis = (i, s, t) => { 
+window.degis = (i, s, t) => { 
+    // --- GELECEK ENGELLEYİCİ BURAYA GELİYOR ---
+    if (isFuture()) {
+        alert("⚠️ Bu gün henüz başlamadı! Gelecek günlere veri girişi yapamazsınız.");
+        return; // Fonksiyonun geri kalanını çalıştırmaz, böylece kayıt yapılmaz.
+    }
+    // ------------------------------------------
+
     if (t === 'ozel_renk') {
-        // Eski hali: (durum + 1) % 5 idi. 
-        // Yeni hali: Eğer 0 ise 1 yap (Yeşil), 1 ise 0 yap (Boş).
+        // Özel renkli ameller için mantık (Yeşil/Boş)
         gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum === 0) ? 1 : 0; 
     } else { 
-        // Namaz vakitleri için olan mantık aynı kalıyor, dokunmuyoruz
+        // Namaz vakitleri için mevcut döngüsel mantık
         let d = gunlukVeriler.vakitler[i].durumlar[s]; 
         if (s === 0) d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 4 : (d === 4) ? 3 : 0; 
         else if (s === 1) d = (d === 0) ? 1 : (d === 1) ? 3 : 0; 
         else d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 3 : 0; 
         gunlukVeriler.vakitler[i].durumlar[s] = d; 
     } 
-    render(); 
-};
+    render(); // Değişiklikten sonra ekranı güncellemeyi unutma
+}
     window.arsivle = (id) => { if(!confirm("Arşivlensin mi?")) return; let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) { g[idx].arsiv = true; localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => o.id !== id); render(); } };
     window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
     window.ayRaporuDegis = (n) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showGeneralReport(); };
