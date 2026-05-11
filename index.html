@@ -334,7 +334,15 @@ if (gunFarki < 3) {
         }
         render();
     }
+function getWarningData(vIdx) {
+    // --- YENİ EKLENEN KISIM ---
+    const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
+    if (kayitliGunler < 3) return null; // 3 günden az veri varsa ünlem gösterme ve çık
+    // -------------------------
 
+    if(!signalsActive || isFuture()) return null;
+    // ... (eski kodların aynen devam etsin)
+}
 	function render() {
     // Veriyi kaydet
     localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
