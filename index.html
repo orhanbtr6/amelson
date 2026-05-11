@@ -185,28 +185,39 @@
         return count >= 2;
     }
 window.analizEt = function() {
-    let yorumlari = [];
-	let ilkGiris = localStorage.getItem('ilkGiris');
-let gunFarki = (new Date().getTime() - ilkGiris) / (1000 * 60 * 60 * 24);
+    let yorumlar = [];
+    // ... ilk giriş ve gün farkı kodların ...
 
-if (gunFarki < 3) {
-    // Henüz 3 gün dolmadıysa analiz yerine teşvik mesajı göster
-    yorumlari.push("🌟 **Yolculuk Başlıyor:** Manevi rehberine hoş geldin! Analizlerin sağlıklı oluşabilmesi için ilk 3 gün verilerini girmeye odaklan.");
-}
     let veriler = [];
     let bugun = new Date();
-    const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
     let baslangicGunu = (bugun.getHours() < 23) ? 1 : 0;
 
     for (let i = baslangicGunu; i < (14 + baslangicGunu); i++) {
         let d = new Date(); d.setDate(bugun.getDate() - i);
         let k = getLocalKey(d);
         let v = JSON.parse(localStorage.getItem(k));
-        if (v) veriler.push({ fark: i - baslangicGunu, veri: v });
+
+        // --- KRİTİK FİLTRELEME BURADA ---
+        if (v && v.vakitler) {
+            // O gün içinde herhangi bir vakitte Farz, Sünnet veya Tesbihat işaretlenmiş mi?
+            const gunlukIslemVarmi = v.vakitler.some(vkt => 
+                vkt.durumlar.some(durum => durum > 0)
+            );
+
+            // Eğer özel amellerde de bir giriş varsa onu da sayalım
+            const ozelIslemVarmi = v.ozeller ? v.ozeller.some(o => (o.durum != 0 && o.durum !== "")) : false;
+
+            if (gunlukIslemVarmi || ozelIslemVarmi) {
+                veriler.push({ fark: i - baslangicGunu, veri: v });
+            }
+        }
     }
 
-    if (veriler.length < 3) { alert("Analiz için en az 3 günlük veri gerekiyor."); return; }
-
+    // Eğer filtreleme sonrası elimizde hiç veri kalmadıysa kullanıcıyı uyar
+    if (veriler.length === 0) { 
+        alert("Analiz için henüz kaydedilmiş bir manevi faaliyet bulunamadı."); 
+        return; 
+    }
     let stats = {
         son: { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0, vakitler: [], ozeller: {} },
         once: { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0, vakitler: [], ozeller: {} }
