@@ -189,26 +189,7 @@
 window.analizEt = function() {
     
     
-    // 1. İLK GİRİŞ KONTROLÜ (Yedekle gelen veriyi veya yeni girişi yakalar)
-    let ilkGiris = localStorage.getItem('ilkGiris');
-    
-    // Eğer sistemde hiç veri yoksa ve ilkGiris de yoksa, şimdi oluştur
-    const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20'));
-    
-    if (!ilkGiris) {
-        if (kayitliGunler.length > 0) {
-            // Yedek yüklendiği için veri var ama tarih yoksa, en eski kaydın tarihini baz al
-            ilkGiris = new Date().getTime() - (86400000 * 3); // 3 gün öncesini ata ki analiz açılsın
-            localStorage.setItem('ilkGiris', ilkGiris);
-        } else {
-            ilkGiris = new Date().getTime();
-            localStorage.setItem('ilkGiris', ilkGiris);
-        }
-    }
-
-    let gunFarki = (new Date().getTime() - parseInt(ilkGiris)) / (1000 * 60 * 60 * 24);
-
-    // 2. VERİ TOPLAMA MANTIĞI
+    // 1. Verileri topla (Önce verileri toplayalım ki kaç gün veri var görelim)
     let veriler = [];
     let bugun = new Date();
     const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
@@ -220,29 +201,38 @@ window.analizEt = function() {
         let v = JSON.parse(localStorage.getItem(k));
 
         if (v && v.vakitler) {
-            // Sadece içinde gerçekten işlem yapılmış (0'dan farklı) günleri al
             const islemVarmi = v.vakitler.some(vkt => vkt.durumlar.some(durum => durum > 0)) || 
                              (v.ozeller && v.ozeller.some(o => o.durum != 0 && o.durum !== ""));
-            
             if (islemVarmi) {
                 veriler.push({ fark: i - baslangicGunu, veri: v });
             }
         }
     }
 
-    // 3. ÇALIŞMA ŞARTI (Hata aldığın kritik nokta)
+    // 2. İlk Giriş ve Çalışma Şartı Kontrolü
+    let ilkGiris = localStorage.getItem('ilkGiris');
+    if (!ilkGiris) {
+        ilkGiris = new Date().getTime();
+        localStorage.setItem('ilkGiris', ilkGiris);
+    }
+    let gunFarki = (new Date().getTime() - parseInt(ilkGiris)) / (1000 * 60 * 60 * 24);
+
+    // KRİTİK DEĞİŞİKLİK BURASI:
+    // Eğer veriler boşsa DUR.
     if (veriler.length === 0) {
         alert("Analiz için henüz kaydedilmiş bir manevi faaliyet bulunamadı.");
         return;
     }
 
-    // Eğer 3 günden az veri varsa ama veriler.length > 0 ise analiz çalışır 
-    // ama başına teşvik mesajını ekler
-    if (gunFarki < 3 || veriler.length < 3) {
-        yorumlar.push("🌟 **Yolculuk Başlıyor:** Verilerin henüz çok yeni. Daha kesin sonuçlar için veri girmeye devam et.");
+    // Eğer veri var ama 3 günden azsa (veya 3 farklı gün girilmemişse)
+    // Sadece uyarı mesajı ekle ama analizi DURDURMA (return yapma)
+    if (gunFarki < 3 && veriler.length < 3) {
+        // Burada return YAPMIYORUZ, sadece bir bilgilendirme notu ekliyoruz
+        yorumlar.push("🌟 **Yolculuk Başlıyor:** Verilerin henüz çok yeni (en az 3 farklı gün gerekli). Analizler şu an tam isabetli olmayabilir.");
     }
 
-    // ... stats hesaplamaları ve raporun geri kalanı aynı kalsın ...
+    // Artık kod buradan aşağıya akmaya devam eder ve veriler.length kaç olursa olsun analizi basar.
+    // ... stats hesaplamaları ve raporun geri kalanı ...
     let stats = {
         son: { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0, vakitler: [], ozeller: {} },
         once: { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0, vakitler: [], ozeller: {} }
