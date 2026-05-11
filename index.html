@@ -188,7 +188,7 @@
     }
 window.analizEt = function() {
  
-    
+     let yorumlari = [];
     // 1. Önce Verileri Topla
     let veriler = [];
     let bugun = new Date();
@@ -218,7 +218,7 @@ window.analizEt = function() {
 
     // 3. Az veri olduğunda sadece uyarı notu ekle (Analizi durdurma!)
     if (veriler.length < 3) {
-        yorumlar.push("🌟 **Yolculuk Başlıyor:** Analizlerin daha tutarlı olması için en az 3 günlük veri girişi önerilir.");
+        yorumlari.push("🌟 **Yolculuk Başlıyor:** Analizlerin daha tutarlı olması için en az 3 günlük veri girişi önerilir.");
     }
 
     // --- BURADAN AŞAĞISI HESAPLAMALAR ---
