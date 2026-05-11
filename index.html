@@ -171,7 +171,8 @@
         return count >= 2;
     }
 window.analizEt = function() {
-    let ilkGiris = localStorage.getItem('ilkGiris');
+    let yorumlar = [];
+	let ilkGiris = localStorage.getItem('ilkGiris');
 let gunFarki = (new Date().getTime() - ilkGiris) / (1000 * 60 * 60 * 24);
 
 if (gunFarki < 3) {
