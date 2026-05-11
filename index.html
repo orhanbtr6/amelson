@@ -173,7 +173,7 @@
 
 
 	function getOzelWarning(ozelIdx) {
-		if(!signalsActive || isFuture()) return false;
+    if(!signalsActive || isFuture()) return false;
     if (getLocalKey(seciliTarih) !== getLocalKey(new Date())) return false;
     
     const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
@@ -189,11 +189,15 @@
         
         if(val && val.ozeller) {
             let o = val.ozeller.find(x => x.ad === ozelBugun.ad);
-            if(!o || o.durum == 0 || o.durum === "") count++;
-        } else { 
-            // Kayıt yoksa ihmal sayma, artırma
-            count += 0; 
-        }
+            
+            // KRİTİK DEĞİŞİKLİK BURADA:
+            // Sadece amel o günün listesinde VARSA ve DURUMU 0 ise count artır.
+            // Eğer amel o günün listesinde yoksa (!o), o zaman henüz eklenmemiş demektir, sayma!
+            if(o && (o.durum == 0 || o.durum === "")) {
+                count++;
+            }
+        } 
+        // else kısmına dokunmaya gerek yok, zaten kayıt yoksa count artmıyor.
     }
     return count >= 2;
 }
