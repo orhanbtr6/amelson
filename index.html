@@ -136,7 +136,9 @@
     function isFuture() { let today = new Date(); today.setHours(0,0,0,0); let check = new Date(seciliTarih); check.setHours(0,0,0,0); return check > today; }
 
     function getWarningData(vIdx) {
-        if(!signalsActive || isFuture()) return null;
+        const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
+    	if (kayitliGunler < 3) return null; // 3 günden az veri varsa ünlem gösterme ve çık
+		if(!signalsActive || isFuture()) return null;
         const bugunDurum = gunlukVeriler.vakitler[vIdx].durumlar;
         let streaks = [0, 0, 0];
         for(let i=1; i<=3; i++) {
@@ -334,15 +336,7 @@ if (gunFarki < 3) {
         }
         render();
     }
-function getWarningData(vIdx) {
-    // --- YENİ EKLENEN KISIM ---
-    const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
-    if (kayitliGunler < 3) return null; // 3 günden az veri varsa ünlem gösterme ve çık
-    // -------------------------
 
-    if(!signalsActive || isFuture()) return null;
-    // ... (eski kodların aynen devam etsin)
-}
 	function render() {
     // Veriyi kaydet
     localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
