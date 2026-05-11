@@ -171,23 +171,32 @@
     return (fWarn || sWarn || tWarn) ? {streaks, fWarn, sWarn, tWarn} : null;
 }
 
-    function getOzelWarning(ozelIdx) {
-        if(!signalsActive || isFuture()) return false;
-        const ozelBugun = gunlukVeriler.ozeller[ozelIdx];
-        if(!ozelBugun || (ozelBugun.durum != 0 && ozelBugun.durum !== "")) return false;
-		const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
+
+	function getOzelWarning(ozelIdx) {
+		if(!signalsActive || isFuture()) return false;
+    if (getLocalKey(seciliTarih) !== getLocalKey(new Date())) return false;
+    
+    const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
     if (kayitliGunler < 3) return false;
-        let count = 0;
-        for(let i=1; i<=2; i++) {
-            let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
-            let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
-            if(val && val.ozeller) {
-                let o = val.ozeller.find(x => x.ad === ozelBugun.ad);
-                if(!o || o.durum == 0 || o.durum === "" || o.durum === 0) count++;
-            } else { count++; }
+
+    const ozelBugun = gunlukVeriler.ozeller[ozelIdx];
+    if(!ozelBugun || (ozelBugun.durum != 0 && ozelBugun.durum !== "")) return false;
+    
+    let count = 0;
+    for(let i=1; i<=2; i++) {
+        let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
+        let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
+        
+        if(val && val.ozeller) {
+            let o = val.ozeller.find(x => x.ad === ozelBugun.ad);
+            if(!o || o.durum == 0 || o.durum === "") count++;
+        } else { 
+            // Kayıt yoksa ihmal sayma, artırma
+            count += 0; 
         }
-        return count >= 2;
     }
+    return count >= 2;
+}
 window.analizEt = function() {
  
      let yorumlari = [];
