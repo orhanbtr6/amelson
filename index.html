@@ -458,9 +458,7 @@ gunlukVeriler.ozeller.forEach((o, oIdx) => {
     const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
     const card = document.createElement('div');
 	card.classList.add('ozel-kart');
-	card.style.position = "relative"; // İkonun buna göre hizalanması için şart
-	card.style.overflow = "visible";  // İkonun köşelerde kesilmemesi için
-	card.style.paddingBottom = "10px"; // Alt kısımda ikon için nefes payı bırakır
+	
     if (isDone) card.classList.add('yapildi');
 
     // --- BURASI KRİTİK: Kartın tamamına tıklama engeli koyuyoruz ---
