@@ -374,27 +374,38 @@ window.analizEt = function() {
                 <b style="font-size:12px; color:var(--${color});">${title}</b><br><span style="font-size:11px; opacity:0.8;">${text}</span>
             </div>`;
 } function veriYukle() {
-        const key = getLocalKey(seciliTarih);
-        const kaydedilmis = JSON.parse(localStorage.getItem(key));
-        const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
-        const globalListe = getGlobalOzeller().filter(g => {
-            if(!g.eklenmeTarihi) return !g.arsiv;
-            return !g.arsiv && seciliTarihStr >= g.eklenmeTarihi;
+    const key = getLocalKey(seciliTarih);
+    const kaydedilmis = JSON.parse(localStorage.getItem(key));
+    const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
+    
+    // Değişiklik 1: Arşivli olsa bile geçmişteki tüm amelleri (eklenme tarihine göre) getir
+    const globalListe = getGlobalOzeller().filter(g => {
+        if(!g.eklenmeTarihi) return true; // Arşiv kontrolünü buradan kaldırdık
+        return seciliTarihStr >= g.eklenmeTarihi;
+    });
+
+    if (kaydedilmis) {
+        gunlukVeriler = kaydedilmis;
+        
+        // Değişiklik 2: Artık filtreleme yapmıyoruz. Eski veriyi asla silmiyoruz.
+        // Sadece global listede olup bugünün verisinde eksik kalan varsa ekliyoruz.
+        globalListe.forEach(g => { 
+            const varMi = gunlukVeriler.ozeller.find(o => o.id === g.id);
+            if(!varMi) {
+                gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)}); 
+            } else {
+                // Arşiv durumunu güncel tutalım ki render fonksiyonu kimi gizleyeceğini bilsin
+                varMi.arsiv = g.arsiv; 
+            }
         });
-        if (kaydedilmis) {
-            gunlukVeriler = kaydedilmis;
-            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.id === o.id));
-            globalListe.forEach(g => { 
-                if(!gunlukVeriler.ozeller.some(o => o.id === g.id)) gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)}); 
-            });
-        } else {
-            gunlukVeriler = { 
-                vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
-                ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
-            };
-        }
-        render();
+    } else {
+        gunlukVeriler = { 
+            vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
+            ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
+        };
     }
+    render();
+}
 
 	function render() {
     // Veriyi kaydet
