@@ -497,6 +497,57 @@ function render() {
         });
     }
 }
+	 window.showHeatmap = (id, tip, subIdx = null) => {
+    currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
+    let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+    
+    // --- DÜZELTME BURADA BAŞLIYOR: Boşluk Hesaplama ---
+    let ilkGunHangiGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), 1).getDay();
+    let baslangicBoslugu = (ilkGunHangiGun === 0) ? 6 : ilkGunHangiGun - 1; // Pazartesi'yi başa alır
+    // --------------------------------------------------
+
+    let ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+    document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.heatmapNav(-1)">❮</button><div><div style="font-size:10px; opacity:0.7">${ayYilStr}</div><div style="font-size:14px">${tip === 'vakit' ? vakitler[id] : (tip === 'vakit_sub' ? vakitler[id].split(" ")[0] + " - " + basliklar[subIdx] : id)}</div></div><button class="nav-btn" onclick="window.heatmapNav(1)">❯</button></div>`;
+    
+// ... fonksiyonun başındaki hesaplamalar aynı kalıyor ...
+
+let h = `<div class="genel-wrapper">
+    <table class="genel-table heatmap-table">
+        <thead>
+            <tr style="background: rgba(255,255,255,0.1); font-size: 10px; color: #a5d3ff;">
+                <th>Pt</th><th>Sa</th><th>Ça</th><th>Pe</th><th>Cu</th><th>Ct</th><th>Pz</th>
+            </tr>
+        </thead>
+        <tr>`;
+// Ayın ilk gününden önceki boş kutucuklar
+for (let b = 0; b < baslangicBoslugu; b++) {
+    h += `<td style="background:transparent; border:none;"></td>`;
+}
+// ... geri kalan d döngüsü aynı kalıyor ...
+    for(let d=1; d<=sonGun; d++) {
+        let isToday = isTodayCheck(d, raporTarih.getMonth(), raporTarih.getFullYear());
+        let val = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
+        let c = "s0", txt = "";
+        if(val) {
+            if(tip === 'vakit') c = `s${val.vakitler[id].durumlar[0]}`;
+            else if(tip === 'vakit_sub') c = `s${val.vakitler[id].durumlar[subIdx]}`;
+            else { 
+                let o = val.ozeller.find(x => x.ad === id); 
+                if(o) { 
+                    c = o.tip === 'sayi' ? (o.durum > 0 ? 's1' : 's0') : `s${o.durum}`; 
+                    txt = (o.tip === 'sayi' && o.durum > 0) ? o.durum : ""; 
+                } 
+            }
+        }
+        h += `<td class="${c} ${isToday ? 'is-today-cell' : ''}"><span class="day-num">${d}</span>${txt}</td>`;
+        
+        // Satır sonu kontrolü (Boşluklar + Gün sayısı 7'nin katı olunca alt satıra geç)
+        if((d + baslangicBoslugu) % 7 === 0) h += `</tr><tr>`;
+    }
+    document.getElementById('calGrid').innerHTML = h + `</tr></table></div>`;
+    document.getElementById('statModal').style.display = 'flex';
+    document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
+};
     window.showGeneralReport = () => {
     const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
     document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
