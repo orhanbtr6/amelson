@@ -77,7 +77,10 @@
                 <span class="slider"></span>
             </label>
         </div>
-        <button class="nav-btn" style="width:100%; margin-bottom:10px;" onclick="exportData()">💾 Yedekle</button>
+		<button onclick="window.bildirimIzinIste()" class="nav-btn" style="background:#f39c12; color:white; padding:10px; margin:10px; border-radius:8px;">
+    🔔 Bildirimleri Aktif Et
+</button>
+		<button class="nav-btn" style="width:100%; margin-bottom:10px;" onclick="exportData()">💾 Yedekle</button>
         <button class="nav-btn" style="width:100%;" onclick="importData()">📂 Geri Yükle</button>
     </div>
 </div>
@@ -1249,7 +1252,49 @@ const dragEnd = () => {
     };
     localStorage.setItem('analizBtnPos', JSON.stringify(pos));
 };
+// 1. Bildirim İzni İsteme Fonksiyonu
+window.bildirimIzinIste = () => {
+    if (!("Notification" in window)) {
+        alert("Maalesef tarayıcınız bildirim desteği sunmuyor.");
+        return;
+    }
 
+    Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+            new Notification("Sistem Aktif", { 
+                body: "Amel Defteri hatırlatıcıları başarıyla açıldı!",
+                icon: "https://cdn-icons-png.flaticon.com/512/3119/3119338.png" 
+            });
+        } else {
+            alert("Bildirim izni reddedildi. Ayarlardan açmanız gerekebilir.");
+        }
+    });
+};
+
+// 2. Hatırlatıcı Kontrol Mekanizması
+// Her 1 dakikada bir saati kontrol eder
+setInterval(() => {
+    const simdi = new Date();
+    const saat = simdi.getHours();
+    const dakika = simdi.getMinutes();
+    
+    // Saat ve dakikayı formatlayalım (Örn: "21:30")
+    const suAnkiZaman = `${saat}:${dakika.toString().padStart(2, '0')}`;
+
+    // --- HATIRLATMA SAATİ ---
+    // Buradaki saati istediğin gibi değiştirebilirsin hocam
+    const hatirlatmaSaati = "21:30"; 
+
+    if (suAnkiZaman === hatirlatmaSaati) {
+        if (Notification.permission === "granted") {
+            new Notification("Amel Defteri Vakti", {
+                body: "Amel Defteri, bugünkü amellerini ve namazlarını girmeyi unutma!",
+                icon: "https://cdn-icons-png.flaticon.com/512/3119/3119338.png",
+                requireInteraction: true // Sen kapatana kadar ekranda kalır
+            });
+        }
+    }
+}, 60000); // 60.000 ms = 1 dakika
 // Olay Dinleyicileri
 el.addEventListener('mousedown', dragStart);
 document.addEventListener('mousemove', dragMove);
