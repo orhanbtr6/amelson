@@ -663,17 +663,22 @@ window.degis = (i, s, t) => {
     };
     window.openSettings = () => { document.getElementById('settingsModal').style.display = 'flex'; document.getElementById('signalToggle').checked = signalsActive; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
-    window.sayiGuncelle = (i, v) => { 
-    // --- GELECEK ENGELLEYİCİ ---
+window.sayiGuncelle = (i, v) => {
     if (isFuture()) {
+        console.log("Gelecek tarihi tespit edildi, kilit aktif.");
+        
+        // 1. Modalı aç
         document.getElementById('ozelAlertModal').style.display = 'flex';
-        render(); // Yazılan sayıyı kutudan silip eski haline döndürmek için
+        
+        // 2. Input kutusunu eski haline döndürmek için veriyi değiştirme ve render et
+        // Bu satır çok önemli, mevcut veriyi koruyoruz
+        render(); 
         return; 
     }
-    // ---------------------------
 
-    gunlukVeriler.ozeller[i].durum = v === "" ? "" : parseFloat(v); 
-    render(); 
+    // Gelecek değilse normal işleme devam et
+    gunlukVeriler.ozeller[i].durum = v === "" ? "" : parseFloat(v);
+    render();
 };
     window.showHelp = () => { 
     document.getElementById('statTitle').innerHTML = `<b>AMEL DEFTERİ PRO - DETAYLI REHBER</b>`; 
