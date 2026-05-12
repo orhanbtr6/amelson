@@ -379,27 +379,41 @@ window.analizEt = function() {
     const kaydedilmis = JSON.parse(localStorage.getItem(key));
     const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
     
-    // Değişiklik 1: Arşivli olsa bile geçmişteki tüm amelleri (eklenme tarihine göre) getir
+    // Global listeyi al (Arşivli olsa bile getiriyoruz, render'da gizleyeceğiz)
     const globalListe = getGlobalOzeller().filter(g => {
-        if(!g.eklenmeTarihi) return true; // Arşiv kontrolünü buradan kaldırdık
+        if(!g.eklenmeTarihi) return true;
         return seciliTarihStr >= g.eklenmeTarihi;
     });
 
     if (kaydedilmis) {
         gunlukVeriler = kaydedilmis;
         
-        // Değişiklik 2: Artık filtreleme yapmıyoruz. Eski veriyi asla silmiyoruz.
-        // Sadece global listede olup bugünün verisinde eksik kalan varsa ekliyoruz.
+        // --- KRİTİK DÜZELTME BURADA ---
+        // Global listede olup bugünün verisinde eksik olanları EKLE
         globalListe.forEach(g => { 
-            const varMi = gunlukVeriler.ozeller.find(o => o.id === g.id);
+            // Sadece ID ile değil, İSİM ile de kontrol et (Çift kayıt engelleyici)
+            const varMi = gunlukVeriler.ozeller.find(o => 
+                (o.id && g.id && o.id === g.id) || 
+                (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase())
+            );
+
             if(!varMi) {
+                // Eğer gerçekten yoksa ekle
                 gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)}); 
             } else {
-                // Arşiv durumunu güncel tutalım ki render fonksiyonu kimi gizleyeceğini bilsin
-                varMi.arsiv = g.arsiv; 
+                // Varsa sadece arşiv ve tip gibi özelliklerini güncelle, yeni kayıt oluşturma!
+                varMi.arsiv = g.arsiv;
+                varMi.id = g.id; // ID'leri eşitleyelim ki ileride çakışmasın
             }
         });
+
+        // Eğer bugünün içinde artık global listede OLMAYAN (silinmiş) bir amel kalmışsa onu temizle
+        gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => 
+            globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase())
+        );
+
     } else {
+        // Eğer o güne dair hiç kayıt yoksa sıfırdan oluştur
         gunlukVeriler = { 
             vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
             ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
@@ -407,7 +421,6 @@ window.analizEt = function() {
     }
     render();
 }
-
 function render() {
     // Veriyi kaydet
     localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
