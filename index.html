@@ -28,7 +28,26 @@
             <button class="info-btn" onclick="window.showHelp()">i</button>
         </div>
     </div>
-    <div id="vakitList"></div>
+<div id="icBildirimPaneli" style="display:none; margin: 10px; padding: 12px; background: linear-gradient(135deg, #2c3e50, #2980b9); color: white; border-radius: 10px; border-left: 5px solid #f39c12; box-shadow: 0 4px 15px rgba(0,0,0,0.3); animation: slideIn 0.5s ease-out;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 20px;">🔔</span>
+            <div>
+                <b style="display: block; font-size: 14px;">Hatırlatma</b>
+                <span id="icBildirimMesaj" style="font-size: 12px; opacity: 0.9;">Bugünkü amellerini girmeyi unutma!</span>
+            </div>
+        </div>
+        <button onclick="this.parentElement.parentElement.style.display='none'" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+    </div>
+</div>
+
+<style>
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+	<div id="vakitList"></div>
     <div id="ozelList" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px; margin-top:5px;"></div>
 </div>
 
@@ -1322,6 +1341,34 @@ setInterval(() => {
         }
     }
 }, 30000);
+
+window.icBildirimKontrol = () => {
+    const simdi = new Date();
+    const suAnkiDakika = simdi.getHours() * 60 + simdi.getMinutes();
+    
+    const ayarliZaman = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
+    const [h, m] = ayarliZaman.split(':').map(Number);
+    const ayarliDakika = h * 60 + m;
+
+    const panel = document.getElementById('icBildirimPaneli');
+    const mesajAlan = document.getElementById('icBildirimMesaj');
+
+    if (!panel) return; // Panel henüz yüklenmediyse hata vermesin
+
+    if (suAnkiDakika >= ayarliDakika) {
+        const key = getLocalKey(new Date());
+        const bugun = JSON.parse(localStorage.getItem(key));
+        
+        // Eğer bugün veri girilmediyse göster
+        if (!bugun || !bugun.ozeller || !bugun.ozeller.some(o => o.durum > 0 || o.durum === "evet")) {
+            panel.style.display = 'block';
+        } else {
+            panel.style.display = 'none'; // Veri girildiyse otomatik gizle
+        }
+    } else {
+        panel.style.display = 'none';
+    }
+};
 	// Olay Dinleyicileri
 el.addEventListener('mousedown', dragStart);
 document.addEventListener('mousemove', dragMove);
