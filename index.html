@@ -748,34 +748,60 @@ window.sayiGuncelle = (i, v) => {
     document.getElementById('statModal').style.display = 'flex'; 
 };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
-    window.importData = () => {
+   window.importData = () => {
     let i = document.createElement('input');
     i.type = 'file';
-    i.accept = '.json, .txt'; // Sadece ilgili dosyaları seçtirir
+    i.accept = '.json, .txt';
     i.onchange = e => {
         let fr = new FileReader();
         fr.onload = () => {
             try {
                 let d = JSON.parse(fr.result);
                 
-                // 1. Önce tüm veriyi localStorage'a yaz
+                // 1. Önce localStorage'ı temizleyelim (Hortlayan verileri engellemek için)
+                // İstersen sadece 'amel_' ile başlayanları temizleyecek şekilde daraltabiliriz.
+                localStorage.clear(); 
+
+                // 2. Yedeği yükle
                 Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
 
-                // 2. KRİTİK ADIM: Global listeyi ve bugünkü veriyi senkronize et
-                // Bu kısım yedeği yükledikten sonra arşivlerin karışmasını engeller
+                // 3. MÜKERRER VE ARŞİV TEMİZLİĞİ
                 let globalListe = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
+                
+                if (globalListe.length > 0) {
+                    // Aynı isme sahip amelleri tekilleştir (En güncelini tut)
+                    const uniqueListe = [];
+                    const isimler = new Set();
+                    
+                    // Tersten dönüyoruz ki en son eklenen/güncel olan kalsın
+                    for (let index = globalListe.length - 1; index >= 0; index--) {
+                        if (!isimler.has(globalListe[index].ad)) {
+                            // KRİTİK: Yükleme anında hepsini aktif yap (Arşiv sorununu çözer)
+                            globalListe[index].arsiv = false; 
+                            uniqueListe.push(globalListe[index]);
+                            isimler.add(globalListe[index].ad);
+                        }
+                    }
+                    
+                    // Temizlenmiş listeyi geri yükle
+                    localStorage.setItem('amel_global_ozeller', JSON.stringify(uniqueListe.reverse()));
+                }
+
+                // 4. Bugünün verisini global liste ile eşitle
                 let key = getLocalKey(new Date());
                 let bugun = JSON.parse(localStorage.getItem(key));
 
                 if (bugun && bugun.ozeller) {
-                    bugun.ozeller.forEach(o => {
-                        let gAmel = globalListe.find(g => g.id === o.id);
-                        if (gAmel) o.arsiv = gAmel.arsiv; // Arşiv durumunu eşitle
+                    let yeniGlobal = JSON.parse(localStorage.getItem('amel_global_ozeller'));
+                    // Bugünün listesinde olmayan ama globalde olanları ekle, fazlalıkları (silinenleri) at
+                    bugun.ozeller = yeniGlobal.map(g => {
+                        let mevcut = bugun.ozeller.find(o => o.ad === g.ad);
+                        return mevcut ? { ...mevcut, arsiv: false } : { ...g, durum: (g.tip === 'sayi' ? "" : 0), arsiv: false };
                     });
                     localStorage.setItem(key, JSON.stringify(bugun));
                 }
 
-                alert("Veriler başarıyla senkronize edildi. Sayfa yenileniyor...");
+                alert("Sistem temizlendi ve yedek başarıyla yüklendi!");
                 location.reload(); 
 
             } catch (err) {
