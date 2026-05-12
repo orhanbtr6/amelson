@@ -663,7 +663,18 @@ window.degis = (i, s, t) => {
     };
     window.openSettings = () => { document.getElementById('settingsModal').style.display = 'flex'; document.getElementById('signalToggle').checked = signalsActive; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
-    window.sayiGuncelle = (i, v) => { gunlukVeriler.ozeller[i].durum = v === "" ? "" : parseFloat(v); render(); };
+    window.sayiGuncelle = (i, v) => { 
+    // --- GELECEK ENGELLEYİCİ ---
+    if (isFuture()) {
+        document.getElementById('ozelAlertModal').style.display = 'flex';
+        render(); // Yazılan sayıyı kutudan silip eski haline döndürmek için
+        return; 
+    }
+    // ---------------------------
+
+    gunlukVeriler.ozeller[i].durum = v === "" ? "" : parseFloat(v); 
+    render(); 
+};
     window.showHelp = () => { 
     document.getElementById('statTitle').innerHTML = `<b>AMEL DEFTERİ PRO - DETAYLI REHBER</b>`; 
     document.getElementById('calGrid').innerHTML = `
