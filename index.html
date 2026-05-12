@@ -482,19 +482,7 @@ gunlukVeriler.ozeller.forEach((o, oIdx) => {
     let wHtml = (sistemdeVeriVarmi && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
     
 card.innerHTML = `
-    <span class="arsiv-mini-btn" 
-          onclick="event.stopPropagation(); window.arsivle('${o.id}')" 
-          style="position:absolute !important; 
-                 bottom: 2px !important; 
-                 right: 2px !important; 
-                 top: auto !important; 
-                 font-size:12px; 
-                 opacity:0.3; 
-                 cursor:pointer; 
-                 padding:5px; 
-                 z-index:10;">
-          📦
-    </span>
+
     ${wHtml}
     <b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>
     ${ctrl}
@@ -737,7 +725,57 @@ window.sayiGuncelle = (i, v) => {
 };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
     window.importData = () => { let i = document.createElement('input'); i.type='file'; i.onchange=e=>{ let fr=new FileReader(); fr.onload=()=>{ let d=JSON.parse(fr.result); Object.keys(d).forEach(k=>localStorage.setItem(k,d[k])); location.reload(); }; fr.readAsText(e.target.files[0]); }; i.click(); };
-    window.showYearlyReport = () => { const grid = document.getElementById('calGrid'); const yil = new Date().getFullYear(); document.getElementById('statTitle').innerHTML = `<b>${yil} YILI ÖZETİ</b>`; let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {}; for (let m = 0; m < 12; m++) { for (let d = 1; d <= 31; d++) { let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); if (!v) continue; v.vakitler.forEach((vk, i) => { if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; }); (v.ozeller || []).forEach(vo => { if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip }; if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); else if (vo.durum > 0) arsiv[vo.ad].t += 1; }); } } let h = `<div style="max-height:55vh; overflow-y:auto;"><table style="width:100%; font-size:12px;"><thead><tr style="color:var(--red);"><th style="text-align:left;">Kaza Namazları</th><th style="text-align:right;">Adet</th></tr></thead><tbody>`; Object.keys(kaza).forEach(k => { h += `<tr><td>${k}</td><td style="text-align:right;">${kaza[k]}</td></tr>`; }); h += `</tbody></table><table style="width:100%; margin-top:15px; font-size:12px;"><thead><tr style="color:var(--blue);"><th style="text-align:left;">Özel Ameller</th><th style="text-align:right;">Değer</th></tr></thead><tbody>`; Object.keys(arsiv).sort().forEach(k => { h += `<tr><td style="padding:8px 0;">${k}</td><td style="text-align:right;">${arsiv[k].t} <span onclick="tamamenSil('${k.replace(/'/g, "\\'")}')" style="cursor:pointer; margin-left:15px; color:var(--red); font-size:12px;">🗑️</span></td></tr>`; }); grid.innerHTML = h + `</tbody></table></div>`; document.getElementById('statModal').style.display = 'flex'; };
+ window.showYearlyReport = () => { 
+    const grid = document.getElementById('calGrid'); 
+    const yil = new Date().getFullYear(); 
+    document.getElementById('statTitle').innerHTML = `<b style="font-size:18px;">${yil} YILI ÖZETİ</b>`; 
+    
+    let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {}; 
+    
+    for (let m = 0; m < 12; m++) { 
+        for (let d = 1; d <= 31; d++) { 
+            let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); 
+            if (!v) continue; 
+            v.vakitler.forEach((vk, i) => { 
+                if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; 
+            }); 
+            (v.ozeller || []).forEach(vo => { 
+                if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip, id: vo.id }; 
+                if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); 
+                else if (vo.durum > 0) arsiv[vo.ad].t += 1; 
+            }); 
+        } 
+    } 
+
+    let h = `<div style="max-height:60vh; overflow-y:auto; padding:5px;"><table style="width:100%; border-collapse:collapse;"><thead><tr style="color:#e74c3c; border-bottom:2px solid rgba(231,76,60,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Kaza Namazları</th><th style="text-align:right; padding:10px 5px; font-size:15px;">Adet</th></tr></thead><tbody>`; 
+    
+    Object.keys(kaza).forEach(k => { 
+        h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:12px 5px; font-size:15px;">${k}</td><td style="text-align:right; font-weight:bold; font-size:16px; color:#eee;">${kaza[k]}</td></tr>`; 
+    }); 
+
+    h += `</tbody></table><table style="width:100%; margin-top:25px; border-collapse:collapse;"><thead><tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Özel Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead><tbody>`; 
+    
+    Object.keys(arsiv).sort().forEach(k => { 
+        const safeK = k.replace(/'/g, "\\'");
+        
+        h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:12px 5px;">
+                    <b style="font-size:15px; display:block; color:#fff; margin-bottom:2px;">${k}</b>
+                    <small style="font-size:13px; color:#2ecc71; font-weight:bold;">Toplam: ${arsiv[k].t}</small>
+                </td>
+                <td style="text-align:right; white-space:nowrap; vertical-align:middle;">
+                    <span onclick="window.arsivle('${arsiv[k].id}'); window.showYearlyReport();" 
+                          style="cursor:pointer; display:inline-block; padding:8px; font-size:14px; opacity:0.7;" title="Arşivle">📦</span>
+                    
+                    <span onclick="tamamenSil('${safeK}')" 
+                          style="cursor:pointer; display:inline-block; padding:8px; font-size:14px; opacity:0.7;" title="Sil">🗑️</span>
+                </td>
+              </tr>`; 
+    }); 
+    
+    grid.innerHTML = h + `</tbody></table></div>`; 
+    document.getElementById('statModal').style.display = 'flex'; 
+};
     veriYukle();
     window.tamamenSil = (amelAd) => { if(confirm(`'${amelAd}' her yerden silinecek. Emin misiniz?`)) { let g = JSON.parse(localStorage.getItem('amel_global_ozeller')) || []; g = g.filter(a => a.ad.trim() !== amelAd.trim()); localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); for (let i = 0; i < localStorage.length; i++) { let key = localStorage.key(i); if (key && key.startsWith('amel_')) { let gunlukVeri = JSON.parse(localStorage.getItem(key)); if (gunlukVeri && gunlukVeri.ozeller) { gunlukVeri.ozeller = gunlukVeri.ozeller.filter(o => o.ad.trim() !== amelAd.trim()); localStorage.setItem(key, JSON.stringify(gunlukVeri)); } } } veriYukle(); closeModal(); } }
 window.showModernReport = () => {
@@ -768,7 +806,7 @@ window.showModernReport = () => {
         mesaj = "Hayırlı sabahlar! Güne güzel bir maneviyatla başlamaya ne dersin? Sabah namazını kıl ve işaretle.. ✨";
     } else if (bPuan >= 100) {
         mRenk = "#2ecc71"; // Yeşil
-        mesaj = "Manevi zirvedesin! Bu nuru koru 🔥🌟";
+        mesaj = "Manevi zirvedesin! Bu nuru koru 💯";
     } else if (bPuan >= 90) {
         mRenk = "#2ecc71"; // Yeşil
         mesaj = "Gayretin çok iyi, küçük bir adımla zirveye çıkabilirsin! 🚀";
@@ -777,10 +815,10 @@ window.showModernReport = () => {
         mesaj = "Gayretini daha da arttır, manevi basamakları çıkmalısın! 💡";
     } else if (bPuan >= 70) {
         mRenk = "#e67e22"; // Turuncu
-        mesaj = "Niyetleri Amellere çevirmeye devam et.. ⚠️";
+        mesaj = "Niyetleri Amellere çevirmeye devam et.. ☘️";
     } else if (bPuan >= 50) {
         mRenk = "#9b59b6"; // Mor
-        mesaj = "Toparlanma vakti! Enerjini yeniden yükseltmelisin. ✨";
+        mesaj = "Toparlanma vakti! Enerjini yeniden yükseltmelisin. ⚡";
     } else {
         mRenk = "#e74c3c"; // Kırmızı
         mesaj = "Namaz vakitlerine dikkat et.. 🚨";
