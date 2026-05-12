@@ -607,8 +607,25 @@ window.degis = (i, s, t) => {
     } 
     render();
 }
-    window.arsivle = (id) => { if(!confirm("Arşivlensin mi?")) return; let g = getGlobalOzeller(); let idx = g.findIndex(x => x.id === id); if(idx > -1) { g[idx].arsiv = true; localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => o.id !== id); render(); } };
-    window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
+    window.arsivle = (id) => {
+    let globalListe = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
+    let amel = globalListe.find(g => g.id == id || g.ad == id); // ID veya Ad ile bul
+    
+    if (amel) {
+        // Durumu tersine çevir (Toggle)
+        amel.arsiv = !amel.arsiv;
+        
+        // Değişikliği kaydet
+        localStorage.setItem('amel_global_ozeller', JSON.stringify(globalListe));
+        
+        // Bugünkü veriye de yansıt ki render anında bilsin
+        const varMi = gunlukVeriler.ozeller.find(o => o.id == id || o.ad == id);
+        if (varMi) varMi.arsiv = amel.arsiv;
+
+        render();
+    }
+};
+	window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
     window.ayRaporuDegis = (n) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showGeneralReport(); };
     window.heatmapNav = (n) => { raporTarih.setMonth(raporTarih.getMonth() + n); window.showHeatmap(currentHeatmapId, currentHeatmapType, currentHeatmapSubIdx); };
     window.tarihSec = (v) => { if(v) { seciliTarih = new Date(v); raporTarih = new Date(seciliTarih); veriYukle(); } };
