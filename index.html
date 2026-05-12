@@ -37,7 +37,7 @@
                 <span id="icBildirimMesaj" style="font-size: 12px; opacity: 0.9;">Bugünkü amellerini girmeyi unutma!</span>
             </div>
         </div>
-        <button onclick="this.parentElement.parentElement.style.display='none'" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+       <button onclick="window.icBildirimiKapat()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
     </div>
 </div>
 
@@ -1344,30 +1344,38 @@ setInterval(() => {
 
 window.icBildirimKontrol = () => {
     const simdi = new Date();
+    const bugunKey = getLocalKey(simdi);
     const suAnkiDakika = simdi.getHours() * 60 + simdi.getMinutes();
     
+    // 1. Kullanıcı bugün bu paneli zaten kapattı mı?
+    const panelKapandiMi = localStorage.getItem('panel_kapandi_' + bugunKey);
+    if (panelKapandiMi) {
+        document.getElementById('icBildirimPaneli').style.display = 'none';
+        return; 
+    }
+
     const ayarliZaman = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
     const [h, m] = ayarliZaman.split(':').map(Number);
     const ayarliDakika = h * 60 + m;
 
     const panel = document.getElementById('icBildirimPaneli');
-    const mesajAlan = document.getElementById('icBildirimMesaj');
-
-    if (!panel) return; // Panel henüz yüklenmediyse hata vermesin
-
+    
     if (suAnkiDakika >= ayarliDakika) {
-        const key = getLocalKey(new Date());
-        const bugun = JSON.parse(localStorage.getItem(key));
-        
-        // Eğer bugün veri girilmediyse göster
-        if (!bugun || !bugun.ozeller || !bugun.ozeller.some(o => o.durum > 0 || o.durum === "evet")) {
+        const bugunVeri = JSON.parse(localStorage.getItem(bugunKey));
+        // Veri girilmediyse paneli göster
+        if (!bugunVeri || !bugunVeri.ozeller || !bugunVeri.ozeller.some(o => o.durum > 0 || o.durum === "evet")) {
             panel.style.display = 'block';
         } else {
-            panel.style.display = 'none'; // Veri girildiyse otomatik gizle
+            panel.style.display = 'none';
         }
-    } else {
-        panel.style.display = 'none';
     }
+};
+
+// Kapatma butonuna basınca bugüne özel "gösterme" notu düşen yeni fonksiyon
+window.icBildirimiKapat = () => {
+    const bugunKey = getLocalKey(new Date());
+    localStorage.setItem('panel_kapandi_' + bugunKey, 'true'); // Hafızaya al
+    document.getElementById('icBildirimPaneli').style.display = 'none';
 };
 	// Sayfa ilk açıldığında kontrol et
 window.addEventListener('DOMContentLoaded', window.icBildirimKontrol);
