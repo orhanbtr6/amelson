@@ -731,41 +731,43 @@ window.showYearlyReport = () => {
     document.getElementById('statTitle').innerHTML = `<b style="font-size:18px;">${yil} YILI ÖZETİ</b>`; 
     
     let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
-    let amelIstatistik = {}; // Tüm amelleri burada toplayacağız
+    let amelIstatistik = {}; 
 
-    // 1. Önce global listeyi alalım (Şu anki arşiv durumunu bilmek için)
     const globalOzeller = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
 
-    // 2. Yıllık verileri tara ve istatistikleri çıkar
+    // Yıllık verileri tara
     for (let m = 0; m < 12; m++) { 
         for (let d = 1; d <= 31; d++) { 
             let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d)))); 
             if (!v) continue; 
             
-            // Kaza hesaplama
+            // Kaza hesaplama aynı kalıyor
             v.vakitler.forEach((vk, i) => { 
                 if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; 
             }); 
 
-            // Özel amelleri tara
+            // KRİTİK NOKTA: Amel o günkü listede olmasa bile isminden yakala
             (v.ozeller || []).forEach(vo => {
                 if (!amelIstatistik[vo.ad]) {
-                    // Global listeden bu amelin şu anki durumunu bul
                     const gAmel = globalOzeller.find(g => g.ad === vo.ad);
                     amelIstatistik[vo.ad] = { 
                         t: 0, 
-                        id: vo.id || (gAmel ? gAmel.id : Date.now()), 
+                        id: vo.id || (gAmel ? gAmel.id : null), 
                         arsiv: gAmel ? gAmel.arsiv : false 
                     };
                 }
                 
-                if (vo.tip === 'sayi') amelIstatistik[vo.ad].t += parseFloat(vo.durum || 0); 
-                else if (vo.durum > 0) amelIstatistik[vo.ad].t += 1; 
+                // Değeri topla (Arşivde olsa bile geçmiş veriden gelir)
+                if (vo.tip === 'sayi') {
+                    amelIstatistik[vo.ad].t += parseFloat(vo.durum || 0); 
+                } else if (Number(vo.durum) > 0) {
+                    amelIstatistik[vo.ad].t += 1; 
+                }
             }); 
         } 
     }
 
-    // 3. Global listede olup da henüz hiç veri girilmemiş amelleri de ekleyelim (Boş gözükmesinler)
+    // Hiç verisi olmayan ama listede olanları ekle
     globalOzeller.forEach(g => {
         if (!amelIstatistik[g.ad]) {
             amelIstatistik[g.ad] = { t: 0, id: g.id, arsiv: g.arsiv };
@@ -780,7 +782,7 @@ window.showYearlyReport = () => {
     </style>
     <div class="custom-scroll" style="max-height:60vh; overflow-y:auto; padding-right:15px; padding-left:5px;">`;
 
-    // KAZA TABLOSU
+    // Kaza Tablosu
     h += `<table style="width:100%; border-collapse:collapse;">
             <thead><tr style="color:#e74c3c; border-bottom:2px solid rgba(231,76,60,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Kaza Namazları</th><th style="text-align:right; padding:10px 5px; font-size:15px;">Adet</th></tr></thead>
             <tbody>`;
@@ -789,40 +791,42 @@ window.showYearlyReport = () => {
     });
     h += `</tbody></table>`;
 
-    // AKTİF AMEL TABLOSU
-    h += `<table style="width:100%; margin-top:25px; border-collapse:collapse;">
-            <thead><tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Aktif Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead>
-            <tbody>`;
+    // Aktif ve Arşiv Başlıkları Hazırlığı
+    let aktifHtml = "";
+    let arsivHtml = "";
 
     const sortedNames = Object.keys(amelIstatistik).sort();
-    let arsivHtml = ""; // Arşivlenenleri burada biriktirip en sona ekleyeceğiz
 
     sortedNames.forEach(name => {
         const item = amelIstatistik[name];
         const safeName = name.replace(/'/g, "\\'");
         
         let row = `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                <td style="padding:12px 5px;"><b style="font-size:15px; display:block; color:#fff;">${name}</b><small style="font-size:13px; color:#2ecc71; font-weight:bold;">Toplam: ${item.t}</small></td>
+                <td style="padding:12px 5px;">
+                    <b style="font-size:15px; display:block; color:${item.arsiv ? '#95a5a6' : '#fff'};">${name}</b>
+                    <small style="font-size:13px; color:${item.arsiv ? '#7f8c8d' : '#2ecc71'}; font-weight:bold;">Toplam: ${item.t.toFixed(item.t % 1 === 0 ? 0 : 1)}</small>
+                </td>
                 <td style="text-align:right; white-space:nowrap; vertical-align:middle;">
-                    <span onclick="window.arsivle('${item.id}'); setTimeout(window.showYearlyReport, 100);" style="cursor:pointer; padding:8px; font-size:18px;" title="Arşiv/Geri">${item.arsiv ? '📤' : '📦'}</span>
+                    <span onclick="window.arsivle('${item.id}'); setTimeout(window.showYearlyReport, 150);" style="cursor:pointer; padding:8px; font-size:18px;" title="Arşiv/Geri">${item.arsiv ? '📤' : '📦'}</span>
                     <span onclick="tamamenSil('${safeName}')" style="cursor:pointer; padding:8px; font-size:16px;" title="Sil">🗑️</span>
                 </td></tr>`;
 
-        if (item.arsiv) {
-            arsivHtml += row.replace('color:#fff', 'color:#95a5a6').replace('font-size:15px', 'font-size:14px; font-weight:normal;');
-        } else {
-            h += row;
-        }
+        if (item.arsiv) arsivHtml += row; else aktifHtml += row;
     });
 
-    // ARŞİV BAŞLIĞI VE LİSTESİ
+    // Aktif Ameller Tablosu
+    h += `<table style="width:100%; margin-top:25px; border-collapse:collapse;">
+            <thead><tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Aktif Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead>
+            <tbody>${aktifHtml}</tbody></table>`;
+
+    // Arşivlenmiş Ameller Tablosu
     if (arsivHtml !== "") {
-        h += `</tbody></table><table style="width:100%; margin-top:25px; border-collapse:collapse;">
+        h += `<table style="width:100%; margin-top:25px; border-collapse:collapse;">
                 <thead><tr style="color:#95a5a6; border-bottom:2px solid rgba(149,165,166,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Arşivlenmiş Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead>
-                <tbody>` + arsivHtml;
+                <tbody>${arsivHtml}</tbody></table>`;
     }
 
-    grid.innerHTML = h + `</tbody></table></div>`; 
+    grid.innerHTML = h + `</div>`; 
     document.getElementById('statModal').style.display = 'flex'; 
 };
     veriYukle();
