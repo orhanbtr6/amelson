@@ -731,38 +731,46 @@ window.showYearlyReport = () => {
     document.getElementById('statTitle').innerHTML = `<b style="font-size:18px;">${yil} YILI ÖZETİ</b>`; 
     
     let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
-    let aktifAmeller = {};
-    let arsivlenmisAmeller = {};
+    let amelIstatistik = {}; // Tüm amelleri burada toplayacağız
 
-    // 1. Mevcut amellerin güncel durumunu (arşivde mi değil mi) öğren
-    const ozelListesi = (JSON.parse(localStorage.getItem('amel_global_ozeller')) || []);
+    // 1. Önce global listeyi alalım (Şu anki arşiv durumunu bilmek için)
+    const globalOzeller = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
 
-    // 2. Yıllık veri toplama
+    // 2. Yıllık verileri tara ve istatistikleri çıkar
     for (let m = 0; m < 12; m++) { 
         for (let d = 1; d <= 31; d++) { 
-            let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); 
+            let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil, m, d)))); 
             if (!v) continue; 
             
+            // Kaza hesaplama
             v.vakitler.forEach((vk, i) => { 
                 if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; 
             }); 
 
+            // Özel amelleri tara
             (v.ozeller || []).forEach(vo => {
-                // Amelin şu anki arşiv durumunu global listeden kontrol et
-                const globalAmel = ozelListesi.find(g => g.ad === vo.ad);
-                const isNowArsiv = globalAmel ? globalAmel.arsiv : false;
-                
-                let hedefSözlük = isNowArsiv ? arsivlenmisAmeller : aktifAmeller;
-
-                if (!hedefSözlük[vo.ad]) {
-                    hedefSözlük[vo.ad] = { t: 0, id: vo.id || (globalAmel ? globalAmel.id : null) };
+                if (!amelIstatistik[vo.ad]) {
+                    // Global listeden bu amelin şu anki durumunu bul
+                    const gAmel = globalOzeller.find(g => g.ad === vo.ad);
+                    amelIstatistik[vo.ad] = { 
+                        t: 0, 
+                        id: vo.id || (gAmel ? gAmel.id : Date.now()), 
+                        arsiv: gAmel ? gAmel.arsiv : false 
+                    };
                 }
                 
-                if (vo.tip === 'sayi') hedefSözlük[vo.ad].t += parseFloat(vo.durum || 0); 
-                else if (vo.durum > 0) hedefSözlük[vo.ad].t += 1; 
+                if (vo.tip === 'sayi') amelIstatistik[vo.ad].t += parseFloat(vo.durum || 0); 
+                else if (vo.durum > 0) amelIstatistik[vo.ad].t += 1; 
             }); 
         } 
-    } 
+    }
+
+    // 3. Global listede olup da henüz hiç veri girilmemiş amelleri de ekleyelim (Boş gözükmesinler)
+    globalOzeller.forEach(g => {
+        if (!amelIstatistik[g.ad]) {
+            amelIstatistik[g.ad] = { t: 0, id: g.id, arsiv: g.arsiv };
+        }
+    });
 
     let h = `
     <style>
@@ -770,42 +778,48 @@ window.showYearlyReport = () => {
         .custom-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(52, 152, 219, 0.3); border-radius: 10px; }
     </style>
-    <div class="custom-scroll" style="max-height:60vh; overflow-y:auto; padding-right:15px; padding-left:5px;">
-        
-        <table style="width:100%; border-collapse:collapse;">
+    <div class="custom-scroll" style="max-height:60vh; overflow-y:auto; padding-right:15px; padding-left:5px;">`;
+
+    // KAZA TABLOSU
+    h += `<table style="width:100%; border-collapse:collapse;">
             <thead><tr style="color:#e74c3c; border-bottom:2px solid rgba(231,76,60,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Kaza Namazları</th><th style="text-align:right; padding:10px 5px; font-size:15px;">Adet</th></tr></thead>
             <tbody>`;
-    
     Object.keys(kaza).forEach(k => { 
         h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:12px 5px; font-size:15px;">${k}</td><td style="text-align:right; font-weight:bold; font-size:16px; color:#eee;">${kaza[k]}</td></tr>`; 
-    }); 
+    });
+    h += `</tbody></table>`;
 
-    // AKTİF ÖZEL AMELLER
-    h += `</tbody></table><table style="width:100%; margin-top:25px; border-collapse:collapse;"><thead><tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Aktif Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead><tbody>`;
-    
-    Object.keys(aktifAmeller).sort().forEach(k => {
-        const amel = aktifAmeller[k];
-        h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                <td style="padding:12px 5px;"><b style="font-size:15px; display:block; color:#fff;">${k}</b><small style="font-size:13px; color:#2ecc71; font-weight:bold;">Toplam: ${amel.t}</small></td>
+    // AKTİF AMEL TABLOSU
+    h += `<table style="width:100%; margin-top:25px; border-collapse:collapse;">
+            <thead><tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Aktif Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead>
+            <tbody>`;
+
+    const sortedNames = Object.keys(amelIstatistik).sort();
+    let arsivHtml = ""; // Arşivlenenleri burada biriktirip en sona ekleyeceğiz
+
+    sortedNames.forEach(name => {
+        const item = amelIstatistik[name];
+        const safeName = name.replace(/'/g, "\\'");
+        
+        let row = `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:12px 5px;"><b style="font-size:15px; display:block; color:#fff;">${name}</b><small style="font-size:13px; color:#2ecc71; font-weight:bold;">Toplam: ${item.t}</small></td>
                 <td style="text-align:right; white-space:nowrap; vertical-align:middle;">
-                    <span onclick="window.arsivle('${amel.id}'); window.showYearlyReport();" style="cursor:pointer; padding:8px; font-size:14px; opacity:0.7;" title="Arşivle">📦</span>
-                    <span onclick="tamamenSil('${k.replace(/'/g, "\\'")}')" style="cursor:pointer; padding:8px; font-size:14px; opacity:0.7;" title="Sil">🗑️</span>
+                    <span onclick="window.arsivle('${item.id}'); setTimeout(window.showYearlyReport, 100);" style="cursor:pointer; padding:8px; font-size:18px;" title="Arşiv/Geri">${item.arsiv ? '📤' : '📦'}</span>
+                    <span onclick="tamamenSil('${safeName}')" style="cursor:pointer; padding:8px; font-size:16px;" title="Sil">🗑️</span>
                 </td></tr>`;
+
+        if (item.arsiv) {
+            arsivHtml += row.replace('color:#fff', 'color:#95a5a6').replace('font-size:15px', 'font-size:14px; font-weight:normal;');
+        } else {
+            h += row;
+        }
     });
 
-    // ARŞİVLENMİŞ AMELLER
-    if (Object.keys(arsivlenmisAmeller).length > 0) {
-        h += `</tbody></table><table style="width:100%; margin-top:25px; border-collapse:collapse;"><thead><tr style="color:#95a5a6; border-bottom:2px solid rgba(149,165,166,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Arşivlenmiş Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead><tbody>`;
-        
-        Object.keys(arsivlenmisAmeller).sort().forEach(k => {
-            const amel = arsivlenmisAmeller[k];
-            h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); opacity:0.6;">
-                    <td style="padding:12px 5px;"><b style="font-size:15px; display:block; color:#ccc;">${k}</b><small style="font-size:13px; color:#95a5a6;">Toplam: ${amel.t}</small></td>
-                    <td style="text-align:right; white-space:nowrap; vertical-align:middle;">
-                        <span onclick="window.arsivle('${amel.id}'); window.showYearlyReport();" style="cursor:pointer; padding:8px; font-size:14px; color:#3498db;" title="Geri Yükle">📤</span>
-                        <span onclick="tamamenSil('${k.replace(/'/g, "\\'")}')" style="cursor:pointer; padding:8px; font-size:14px; color:#e74c3c;" title="Sil">🗑️</span>
-                    </td></tr>`;
-        });
+    // ARŞİV BAŞLIĞI VE LİSTESİ
+    if (arsivHtml !== "") {
+        h += `</tbody></table><table style="width:100%; margin-top:25px; border-collapse:collapse;">
+                <thead><tr style="color:#95a5a6; border-bottom:2px solid rgba(149,165,166,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Arşivlenmiş Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead>
+                <tbody>` + arsivHtml;
     }
 
     grid.innerHTML = h + `</tbody></table></div>`; 
