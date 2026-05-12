@@ -758,54 +758,58 @@ window.sayiGuncelle = (i, v) => {
             try {
                 let d = JSON.parse(fr.result);
                 
-                // 1. Önce localStorage'ı temizleyelim (Hortlayan verileri engellemek için)
-                // İstersen sadece 'amel_' ile başlayanları temizleyecek şekilde daraltabiliriz.
-                localStorage.clear(); 
-
-                // 2. Yedeği yükle
+                // 1. Mevcut verileri yedekle (Çakışma yönetimi için)
+                let eskiGlobal = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
+                
+                // 2. Yedeği yükle (Tüm localStorage'ı d[k] ile doldurur)
                 Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
 
-                // 3. MÜKERRER VE ARŞİV TEMİZLİĞİ
-                let globalListe = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
-                
-                if (globalListe.length > 0) {
-                    // Aynı isme sahip amelleri tekilleştir (En güncelini tut)
-                    const uniqueListe = [];
-                    const isimler = new Set();
-                    
-                    // Tersten dönüyoruz ki en son eklenen/güncel olan kalsın
-                    for (let index = globalListe.length - 1; index >= 0; index--) {
-                        if (!isimler.has(globalListe[index].ad)) {
-                            // KRİTİK: Yükleme anında hepsini aktif yap (Arşiv sorununu çözer)
-                            globalListe[index].arsiv = false; 
-                            uniqueListe.push(globalListe[index]);
-                            isimler.add(globalListe[index].ad);
-                        }
-                    }
-                    
-                    // Temizlenmiş listeyi geri yükle
-                    localStorage.setItem('amel_global_ozeller', JSON.stringify(uniqueListe.reverse()));
-                }
+                // 3. AKILLI BİRLEŞTİRME (Merge) MANTIĞI
+                let yuklenenGlobal = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
+                let yeniGlobal = [];
+                let isimKontrol = new Set();
 
-                // 4. Bugünün verisini global liste ile eşitle
+                // Yüklenen amelleri tek tek kontrol et
+                yuklenenGlobal.forEach(amel => {
+                    if (!isimKontrol.has(amel.ad)) {
+                        // Eğer aynı isimli amelden birden fazla varsa, sadece ilkini al
+                        // Teravih/Mülk gibi amelleri aktif (arsiv:false) olarak başlat
+                        amel.arsiv = false; 
+                        yeniGlobal.push(amel);
+                        isimKontrol.add(amel.ad);
+                    }
+                });
+
+                // 4. Temizlenmiş listeyi kaydet
+                localStorage.setItem('amel_global_ozeller', JSON.stringify(yeniGlobal));
+
+                // 5. GÜNLÜK VERİLERİ SENKRONİZE ET (Mükerrerleri ekrandan siler)
                 let key = getLocalKey(new Date());
                 let bugun = JSON.parse(localStorage.getItem(key));
 
                 if (bugun && bugun.ozeller) {
-                    let yeniGlobal = JSON.parse(localStorage.getItem('amel_global_ozeller'));
-                    // Bugünün listesinde olmayan ama globalde olanları ekle, fazlalıkları (silinenleri) at
-                    bugun.ozeller = yeniGlobal.map(g => {
-                        let mevcut = bugun.ozeller.find(o => o.ad === g.ad);
-                        return mevcut ? { ...mevcut, arsiv: false } : { ...g, durum: (g.tip === 'sayi' ? "" : 0), arsiv: false };
+                    // Bugünün listesini isim bazlı tekilleştir
+                    let tekilBugunOzeller = [];
+                    let bugunIsimKontrol = new Set();
+
+                    yeniGlobal.forEach(g => {
+                        // Sadece global listede olan ve bugün henüz eklenmemiş olanları al
+                        let mevcutVeri = bugun.ozeller.find(o => o.ad === g.ad);
+                        if (!bugunIsimKontrol.has(g.ad)) {
+                            tekilBugunOzeller.push(mevcutVeri ? { ...mevcutVeri, arsiv: false } : { ...g, durum: (g.tip === 'sayi' ? "" : 0), arsiv: false });
+                            bugunIsimKontrol.add(g.ad);
+                        }
                     });
+                    
+                    bugun.ozeller = tekilBugunOzeller;
                     localStorage.setItem(key, JSON.stringify(bugun));
                 }
 
-                alert("Sistem temizlendi ve yedek başarıyla yüklendi!");
+                alert("Mükerrer kayıtlar (Mülk, Teravih vb.) birleştirildi ve sistem temizlendi!");
                 location.reload(); 
 
             } catch (err) {
-                alert("Yedek dosyası okunurken bir hata oluştu: " + err.message);
+                alert("Hata: " + err.message);
             }
         };
         fr.readAsText(e.target.files[0]);
