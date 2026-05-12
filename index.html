@@ -151,6 +151,9 @@
   function getWarningData(vIdx) {
     if (getLocalKey(seciliTarih) !== getLocalKey(new Date())) return null;
 	if (!signalsActive || isFuture()) return null;
+	  // --- YENİ EKLENEN KISIM: Eğer bugün bu vakit zaten işaretlendiyse uyarıyı KES ---
+    const bugunVeri = gunlukVeriler.vakitler[vIdx];
+    if (bugunVeri && bugunVeri.durumlar[0] > 0) return null;
 	  const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
     if (kayitliGunler < 3) return null;
     let streaks = [0, 0, 0];
