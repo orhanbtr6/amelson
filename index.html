@@ -480,13 +480,12 @@ gunlukVeriler.ozeller.forEach((o, oIdx) => {
     
     let wHtml = (sistemdeVeriVarmi && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
     
-    card.innerHTML = `
+card.innerHTML = `
     <span class="arsiv-mini-btn" 
           onclick="event.stopPropagation(); window.arsivle('${o.id}')" 
-          style="position:absolute; bottom: 2px; right: 2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">
+          style="position:absolute; bottom:5px; right:5px; top:auto; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">
           📦
     </span>
-    
     ${wHtml}
     <b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>
     ${ctrl}
