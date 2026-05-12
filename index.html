@@ -732,7 +732,6 @@ window.showYearlyReport = () => {
     
     let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {}; 
     
-    // Veri toplama döngüsü
     for (let m = 0; m < 12; m++) { 
         for (let d = 1; d <= 31; d++) { 
             let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); 
@@ -741,70 +740,54 @@ window.showYearlyReport = () => {
                 if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; 
             }); 
             (v.ozeller || []).forEach(vo => { 
-                if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip, id: vo.id }; 
+                if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip, id: vo.id, isArsiv: vo.arsiv }; 
                 if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); 
                 else if (vo.durum > 0) arsiv[vo.ad].t += 1; 
             }); 
         } 
     } 
 
-    // Stil ve Tablo Başlangıcı
     let h = `
     <style>
-        /* Temaya uygun özel kaydırma çubuğu */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(52, 152, 219, 0.3); border-radius: 10px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(52, 152, 219, 0.5); }
     </style>
-    
     <div class="custom-scroll" style="max-height:60vh; overflow-y:auto; padding-right:15px; padding-left:5px;">
         <table style="width:100%; border-collapse:collapse;">
-            <thead>
-                <tr style="color:#e74c3c; border-bottom:2px solid rgba(231,76,60,0.3);">
-                    <th style="text-align:left; padding:10px 5px; font-size:15px;">Kaza Namazları</th>
-                    <th style="text-align:right; padding:10px 5px; font-size:15px;">Adet</th>
-                </tr>
-            </thead>
+            <thead><tr style="color:#e74c3c; border-bottom:2px solid rgba(231,76,60,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Kaza Namazları</th><th style="text-align:right; padding:10px 5px; font-size:15px;">Adet</th></tr></thead>
             <tbody>`; 
     
-    // Kaza Namazları Satırları
     Object.keys(kaza).forEach(k => { 
-        h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                <td style="padding:12px 5px; font-size:15px;">${k}</td>
-                <td style="text-align:right; font-weight:bold; font-size:16px; color:#eee;">${kaza[k]}</td>
-              </tr>`; 
+        h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:12px 5px; font-size:15px;">${k}</td><td style="text-align:right; font-weight:bold; font-size:16px; color:#eee;">${kaza[k]}</td></tr>`; 
     }); 
 
-    // Özel Ameller Başlığı
-    h += `</tbody></table>
-        <table style="width:100%; margin-top:25px; border-collapse:collapse;">
-            <thead>
-                <tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);">
-                    <th style="text-align:left; padding:10px 5px; font-size:15px;">Özel Ameller</th>
-                    <th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th>
-                </tr>
-            </thead>
-            <tbody>`; 
+    h += `</tbody></table><table style="width:100%; margin-top:25px; border-collapse:collapse;"><thead><tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Özel Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead><tbody>`; 
     
-    // Özel Ameller Satırları
-    Object.keys(arsiv).sort().forEach(k => { 
+    // Aktif ve Arşivlenmişleri ayırarak listele
+    const tumAmeller = Object.keys(arsiv).sort();
+    
+    tumAmeller.forEach(k => { 
+        const amel = arsiv[k];
         const safeK = k.replace(/'/g, "\\'");
         
+        // Sadece aktif olanları (arşivlenmemişleri) burada göster
         h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
                 <td style="padding:12px 5px;">
-                    <b style="font-size:15px; display:block; color:#fff; margin-bottom:2px;">${k}</b>
-                    <small style="font-size:13px; color:#2ecc71; font-weight:bold;">Toplam: ${arsiv[k].t}</small>
+                    <b style="font-size:15px; display:block; color:#fff;">${k}</b>
+                    <small style="font-size:13px; color:#2ecc71; font-weight:bold;">Toplam: ${amel.t}</small>
                 </td>
                 <td style="text-align:right; white-space:nowrap; vertical-align:middle;">
-                    <span onclick="window.arsivle('${arsiv[k].id}'); window.showYearlyReport();" 
+                    <span onclick="window.arsivle('${amel.id}'); window.showYearlyReport();" 
                           style="cursor:pointer; display:inline-block; padding:8px; font-size:14px; opacity:0.7;" title="Arşivle">📦</span>
-                    
                     <span onclick="tamamenSil('${safeK}')" 
                           style="cursor:pointer; display:inline-block; padding:8px; font-size:14px; opacity:0.7;" title="Sil">🗑️</span>
                 </td>
               </tr>`; 
     }); 
+
+    // --- ARŞİVLENMİŞ AMEL BÖLÜMÜ (İsteğe Bağlı) ---
+    // Eğer istersen buraya ayrı bir tablo daha açıp sadece "arsiv: true" olanları listeleyebiliriz.
     
     grid.innerHTML = h + `</tbody></table></div>`; 
     document.getElementById('statModal').style.display = 'flex'; 
