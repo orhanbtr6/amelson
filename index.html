@@ -407,39 +407,32 @@ window.analizEt = function() {
     render();
 }
 
-	function render() {
-    // Veriyi kaydet
+function render() {
+    // 1. DEĞİŞİKLİK: Kaydederken ARŞİVİ filtrelemiyoruz. 
+    // Tüm günlukVeriler (arşivdekiler dahil) localStorage'a gitmeli ki veri kaybolmasın.
     localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
     
-    // Tarih gösterimlerini güncelle
     document.getElementById('dispDate').innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('isToday').innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
     
-    // KRİTİK: Anahtar kontrolünü 'amel_' olarak düzeltiyoruz (senin formatın bu)
     const sistemdeVeriVarmi = Object.keys(localStorage).some(key => key.startsWith('amel_20')); 
-    
     const vDiv = document.getElementById('vakitList'); 
     vDiv.innerHTML = '';
     
-    // Bugünün vaktini belirle
     const isToday = (getLocalKey(new Date()) === getLocalKey(seciliTarih));
     const siradakiVakitIdx = isToday ? gunlukVeriler.vakitler.findIndex(v => v.durumlar[0] === 0) : -1;
 
-    // Namaz Vakitlerini Render Et
+    // Namaz Vakitleri Render (Değişmedi)
     gunlukVeriler.vakitler.forEach((v, vIdx) => {
         let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
         const cemaatMi = (f === 2);
-        
         if ((f === 1 || f === 2) && s > 0 && (t === 1 || t === 2)) p = 100;
         else {
             if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
             if (s > 0) p += 25;
             if (t === 1 || t === 2) p += 25;
         }
-
         let bCol = cemaatMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
-        
-        // getWarningData'yı güvenli çağırıyoruz
         let wData = (sistemdeVeriVarmi) ? getWarningData(vIdx) : null; 
         let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
         let activeClass = (vIdx === siradakiVakitIdx) ? "active-vakit" : "";
@@ -459,99 +452,46 @@ window.analizEt = function() {
             </div></div>`;
     });
 
-// Özel Amelleri Render Et
-const oDiv = document.getElementById('ozelList'); 
-oDiv.innerHTML = "";
+    // Özel Ameller Render Et
+    const oDiv = document.getElementById('ozelList'); 
+    oDiv.innerHTML = "";
 
-gunlukVeriler.ozeller.forEach((o, oIdx) => {
-    if (o.arsiv) return;
+    gunlukVeriler.ozeller.forEach((o, oIdx) => {
+        // 2. DEĞİŞİKLİK: Burada if(o.arsiv) return; satırı KALMALI. 
+        // Veri arka planda duruyor ama biz sadece ekrana çizmiyoruz.
+        if (o.arsiv) return;
 
-    const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
-    const card = document.createElement('div');
-	card.classList.add('ozel-kart');
-	
-    if (isDone) card.classList.add('yapildi');
+        const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
+        const card = document.createElement('div');
+        card.classList.add('ozel-kart');
+        if (isDone) card.classList.add('yapildi');
 
-    // --- BURASI KRİTİK: Kartın tamamına tıklama engeli koyuyoruz ---
-    card.onclick = () => {
-        if (isFuture()) {
-            document.getElementById('ozelAlertModal').style.display = 'flex';
-        }
-    };
-
-    // --- INPUT KONTROLÜ: Gelecekse tıklanmaz ve soluk görünür ---
-    let ctrl = o.tip === 'sayi' ? 
-        `<input type="number" 
-            value="${o.durum === 0 ? "" : o.durum}" 
-            style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px; 
-                   ${isFuture() ? 'pointer-events: none; opacity: 0.3;' : ''}" 
-            onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
-        `<div class="circle s${o.durum}" 
-              style="width:26px; height:26px; margin:auto; ${isFuture() ? 'pointer-events: none; opacity: 0.3;' : ''}" 
-              onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-    
-    let wHtml = (sistemdeVeriVarmi && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
-    
-card.innerHTML = `
-
-    ${wHtml}
-    <b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>
-    ${ctrl}
-`;
-    oDiv.appendChild(card);
-});
-}
-    window.showHeatmap = (id, tip, subIdx = null) => {
-    currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
-    let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-    
-    // --- DÜZELTME BURADA BAŞLIYOR: Boşluk Hesaplama ---
-    let ilkGunHangiGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), 1).getDay();
-    let baslangicBoslugu = (ilkGunHangiGun === 0) ? 6 : ilkGunHangiGun - 1; // Pazartesi'yi başa alır
-    // --------------------------------------------------
-
-    let ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-    document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.heatmapNav(-1)">❮</button><div><div style="font-size:10px; opacity:0.7">${ayYilStr}</div><div style="font-size:14px">${tip === 'vakit' ? vakitler[id] : (tip === 'vakit_sub' ? vakitler[id].split(" ")[0] + " - " + basliklar[subIdx] : id)}</div></div><button class="nav-btn" onclick="window.heatmapNav(1)">❯</button></div>`;
-    
-// ... fonksiyonun başındaki hesaplamalar aynı kalıyor ...
-
-let h = `<div class="genel-wrapper">
-    <table class="genel-table heatmap-table">
-        <thead>
-            <tr style="background: rgba(255,255,255,0.1); font-size: 10px; color: #a5d3ff;">
-                <th>Pt</th><th>Sa</th><th>Ça</th><th>Pe</th><th>Cu</th><th>Ct</th><th>Pz</th>
-            </tr>
-        </thead>
-        <tr>`;
-// Ayın ilk gününden önceki boş kutucuklar
-for (let b = 0; b < baslangicBoslugu; b++) {
-    h += `<td style="background:transparent; border:none;"></td>`;
-}
-// ... geri kalan d döngüsü aynı kalıyor ...
-    for(let d=1; d<=sonGun; d++) {
-        let isToday = isTodayCheck(d, raporTarih.getMonth(), raporTarih.getFullYear());
-        let val = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
-        let c = "s0", txt = "";
-        if(val) {
-            if(tip === 'vakit') c = `s${val.vakitler[id].durumlar[0]}`;
-            else if(tip === 'vakit_sub') c = `s${val.vakitler[id].durumlar[subIdx]}`;
-            else { 
-                let o = val.ozeller.find(x => x.ad === id); 
-                if(o) { 
-                    c = o.tip === 'sayi' ? (o.durum > 0 ? 's1' : 's0') : `s${o.durum}`; 
-                    txt = (o.tip === 'sayi' && o.durum > 0) ? o.durum : ""; 
-                } 
+        card.onclick = () => {
+            if (isFuture()) {
+                document.getElementById('ozelAlertModal').style.display = 'flex';
             }
-        }
-        h += `<td class="${c} ${isToday ? 'is-today-cell' : ''}"><span class="day-num">${d}</span>${txt}</td>`;
+        };
+
+        let ctrl = o.tip === 'sayi' ? 
+            `<input type="number" 
+                value="${o.durum === 0 || o.durum === "" ? "" : o.durum}" 
+                style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px; 
+                        ${isFuture() ? 'pointer-events: none; opacity: 0.3;' : ''}" 
+                onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
+            `<div class="circle s${o.durum}" 
+                  style="width:26px; height:26px; margin:auto; ${isFuture() ? 'pointer-events: none; opacity: 0.3;' : ''}" 
+                  onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
         
-        // Satır sonu kontrolü (Boşluklar + Gün sayısı 7'nin katı olunca alt satıra geç)
-        if((d + baslangicBoslugu) % 7 === 0) h += `</tr><tr>`;
-    }
-    document.getElementById('calGrid').innerHTML = h + `</tr></table></div>`;
-    document.getElementById('statModal').style.display = 'flex';
-    document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
-};
+        let wHtml = (sistemdeVeriVarmi && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px; position:absolute;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
+        
+        card.innerHTML = `
+            ${wHtml}
+            <b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>
+            ${ctrl}
+        `;
+        oDiv.appendChild(card);
+    });
+}
     window.showGeneralReport = () => {
     const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
     document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
