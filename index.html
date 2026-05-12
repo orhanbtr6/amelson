@@ -445,29 +445,44 @@ window.analizEt = function() {
             </div></div>`;
     });
 
-    // Özel Amelleri Render Et
-    const oDiv = document.getElementById('ozelList'); 
-    oDiv.innerHTML = "";
-    gunlukVeriler.ozeller.forEach((o, oIdx) => {
-        if (o.arsiv) return;
-        const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
-        const card = document.createElement('div');
-        card.classList.add('ozel-kart');
-        if (isDone) card.classList.add('yapildi');
+// Özel Amelleri Render Et
+const oDiv = document.getElementById('ozelList'); 
+oDiv.innerHTML = "";
 
-        let ctrl = o.tip === 'sayi' ? 
-            `<input type="number" value="${o.durum === 0 ? "" : o.durum}" style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px;" onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
-            `<div class="circle s${o.durum}" style="width:26px; height:26px; margin:auto;" onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-        
-        // HATA BURADAYDI: veriler.length yerine sistemdeVeriVarmi kullanıyoruz
-        let wHtml = (sistemdeVeriVarmi && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
-        
-        card.innerHTML = `
-            <span class="arsiv-mini-btn" onclick="event.stopPropagation(); window.arsivle('${o.id}')" style="position:absolute; top:-2px; right:-2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">📦</span>
-            ${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}
-        `;
-        oDiv.appendChild(card);
-    });
+gunlukVeriler.ozeller.forEach((o, oIdx) => {
+    if (o.arsiv) return;
+
+    const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
+    const card = document.createElement('div');
+    card.classList.add('ozel-kart');
+    if (isDone) card.classList.add('yapildi');
+
+    // --- BURASI KRİTİK: Kartın tamamına tıklama engeli koyuyoruz ---
+    card.onclick = () => {
+        if (isFuture()) {
+            document.getElementById('ozelAlertModal').style.display = 'flex';
+        }
+    };
+
+    // --- INPUT KONTROLÜ: Gelecekse tıklanmaz ve soluk görünür ---
+    let ctrl = o.tip === 'sayi' ? 
+        `<input type="number" 
+            value="${o.durum === 0 ? "" : o.durum}" 
+            style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px; 
+                   ${isFuture() ? 'pointer-events: none; opacity: 0.3;' : ''}" 
+            onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
+        `<div class="circle s${o.durum}" 
+              style="width:26px; height:26px; margin:auto; ${isFuture() ? 'pointer-events: none; opacity: 0.3;' : ''}" 
+              onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
+    
+    let wHtml = (sistemdeVeriVarmi && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
+    
+    card.innerHTML = `
+        <span class="arsiv-mini-btn" onclick="event.stopPropagation(); window.arsivle('${o.id}')" style="position:absolute; top:-2px; right:-2px; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">📦</span>
+        ${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}
+    `;
+    oDiv.appendChild(card);
+});
 }
     window.showHeatmap = (id, tip, subIdx = null) => {
     currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
