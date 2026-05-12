@@ -730,19 +730,36 @@ window.showYearlyReport = () => {
     const yil = new Date().getFullYear(); 
     document.getElementById('statTitle').innerHTML = `<b style="font-size:18px;">${yil} YILI ÖZETİ</b>`; 
     
-    let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 }, arsiv = {}; 
-    
+    let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
+    let aktifAmeller = {};
+    let arsivlenmisAmeller = {};
+
+    // 1. Mevcut amellerin güncel durumunu (arşivde mi değil mi) öğren
+    const ozelListesi = (JSON.parse(localStorage.getItem('amel_global_ozeller')) || []);
+
+    // 2. Yıllık veri toplama
     for (let m = 0; m < 12; m++) { 
         for (let d = 1; d <= 31; d++) { 
             let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(yil,m,d)))); 
             if (!v) continue; 
+            
             v.vakitler.forEach((vk, i) => { 
                 if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; 
             }); 
-            (v.ozeller || []).forEach(vo => { 
-                if (!arsiv[vo.ad]) arsiv[vo.ad] = { t: 0, tip: vo.tip, id: vo.id, isArsiv: vo.arsiv }; 
-                if (vo.tip === 'sayi') arsiv[vo.ad].t += parseFloat(vo.durum || 0); 
-                else if (vo.durum > 0) arsiv[vo.ad].t += 1; 
+
+            (v.ozeller || []).forEach(vo => {
+                // Amelin şu anki arşiv durumunu global listeden kontrol et
+                const globalAmel = ozelListesi.find(g => g.ad === vo.ad);
+                const isNowArsiv = globalAmel ? globalAmel.arsiv : false;
+                
+                let hedefSözlük = isNowArsiv ? arsivlenmisAmeller : aktifAmeller;
+
+                if (!hedefSözlük[vo.ad]) {
+                    hedefSözlük[vo.ad] = { t: 0, id: vo.id || (globalAmel ? globalAmel.id : null) };
+                }
+                
+                if (vo.tip === 'sayi') hedefSözlük[vo.ad].t += parseFloat(vo.durum || 0); 
+                else if (vo.durum > 0) hedefSözlük[vo.ad].t += 1; 
             }); 
         } 
     } 
@@ -754,41 +771,43 @@ window.showYearlyReport = () => {
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(52, 152, 219, 0.3); border-radius: 10px; }
     </style>
     <div class="custom-scroll" style="max-height:60vh; overflow-y:auto; padding-right:15px; padding-left:5px;">
+        
         <table style="width:100%; border-collapse:collapse;">
             <thead><tr style="color:#e74c3c; border-bottom:2px solid rgba(231,76,60,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Kaza Namazları</th><th style="text-align:right; padding:10px 5px; font-size:15px;">Adet</th></tr></thead>
-            <tbody>`; 
+            <tbody>`;
     
     Object.keys(kaza).forEach(k => { 
         h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:12px 5px; font-size:15px;">${k}</td><td style="text-align:right; font-weight:bold; font-size:16px; color:#eee;">${kaza[k]}</td></tr>`; 
     }); 
 
-    h += `</tbody></table><table style="width:100%; margin-top:25px; border-collapse:collapse;"><thead><tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Özel Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead><tbody>`; 
+    // AKTİF ÖZEL AMELLER
+    h += `</tbody></table><table style="width:100%; margin-top:25px; border-collapse:collapse;"><thead><tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Aktif Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead><tbody>`;
     
-    // Aktif ve Arşivlenmişleri ayırarak listele
-    const tumAmeller = Object.keys(arsiv).sort();
-    
-    tumAmeller.forEach(k => { 
-        const amel = arsiv[k];
-        const safeK = k.replace(/'/g, "\\'");
-        
-        // Sadece aktif olanları (arşivlenmemişleri) burada göster
+    Object.keys(aktifAmeller).sort().forEach(k => {
+        const amel = aktifAmeller[k];
         h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                <td style="padding:12px 5px;">
-                    <b style="font-size:15px; display:block; color:#fff;">${k}</b>
-                    <small style="font-size:13px; color:#2ecc71; font-weight:bold;">Toplam: ${amel.t}</small>
-                </td>
+                <td style="padding:12px 5px;"><b style="font-size:15px; display:block; color:#fff;">${k}</b><small style="font-size:13px; color:#2ecc71; font-weight:bold;">Toplam: ${amel.t}</small></td>
                 <td style="text-align:right; white-space:nowrap; vertical-align:middle;">
-                    <span onclick="window.arsivle('${amel.id}'); window.showYearlyReport();" 
-                          style="cursor:pointer; display:inline-block; padding:8px; font-size:14px; opacity:0.7;" title="Arşivle">📦</span>
-                    <span onclick="tamamenSil('${safeK}')" 
-                          style="cursor:pointer; display:inline-block; padding:8px; font-size:14px; opacity:0.7;" title="Sil">🗑️</span>
-                </td>
-              </tr>`; 
-    }); 
+                    <span onclick="window.arsivle('${amel.id}'); window.showYearlyReport();" style="cursor:pointer; padding:8px; font-size:14px; opacity:0.7;" title="Arşivle">📦</span>
+                    <span onclick="tamamenSil('${k.replace(/'/g, "\\'")}')" style="cursor:pointer; padding:8px; font-size:14px; opacity:0.7;" title="Sil">🗑️</span>
+                </td></tr>`;
+    });
 
-    // --- ARŞİVLENMİŞ AMEL BÖLÜMÜ (İsteğe Bağlı) ---
-    // Eğer istersen buraya ayrı bir tablo daha açıp sadece "arsiv: true" olanları listeleyebiliriz.
-    
+    // ARŞİVLENMİŞ AMELLER
+    if (Object.keys(arsivlenmisAmeller).length > 0) {
+        h += `</tbody></table><table style="width:100%; margin-top:25px; border-collapse:collapse;"><thead><tr style="color:#95a5a6; border-bottom:2px solid rgba(149,165,166,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Arşivlenmiş Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead><tbody>`;
+        
+        Object.keys(arsivlenmisAmeller).sort().forEach(k => {
+            const amel = arsivlenmisAmeller[k];
+            h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); opacity:0.6;">
+                    <td style="padding:12px 5px;"><b style="font-size:15px; display:block; color:#ccc;">${k}</b><small style="font-size:13px; color:#95a5a6;">Toplam: ${amel.t}</small></td>
+                    <td style="text-align:right; white-space:nowrap; vertical-align:middle;">
+                        <span onclick="window.arsivle('${amel.id}'); window.showYearlyReport();" style="cursor:pointer; padding:8px; font-size:14px; color:#3498db;" title="Geri Yükle">📤</span>
+                        <span onclick="tamamenSil('${k.replace(/'/g, "\\'")}')" style="cursor:pointer; padding:8px; font-size:14px; color:#e74c3c;" title="Sil">🗑️</span>
+                    </td></tr>`;
+        });
+    }
+
     grid.innerHTML = h + `</tbody></table></div>`; 
     document.getElementById('statModal').style.display = 'flex'; 
 };
