@@ -748,7 +748,7 @@ window.sayiGuncelle = (i, v) => {
     document.getElementById('statModal').style.display = 'flex'; 
 };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
-   window.importData = () => {
+  window.importData = () => {
     let i = document.createElement('input');
     i.type = 'file';
     i.accept = '.json, .txt';
@@ -758,58 +758,52 @@ window.sayiGuncelle = (i, v) => {
             try {
                 let d = JSON.parse(fr.result);
                 
-                // 1. Mevcut verileri yedekle (Çakışma yönetimi için)
-                let eskiGlobal = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
-                
-                // 2. Yedeği yükle (Tüm localStorage'ı d[k] ile doldurur)
-                Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
-
-                // 3. AKILLI BİRLEŞTİRME (Merge) MANTIĞI
-                let yuklenenGlobal = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
-                let yeniGlobal = [];
-                let isimKontrol = new Set();
-
-                // Yüklenen amelleri tek tek kontrol et
-                yuklenenGlobal.forEach(amel => {
-                    if (!isimKontrol.has(amel.ad)) {
-                        // Eğer aynı isimli amelden birden fazla varsa, sadece ilkini al
-                        // Teravih/Mülk gibi amelleri aktif (arsiv:false) olarak başlat
-                        amel.arsiv = false; 
-                        yeniGlobal.push(amel);
-                        isimKontrol.add(amel.ad);
-                    }
+                // 1. ADIM: Mevcut karmaşayı temizle
+                // Sadece amel verilerini temizliyoruz ki ayarların gitmesin
+                Object.keys(localStorage).forEach(k => {
+                    if(k.startsWith('amel_')) localStorage.removeItem(k);
                 });
 
-                // 4. Temizlenmiş listeyi kaydet
-                localStorage.setItem('amel_global_ozeller', JSON.stringify(yeniGlobal));
+                // 2. ADIM: Yedeği yükle
+                Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
 
-                // 5. GÜNLÜK VERİLERİ SENKRONİZE ET (Mükerrerleri ekrandan siler)
-                let key = getLocalKey(new Date());
-                let bugun = JSON.parse(localStorage.getItem(key));
+                // 3. ADIM: Global Listeyi Tekilleştir (Mülk, Teravih vb. için)
+                let globalListe = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
+                let tekilGlobal = [];
+                let isimKontrol = new Set();
 
-                if (bugun && bugun.ozeller) {
-                    // Bugünün listesini isim bazlı tekilleştir
-                    let tekilBugunOzeller = [];
-                    let bugunIsimKontrol = new Set();
+                globalListe.forEach(amel => {
+                    let temizAd = amel.ad.trim();
+                    if (!isimKontrol.has(temizAd)) {
+                        amel.arsiv = false; // Hepsini aktif yapıyoruz
+                        amel.ad = temizAd;
+                        tekilGlobal.push(amel);
+                        isimKontrol.add(temizAd);
+                    }
+                });
+                localStorage.setItem('amel_global_ozeller', JSON.stringify(tekilGlobal));
 
-                    yeniGlobal.forEach(g => {
-                        // Sadece global listede olan ve bugün henüz eklenmemiş olanları al
-                        let mevcutVeri = bugun.ozeller.find(o => o.ad === g.ad);
-                        if (!bugunIsimKontrol.has(g.ad)) {
-                            tekilBugunOzeller.push(mevcutVeri ? { ...mevcutVeri, arsiv: false } : { ...g, durum: (g.tip === 'sayi' ? "" : 0), arsiv: false });
-                            bugunIsimKontrol.add(g.ad);
-                        }
-                    });
-                    
-                    bugun.ozeller = tekilBugunOzeller;
-                    localStorage.setItem(key, JSON.stringify(bugun));
-                }
+                // 4. ADIM: Bugünün verisini tertemiz yeniden oluştur
+                // Çift kayıtları engellemenin en garantisi yolu bugünün listesini 
+                // sıfırdan global listeye göre kurmaktır.
+                let simdi = new Date();
+                let key = getLocalKey(simdi);
+                let bugun = JSON.parse(localStorage.getItem(key)) || {};
 
-                alert("Mükerrer kayıtlar (Mülk, Teravih vb.) birleştirildi ve sistem temizlendi!");
+                // Namaz vakitleri zaten standart, özelleri ise yeni tekil listeden alıyoruz
+                bugun.ozeller = tekilGlobal.map(g => ({
+                    ...g,
+                    durum: (g.tip === 'sayi' ? "" : 0),
+                    arsiv: false
+                }));
+
+                localStorage.setItem(key, JSON.stringify(bugun));
+
+                alert("Tüm mükerrer kayıtlar temizlendi ve verileriniz birleştirildi!");
                 location.reload(); 
 
             } catch (err) {
-                alert("Hata: " + err.message);
+                alert("Yükleme hatası: " + err.message);
             }
         };
         fr.readAsText(e.target.files[0]);
