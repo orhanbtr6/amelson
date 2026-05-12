@@ -1298,28 +1298,31 @@ window.addEventListener('DOMContentLoaded', () => {
 // 3. Arka planda saati kontrol eden mekanizma
 setInterval(() => {
     const simdi = new Date();
-    // Saat ve dakikayı "21:30" formatına getirir
-    const suAnkiZaman = `${simdi.getHours().toString().padStart(2, '0')}:${simdi.getMinutes().toString().padStart(2, '0')}`;
+    // Saat ve dakikayı her zaman iki haneli (09:05 gibi) alalım
+    const suAnkiSaat = simdi.getHours().toString().padStart(2, '0');
+    const suAnkiDakika = simdi.getMinutes().toString().padStart(2, '0');
+    const suAnkiZaman = `${suAnkiSaat}:${suAnkiDakika}`;
     
-    const kullanıcıSaati = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
+    const kullaniciSaati = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
 
-    if (suAnkiZaman === kullanıcıSaati) {
+    // Konsoldan takip edelim (Test aşamasında F12'den bakarsan saati görürsün)
+    console.log("Sistem Saati:", suAnkiZaman, "Ayarli Saat:", kullaniciSaati);
+
+    if (suAnkiZaman === kullaniciSaati) {
         if (Notification.permission === "granted") {
             if (!window.bildirimGonderildiMi) {
-                new Notification("Amel Defteri", {
-                    body: "Orhan Hocam, bugünkü kayıtlarını girmek için belirlediğin saat geldi!",
-                    icon: "https://cdn-icons-png.flaticon.com/512/3119/3119338.png",
-                    requireInteraction: true
+                const n = new Notification("Amel Defteri", {
+                    body: "Orhan Hocam, bugünkü kayıtlarını girmeyi unutma!",
+                    icon: "https://cdn-icons-png.flaticon.com/512/3119/3119338.png"
                 });
                 
                 window.bildirimGonderildiMi = true;
-                // Aynı dakika içinde tekrar bildirim gelmemesi için 1 dakika kilitle
                 setTimeout(() => { window.bildirimGonderildiMi = false; }, 61000);
             }
         }
     }
-}, 30000); // Her 30 saniyede bir saati kontrol et
-// Olay Dinleyicileri
+}, 30000);
+	// Olay Dinleyicileri
 el.addEventListener('mousedown', dragStart);
 document.addEventListener('mousemove', dragMove);
 document.addEventListener('mouseup', dragEnd);
