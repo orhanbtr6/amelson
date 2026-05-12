@@ -373,7 +373,8 @@ window.analizEt = function() {
     return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
                 <b style="font-size:12px; color:var(--${color});">${title}</b><br><span style="font-size:11px; opacity:0.8;">${text}</span>
             </div>`;
-} function veriYukle() {
+} 
+	function veriYukle() {
     const key = getLocalKey(seciliTarih);
     const kaydedilmis = JSON.parse(localStorage.getItem(key));
     const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
@@ -692,7 +693,44 @@ window.sayiGuncelle = (i, v) => {
     document.getElementById('statModal').style.display = 'flex'; 
 };
     window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
-    window.importData = () => { let i = document.createElement('input'); i.type='file'; i.onchange=e=>{ let fr=new FileReader(); fr.onload=()=>{ let d=JSON.parse(fr.result); Object.keys(d).forEach(k=>localStorage.setItem(k,d[k])); location.reload(); }; fr.readAsText(e.target.files[0]); }; i.click(); };
+    window.importData = () => {
+    let i = document.createElement('input');
+    i.type = 'file';
+    i.accept = '.json, .txt'; // Sadece ilgili dosyaları seçtirir
+    i.onchange = e => {
+        let fr = new FileReader();
+        fr.onload = () => {
+            try {
+                let d = JSON.parse(fr.result);
+                
+                // 1. Önce tüm veriyi localStorage'a yaz
+                Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
+
+                // 2. KRİTİK ADIM: Global listeyi ve bugünkü veriyi senkronize et
+                // Bu kısım yedeği yükledikten sonra arşivlerin karışmasını engeller
+                let globalListe = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
+                let key = getLocalKey(new Date());
+                let bugun = JSON.parse(localStorage.getItem(key));
+
+                if (bugun && bugun.ozeller) {
+                    bugun.ozeller.forEach(o => {
+                        let gAmel = globalListe.find(g => g.id === o.id);
+                        if (gAmel) o.arsiv = gAmel.arsiv; // Arşiv durumunu eşitle
+                    });
+                    localStorage.setItem(key, JSON.stringify(bugun));
+                }
+
+                alert("Veriler başarıyla senkronize edildi. Sayfa yenileniyor...");
+                location.reload(); 
+
+            } catch (err) {
+                alert("Yedek dosyası okunurken bir hata oluştu: " + err.message);
+            }
+        };
+        fr.readAsText(e.target.files[0]);
+    };
+    i.click();
+};
 window.showYearlyReport = () => { 
     const grid = document.getElementById('calGrid'); 
     const yil = new Date().getFullYear(); 
