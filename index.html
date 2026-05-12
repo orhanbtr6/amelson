@@ -457,7 +457,10 @@ gunlukVeriler.ozeller.forEach((o, oIdx) => {
 
     const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
     const card = document.createElement('div');
-    card.classList.add('ozel-kart');
+	card.classList.add('ozel-kart');
+	card.style.position = "relative"; // İkonun buna göre hizalanması için şart
+	card.style.overflow = "visible";  // İkonun köşelerde kesilmemesi için
+	card.style.paddingBottom = "10px"; // Alt kısımda ikon için nefes payı bırakır
     if (isDone) card.classList.add('yapildi');
 
     // --- BURASI KRİTİK: Kartın tamamına tıklama engeli koyuyoruz ---
@@ -483,7 +486,7 @@ gunlukVeriler.ozeller.forEach((o, oIdx) => {
 card.innerHTML = `
     <span class="arsiv-mini-btn" 
           onclick="event.stopPropagation(); window.arsivle('${o.id}')" 
-          style="position:absolute; bottom:5px; right:5px; top:auto; font-size:12px; opacity:0.3; cursor:pointer; padding:5px; z-index:5;">
+          style="position:absolute; bottom:2px; right:2px; font-size:11px; opacity:0.3; cursor:pointer; padding:3px; z-index:10; line-height:1;">
           📦
     </span>
     ${wHtml}
