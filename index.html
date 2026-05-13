@@ -32,6 +32,23 @@
     <div style="display: flex; align-items: center; justify-content: space-between;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 20px;">🔔</span>
+			<div class="setting-item" style="margin: 10px; padding: 15px; background: rgba(255,255,255,0.08); border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+    <span style="font-size: 14px; color: #fff;">🔔 Bildirimleri Göster:</span>
+    <label class="switch">
+        <input type="checkbox" id="bildirimDurumCheck" onchange="window.bildirimDurumKaydet(this.checked)">
+        <span class="slider round"></span>
+    </label>
+</div>
+
+<style>
+/* Basit Switch Tasarımı */
+.switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #3498db; }
+input:checked + .slider:before { transform: translateX(26px); }
+</style>
             <div>
                 <b style="display: block; font-size: 14px;">Hatırlatma</b>
                 <span id="icBildirimMesaj" style="font-size: 12px; opacity: 0.9;">Bugünkü amellerini girmeyi unutma!</span>
@@ -1342,41 +1359,53 @@ setInterval(() => {
     }
 }, 30000);
 
+// 1. Bildirim durumunu kaydet
+window.bildirimDurumKaydet = (durum) => {
+    localStorage.setItem('amel_bildirim_aktif', durum);
+    if(durum) window.icBildirimKontrol(); // Açar açmaz kontrol et
+};
+
+// 2. Kontrol fonksiyonunu güncelle
 window.icBildirimKontrol = () => {
-    const simdi = new Date();
-    const bugunKey = getLocalKey(simdi);
-    const suAnkiDakika = simdi.getHours() * 60 + simdi.getMinutes();
+    // GENEL KAPATMA KONTROLÜ: Kullanıcı ayardan kapattıysa direkt çık
+    const bildirimAktif Mi = localStorage.getItem('amel_bildirim_aktif') !== 'false'; // Varsayılan true
+    const panel = document.getElementById('icBildirimPaneli');
     
-    // 1. Kullanıcı bugün bu paneli zaten kapattı mı?
-    const panelKapandiMi = localStorage.getItem('panel_kapandi_' + bugunKey);
-    if (panelKapandiMi) {
-        document.getElementById('icBildirimPaneli').style.display = 'none';
+    if (!bildirimAktifMi) {
+        if(panel) panel.style.display = 'none';
         return; 
     }
 
+    const simdi = new Date();
+    const bugunKey = getLocalKey(simdi);
+    
+    // 3. GÜNLÜK KAPATMA KONTROLÜ: X'e basıp bugünü mü kapattı?
+    if (localStorage.getItem('panel_kapandi_' + bugunKey)) {
+        if(panel) panel.style.display = 'none';
+        return;
+    }
+
+    const suAnkiDakika = simdi.getHours() * 60 + simdi.getMinutes();
     const ayarliZaman = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
     const [h, m] = ayarliZaman.split(':').map(Number);
     const ayarliDakika = h * 60 + m;
 
-    const panel = document.getElementById('icBildirimPaneli');
-    
     if (suAnkiDakika >= ayarliDakika) {
         const bugunVeri = JSON.parse(localStorage.getItem(bugunKey));
-        // Veri girilmediyse paneli göster
         if (!bugunVeri || !bugunVeri.ozeller || !bugunVeri.ozeller.some(o => o.durum > 0 || o.durum === "evet")) {
-            panel.style.display = 'block';
+            if(panel) panel.style.display = 'block';
         } else {
-            panel.style.display = 'none';
+            if(panel) panel.style.display = 'none';
         }
     }
 };
 
-// Kapatma butonuna basınca bugüne özel "gösterme" notu düşen yeni fonksiyon
-window.icBildirimiKapat = () => {
-    const bugunKey = getLocalKey(new Date());
-    localStorage.setItem('panel_kapandi_' + bugunKey, 'true'); // Hafızaya al
-    document.getElementById('icBildirimPaneli').style.display = 'none';
-};
+// Sayfa yüklendiğinde switch durumunu geri yükle
+window.addEventListener('DOMContentLoaded', () => {
+    const durum = localStorage.getItem('amel_bildirim_aktif') !== 'false';
+    const check = document.getElementById('bildirimDurumCheck');
+    if (check) check.checked = durum;
+});
 	// Sayfa ilk açıldığında kontrol et
 window.addEventListener('DOMContentLoaded', window.icBildirimKontrol);
 
