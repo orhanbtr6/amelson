@@ -1433,7 +1433,15 @@ window.icBildirimKontrol = () => {
 };
 // Sayfa yüklendiğinde switch durumunu geri yükle
 // --- OTOMATİK KONTROL MEKANİZMASI ---
-
+window.bildirimDurumKaydet = (durum) => {
+    // durumu "true" veya "false" (metin) olarak kaydeder
+    localStorage.setItem('amel_bildirim_aktif', durum);
+    console.log("Bildirim tercihi kaydedildi:", durum);
+    
+    if (typeof window.icBildirimKontrol === "function") {
+        window.icBildirimKontrol();
+    }
+};
 // 1. Sayfa yüklendiğinde çalıştır
 window.addEventListener('DOMContentLoaded', () => {
     // Ayarları yükle
