@@ -42,11 +42,7 @@
     </div>
 </div>
 
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-</style>
+
 	<div id="vakitList"></div>
     <div id="ozelList" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px; margin-top:5px;"></div>
 </div>
@@ -126,8 +122,14 @@
             slider.style.boxShadow = 'none';
         }
     });
+	<style>
+	@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
 </script>
-<style>
+
 		<button class="nav-btn" style="width:100%; margin-bottom:10px;" onclick="exportData()">💾 Yedekle</button>
         <button class="nav-btn" style="width:100%;" onclick="importData()">📂 Geri Yükle</button>
     </div>
