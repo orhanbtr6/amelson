@@ -1406,11 +1406,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const check = document.getElementById('bildirimDurumCheck');
     if (check) check.checked = durum;
 });
-	// Sayfa ilk açıldığında kontrol et
-window.addEventListener('DOMContentLoaded', window.icBildirimKontrol);
 
-// Her 1 dakikada bir (arka planda) tekrar kontrol et
-setInterval(window.icBildirimKontrol, 60000);
 	// Olay Dinleyicileri
 el.addEventListener('mousedown', dragStart);
 document.addEventListener('mousemove', dragMove);
