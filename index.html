@@ -1362,44 +1362,53 @@ setInterval(() => {
 // 1. Bildirim durumunu kaydet
 window.bildirimDurumKaydet = (durum) => {
     localStorage.setItem('amel_bildirim_aktif', durum);
-    if(durum) window.icBildirimKontrol(); // Açar açmaz kontrol et
+    if(durum) {
+        window.icBildirimKontrol(); 
+    } else {
+        const panel = document.getElementById('icBildirimPaneli');
+        if(panel) panel.style.display = 'none';
+    }
 };
 
 // 2. Kontrol fonksiyonunu güncelle
 window.icBildirimKontrol = () => {
-    // GENEL KAPATMA KONTROLÜ: Kullanıcı ayardan kapattıysa direkt çık
-    const bildirimAktif Mi = localStorage.getItem('amel_bildirim_aktif') !== 'false'; // Varsayılan true
+    // BURADAKİ BOŞLUK DÜZELTİLDİ: bildirimAktifMi
+    const bildirimAktifMi = localStorage.getItem('amel_bildirim_aktif') !== 'false'; 
     const panel = document.getElementById('icBildirimPaneli');
     
+    if (!panel) return; // Panel henüz HTML'de yoksa hata verme
+
     if (!bildirimAktifMi) {
-        if(panel) panel.style.display = 'none';
+        panel.style.display = 'none';
         return; 
     }
 
     const simdi = new Date();
     const bugunKey = getLocalKey(simdi);
     
-    // 3. GÜNLÜK KAPATMA KONTROLÜ: X'e basıp bugünü mü kapattı?
+    // 3. GÜNLÜK KAPATMA KONTROLÜ
     if (localStorage.getItem('panel_kapandi_' + bugunKey)) {
-        if(panel) panel.style.display = 'none';
+        panel.style.display = 'none';
         return;
     }
 
-    const suAnkiDakika = simdi.getHours() * 60 + simdi.getMinutes();
+    const suAnkiDakika = (simdi.getHours() * 60) + simdi.getMinutes();
     const ayarliZaman = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
-    const [h, m] = ayarliZaman.split(':').map(Number);
-    const ayarliDakika = h * 60 + m;
+    const zamanParcalari = ayarliZaman.split(':');
+    const ayarliDakika = (parseInt(zamanParcalari[0]) * 60) + parseInt(zamanParcalari[1]);
 
     if (suAnkiDakika >= ayarliDakika) {
         const bugunVeri = JSON.parse(localStorage.getItem(bugunKey));
-        if (!bugunVeri || !bugunVeri.ozeller || !bugunVeri.ozeller.some(o => o.durum > 0 || o.durum === "evet")) {
-            if(panel) panel.style.display = 'block';
+        // Eğer veri yoksa veya amellerin içi boşsa paneli göster
+        if (!bugunVeri || !bugunVeri.ozeller || !bugunVeri.ozeller.some(o => (o.durum > 0 && o.durum !== "") || o.durum === "evet")) {
+            panel.style.display = 'block';
         } else {
-            if(panel) panel.style.display = 'none';
+            panel.style.display = 'none';
         }
+    } else {
+        panel.style.display = 'none';
     }
 };
-
 // Sayfa yüklendiğinde switch durumunu geri yükle
 window.addEventListener('DOMContentLoaded', () => {
     const durum = localStorage.getItem('amel_bildirim_aktif') !== 'false';
