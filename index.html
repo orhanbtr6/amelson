@@ -1423,37 +1423,42 @@ window.icBildirimKontrol = () => {
     }
 };
 // Sayfa yüklendiğinde switch durumunu geri yükle
+// --- OTOMATİK KONTROL MEKANİZMASI ---
+
+// 1. Sayfa yüklendiğinde çalıştır
 window.addEventListener('DOMContentLoaded', () => {
-    // 1. Saat ayarını yükle
-    const kaydedilenSaat = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
-    if (document.getElementById('hatirlatmaSaatiInput')) {
-        document.getElementById('hatirlatmaSaatiInput').value = kaydedilenSaat;
-    }
-
-    // 2. Bildirim Switch durumunu yükle
-    const durum = localStorage.getItem('amel_bildirim_aktif') !== 'false'; // Varsayılan: Açık
-    const check = document.getElementById('bildirimDurumCheck');
-    const checkBtn = document.getElementById('bildirimDurumCheck');
-	const slider = document.getElementById('sliderBtn');
-
-if (checkBtn) {
-    checkBtn.addEventListener('change', function() {
-        if(this.checked) {
-            slider.style.backgroundColor = '#3498db';
-        } else {
-            slider.style.backgroundColor = '#ccc';
-        }
-    });
-}
-    if (check && slider) {
-        check.checked = durum;
-        slider.style.backgroundColor = durum ? '#3498db' : '#ccc';
-    }
+    // Ayarları yükle
+    const kaydedilenSaat = localStorage.getItem('hatirlatmaSaati') || "21:30";
+    const durum = localStorage.getItem('amel_bildirim_aktif') !== 'false';
     
-    // 3. İlk kontrolü yap
+    if (document.getElementById('hatirlatmaSaatiInput')) 
+        document.getElementById('hatirlatmaSaatiInput').value = kaydedilenSaat;
+        
+    if (document.getElementById('bildirimDurumCheck'))
+        document.getElementById('bildirimDurumCheck').checked = durum;
+
+    // İlk kontrolü yap
     window.icBildirimKontrol();
 });
 
+// 2. Uygulamaya her geri dönüldüğünde (Arka plandan açıldığında) kontrol et
+window.addEventListener('focus', () => {
+    console.log("Uygulamaya geri dönüldü, bildirimler kontrol ediliyor...");
+    window.icBildirimKontrol();
+});
+
+// 3. Ekran görünürlüğü değiştiğinde kontrol et (Mobil tarayıcılar için daha sağlamdır)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        window.icBildirimKontrol();
+    }
+});
+
+// 4. Uygulama açıkken her 60 saniyede bir otomatik kontrol et
+// Böylece sen uygulamada gezinirken saat dolarsa panel anında "pıt" diye açılır
+setInterval(() => {
+    window.icBildirimKontrol();
+}, 60000);
 	// Olay Dinleyicileri
 el.addEventListener('mousedown', dragStart);
 document.addEventListener('mousemove', dragMove);
