@@ -1370,47 +1370,49 @@ setInterval(() => {
     }
 }, 30000);
 
-// 1. Bildirim durumunu kaydet
-window.bildirimDurumKaydet = (durum) => {
-    localStorage.setItem('amel_bildirim_aktif', durum);
-    if(durum) {
-        window.icBildirimKontrol(); 
-    } else {
-        const panel = document.getElementById('icBildirimPaneli');
-        if(panel) panel.style.display = 'none';
-    }
+// 1. X butonuna basınca çalışacak olan fonksiyon
+window.icBildirimiKapat = () => {
+    const simdi = new Date();
+    const bugunKey = getLocalKey(simdi);
+    // Bugün için kapandığını hafızaya al
+    localStorage.setItem('panel_kapandi_' + bugunKey, 'true');
+    
+    // Paneli ekrandan kaldır
+    const panel = document.getElementById('icBildirimPaneli');
+    if (panel) panel.style.display = 'none';
+    console.log("Panel bugünlük kapatıldı.");
 };
 
-// 2. Kontrol fonksiyonunu güncelle
+// 2. Kontrol Mekanizması (Güncellendi)
 window.icBildirimKontrol = () => {
-    // BURADAKİ BOŞLUK DÜZELTİLDİ: bildirimAktifMi
-    const bildirimAktifMi = localStorage.getItem('amel_bildirim_aktif') !== 'false'; 
     const panel = document.getElementById('icBildirimPaneli');
-    
-    if (!panel) return; // Panel henüz HTML'de yoksa hata verme
+    if (!panel) return;
 
+    // Ayarlardan genel olarak kapatıldıysa asla gösterme
+    const bildirimAktifMi = localStorage.getItem('amel_bildirim_aktif') !== 'false';
     if (!bildirimAktifMi) {
         panel.style.display = 'none';
-        return; 
+        return;
     }
 
     const simdi = new Date();
     const bugunKey = getLocalKey(simdi);
     
-    // 3. GÜNLÜK KAPATMA KONTROLÜ
+    // X ile bugünlük kapatıldıysa gösterme
     if (localStorage.getItem('panel_kapandi_' + bugunKey)) {
         panel.style.display = 'none';
         return;
     }
 
+    // Saat kontrolü
     const suAnkiDakika = (simdi.getHours() * 60) + simdi.getMinutes();
     const ayarliZaman = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
-    const zamanParcalari = ayarliZaman.split(':');
-    const ayarliDakika = (parseInt(zamanParcalari[0]) * 60) + parseInt(zamanParcalari[1]);
+    const [h, m] = ayarliZaman.split(':').map(Number);
+    const ayarliDakika = (h * 60) + m;
 
     if (suAnkiDakika >= ayarliDakika) {
         const bugunVeri = JSON.parse(localStorage.getItem(bugunKey));
-        // Eğer veri yoksa veya amellerin içi boşsa paneli göster
+        // Ameller girilmediyse göster
         if (!bugunVeri || !bugunVeri.ozeller || !bugunVeri.ozeller.some(o => (o.durum > 0 && o.durum !== "") || o.durum === "evet")) {
             panel.style.display = 'block';
         } else {
