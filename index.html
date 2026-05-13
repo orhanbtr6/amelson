@@ -1330,8 +1330,17 @@ window.bildirimIzinIste = () => {
 // 1. Kullanıcının seçtiği saati localStorage'a kaydeder
 window.saatKaydet = (yeniSaat) => {
     localStorage.setItem('amel_hatirlatma_saati', yeniSaat);
-    // Küçük bir görsel onay (isteğe bağlı)
-    console.log("Hatırlatma saati ayarlandı: " + yeniSaat);
+    
+    // KRİTİK EKLEME: Saat değiştiği an "Bugünlük kapatıldı" mührünü siliyoruz
+    const bugunKey = getLocalKey(new Date());
+    localStorage.removeItem('panel_kapandi_' + bugunKey);
+    
+    console.log("Saat değişti, kapatma hafızası sıfırlandı: " + yeniSaat);
+    
+    // Paneli yeni saate göre hemen kontrol et
+    if (typeof window.icBildirimKontrol === "function") {
+        window.icBildirimKontrol();
+    }
 };
 
 // 2. Uygulama her açıldığında kaydedilen saati input'a geri yazar
