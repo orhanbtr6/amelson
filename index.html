@@ -1491,8 +1491,16 @@ el.addEventListener('touchstart', dragStart, { passive: false });
 document.addEventListener('touchmove', dragMove, { passive: false });
 document.addEventListener('touchend', dragEnd);
 //yeni kodlar hatırlatıcı için-----------------
-	window.dunRaporuGoster = () => {
+window.dunRaporuGoster = () => {
     const simdi = new Date();
+    
+    // --- 1. GÜNDE BİR KEZ GÖSTERME KONTROLÜ ---
+    const bugunKey = getLocalKey(simdi); // Örn: amel_2026-05-14
+    const raporKontrolKey = "rapor_gosterildi_" + bugunKey;
+    
+    // Eğer bugün bu rapor zaten kapatıldıysa (TAMAM'a basıldıysa) çalışma
+    if (localStorage.getItem(raporKontrolKey) === "evet") return;
+
     const dun = new Date(simdi);
     dun.setDate(simdi.getDate() - 1);
     
@@ -1506,7 +1514,7 @@ document.addEventListener('touchend', dragEnd);
     let eksikSayisi = 0;
     let eksikIsimleri = [];
 
-    // 1. ÖZEL AMELLERİ SAY (Çalışan eski mantığın)
+    // 1. ÖZEL AMELLERİ SAY
     if (dunVeri.ozeller) {
         dunVeri.ozeller.forEach(o => {
             if (o.arsiv) return;
@@ -1518,12 +1526,11 @@ document.addEventListener('touchend', dragEnd);
         });
     }
 
-    // 2. NAMAZLARI SAY (Farz durumuna göre: durumlar[0])
+    // 2. NAMAZLARI SAY
     if (dunVeri.vakitler) {
-        // İsim listesi yoksa hata vermemesi için biz tanımlayalım
         const vAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
         dunVeri.vakitler.forEach((v, idx) => {
-            if (v.durumlar && v.durumlar[0] === 0) { // Farz kılınmamışsa
+            if (v.durumlar && v.durumlar[0] === 0) {
                 eksikSayisi++;
                 eksikIsimleri.push(vAdlari[idx]);
             }
@@ -1532,20 +1539,44 @@ document.addEventListener('touchend', dragEnd);
 
     // EĞER EKSİK VARSA GÖSTER
     if (eksikSayisi > 0) {
+        // --- 2. KAYDIRMA (SCROLL) SORUNU İÇİN CSS EKLEMESİ ---
+        // Bu kod, içeriğin footer'ın arkasından geçmesini engelleyen görünmez duvarı örer.
+        const styleEk = document.createElement('style');
+        styleEk.innerHTML = `
+            #dunOzetPaneli { 
+                position: relative; 
+                z-index: 5; 
+                border: 2px solid #f1c40f;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            }
+            .container { 
+                padding-bottom: 140px !important; /* Footer'a çarptığı yer */
+                overflow-y: auto;
+            }
+        `;
+        document.head.appendChild(styleEk);
+
         konteyner.innerHTML = `
-            <div id="dunOzetPaneli" style="display: block; background: #2c3e50; color: white; padding: 15px; border-radius: 10px; border: 2px solid #f1c40f; margin: 10px;">
+            <div id="dunOzetPaneli" style="display: block; background: #2c3e50; color: white; padding: 15px; border-radius: 15px; margin: 10px;">
                 <b style="color:#f1c40f">🌙 DÜNÜN RAPORU</b><br>
                 Dünden kalan <b>${eksikSayisi}</b> eksik görevin var.<br>
                 <small style="color:#ccc">${eksikIsimleri.slice(0,3).join(", ")}${eksikIsimleri.length > 3 ? '...' : ''}</small>
                 <div style="margin-top:10px">
-                    <button onclick="document.getElementById('dunOzetPaneli').style.display='none'" style="background:#f1c40f; border:none; padding:5px 10px; border-radius:5px; font-weight:bold;">TAMAM</button>
+                    <button onclick="raporuKapat('${raporKontrolKey}')" style="background:#f1c40f; border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer;">TAMAM, ANLADIM</button>
                 </div>
             </div>
         `;
     }
 };
 
-// Fonksiyonu çağırmayı unutmayalım
+// --- 3. RAPORU KAPATMA VE HAFIZAYA ALMA ---
+window.raporuKapat = (key) => {
+    localStorage.setItem(key, "evet"); // Bugün bir daha gösterme
+    const panel = document.getElementById('dunOzetPaneli');
+    if (panel) panel.style.display = 'none';
+};
+
+// Sayfa yüklendiğinde çalıştır
 window.dunRaporuGoster();
 </script>
 </body>
