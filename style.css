@@ -83,7 +83,8 @@ body { margin: 0; padding: 10px; color: white; font-family: sans-serif; backgrou
     flex: 1; /* Kalan tüm alanı kapla */
     overflow-y: auto; /* İçerik sığmazsa sadece burası kaysın */
     padding-bottom: 20px; /* En alttaki kartın footer'a yapışmaması için */
-    
+    padding-bottom: 100px !important; /* Menünün yüksekliğinden biraz fazla boşluk */
+    box-sizing: border-box;
     /* Kaydırma çubuğunu gizlemek istersen (daha mobil hissi verir) */
     -ms-overflow-style: none;  
     scrollbar-width: none; 
