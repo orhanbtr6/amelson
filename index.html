@@ -1492,94 +1492,84 @@ document.addEventListener('touchend', dragEnd);
     dun.setDate(simdi.getDate() - 1);
     
     const dunKey = getLocalKey(dun);
-    const dunVeri = JSON.parse(localStorage.getItem(dunKey));
+    const dunVeriRaw = localStorage.getItem(dunKey);
     const konteyner = document.getElementById('dunOzetKonteyner');
 
-    let mesaj = "";
-    let eksikSayisi = 0;
-
-    // Kontrol Mekanizması
-    if (!dunVeri || !dunVeri.ozeller) {
-        mesaj = "Dün (Çarşamba) amellerini girmeyi unutmuşsun hocam!";
-        eksikSayisi = "Tüm";
-    } else {
-        const yapilmayanlar = dunVeri.ozeller.filter(o => !o.durum || o.durum === 0 || o.durum === "hayir");
-        if (yapilmayanlar.length > 0) {
-            eksikSayisi = yapilmayanlar.length;
-            mesaj = `Dünden kalan <b>${eksikSayisi}</b> eksik amelin bulunuyor. Lütfen geçmiş günleri ihmal etmeyelim.`;
-        }
+    if (!konteyner) return;
+    if (!dunVeriRaw) {
+        gosterRapor("Dün amellerinizi girmeyi tamamen unutmuşsunuz hocam!", "Hepsi");
+        return;
     }
 
-    // Eğer eksik varsa kutuyu oluştur ve göster
-    if (mesaj !== "") {
-        konteyner.innerHTML = `
-            <div id="dunOzetPaneli" style="display: block;">
-                <span class="ozet-baslik">🌙 DÜNÜN ÖZETİ & UYARI</span>
-                <p>${mesaj}</p>
-                <div class="ozet-butonlar">
-                    <button class="git-btn" onclick="sayfaDegistir('takvim')">📅 DÜNE GİT VE DOLDUR</button>
-                    <button class="kapat-btn" onclick="this.parentElement.parentElement.style.display='none'">ANLADIM, KAPAT</button>
-                </div>
+    const dunVeri = JSON.parse(dunVeriRaw);
+    let eksikIsimleri = [];
+
+    // 1. NAMAZLARI (VAKİTLERİ) KONTROL ET
+    // Senin yapında: v.durumlar[0] -> Farz, [1] -> Sünnet, [2] -> Tesbihat
+    if (dunVeri.vakitler) {
+        const vakitIsimleri = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
+        dunVeri.vakitler.forEach((v, idx) => {
+            // Farz (durumlar[0]) kılınmamışsa (0 ise) eksik say
+            if (v.durumlar[0] === 0) {
+                eksikIsimleri.push(vakitIsimleri[idx] + " Namazı");
+            }
+        });
+    }
+
+    // 2. ÖZEL AMELLERİ KONTROL ET
+    if (dunVeri.ozeller) {
+        dunVeri.ozeller.forEach(o => {
+            if (o.arsiv) return; // Arşivlenmişse sayma
+            
+            // Senin render mantığındaki "isDone" kontrolünün tersi
+            const yapildiMi = (o.tip === 'sayi' && Number(o.durum) > 0) || 
+                             (o.tip === 'renk' && Number(o.durum) > 0);
+            
+            if (!yapildiMi) {
+                eksikIsimleri.push(o.ad);
+            }
+        });
+    }
+
+    // SONUÇ: Eğer eksik varsa raporu bas
+    if (eksikIsimleri.length > 0) {
+        let ozetListe = eksikIsimleri.slice(0, 3).join(", ");
+        if (eksikIsimleri.length > 3) ozetListe += "...";
+        
+        gosterRapor(
+            `Dünden kalan <b>${eksikIsimleri.length}</b> eksik göreviniz bulunuyor.`, 
+            eksikIsimleri.length, 
+            ozetListe
+        );
+    }
+};
+
+// HTML'e basan yardımcı fonksiyon (CSS'inle uyumlu)
+function gosterRapor(mesaj, sayi, liste) {
+    const konteyner = document.getElementById('dunOzetKonteyner');
+    konteyner.innerHTML = `
+        <div id="dunOzetPaneli" style="display: block; border-left: 5px solid #f1c40f;">
+            <span class="ozet-baslik">🌙 DÜNÜN RAPORU</span>
+            <p>${mesaj}</p>
+            <p style="font-size: 12px; color: #ccc;">Eksikler: ${liste}</p>
+            <div class="ozet-butonlar">
+                <button class="git-btn" onclick="gitDune()">📅 DÜNE GİT</button>
+                <button class="kapat-btn" onclick="this.parentElement.parentElement.style.display='none'">ANLADIM</button>
             </div>
-        `;
-    }
-};
-
-// Uygulama açıldığında çalıştır
-window.addEventListener('DOMContentLoaded', () => {
-    window.dunRaporuGoster();
-});
-	window.dunKontrolEt = () => {
-    const simdi = new Date();
-    // Dünün tarihini alıyoruz
-    const dun = new Date(simdi);
-    dun.setDate(simdi.getDate() - 1);
-    
-    const dunKey = getLocalKey(dun); // Daha önce yazdığımız tarih formatlama fonksiyonu
-    const dunVeri = JSON.parse(localStorage.getItem(dunKey));
-    
-    // Eğer dünkü veri hiç yoksa veya ameller listesi boşsa/eksikse
-    if (!dunVeri || !dunVeri.ozeller) {
-        return { durum: "veri_yok", mesaj: "Dünkü kayıtlarını hiç girmemişsin hocam." };
-    }
-
-    // Yapılmayanları (durumu 0 veya boş olanları) filtrele
-    const yapilmayanlar = dunVeri.ozeller.filter(o => !o.durum || o.durum === 0 || o.durum === "hayir");
-
-    if (yapilmayanlar.length > 0) {
-        return {
-            durum: "eksik_var",
-            sayi: yapilmayanlar.length,
-            liste: yapilmayanlar.map(o => o.baslik).join(", ")
-        };
-    }
-
-    return { durum: "tamam" };
-};
-
-	// Uygulama açılışında çalışacak
-const dunSonuc = window.dunKontrolEt();
-
-if (dunSonuc.durum !== "tamam") {
-    let uyarıMetni = "";
-    
-    if (dunSonuc.durum === "veri_yok") {
-        uyarıMetni = "Dün amellerini hiç kaydetmemişsin. Eksik bırakmayalım!";
-    } else {
-        uyarıMetni = `Dünden kalan <b>${dunSonuc.sayi}</b> eksik amelin var: <br><small>${dunSonuc.liste}</small>`;
-    }
-
-    // Ekrana şık bir uyarı çıkar (SweetAlert veya kendi panelinle)
-    // Örnek basit bir div gösterimi:
-    document.getElementById('ozetPaneli').innerHTML = `
-        <div style="background: #e74c3c; color: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
-            <p>🌙 <b>Dünün Özeti:</b></p>
-            <p>${uyarıMetni}</p>
-            <button onclick="this.parentElement.style.display='none'" style="background: white; color: #e74c3c; border:none; border-radius:5px; padding:5px 10px;">Anladım, Bugün Tamamlayacağım</button>
         </div>
     `;
 }
 
+// Düne gitmek için yardımcı fonksiyon
+function gitDune() {
+    const dun = new Date();
+    dun.setDate(dun.getDate() - 1);
+    // Senin takvim sistemindeki tarihi değiştirme fonksiyonun (muhtemelen setDate veya benzeri)
+    if (typeof seciliTarih !== 'undefined') {
+        seciliTarih = dun;
+        render(); // Sayfayı dünkü verilerle tekrar çiz
+    }
+}
 </script>
 </body>
 </html>
