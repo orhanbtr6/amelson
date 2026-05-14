@@ -79,7 +79,7 @@ body {
     margin: 0;
     padding: 0;
     color: white;
-    font-family: 'Vollkorn', serif; /* Senin fontun */
+    font-family: 'Nunito', sans-serif;
     background-color: #0b3d59;
     height: 100vh; /* Ekran boyuna sabitle */
     display: flex;
