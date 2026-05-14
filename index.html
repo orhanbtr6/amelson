@@ -558,7 +558,7 @@ function render() {
                     value="${o.durum === 0 ? "" : o.durum}" 
                     style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px; 
                            ${(typeof isFuture === "function" && isFuture()) ? 'pointer-events: none; opacity: 0.3;' : ''}" 
-                    onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
+                    oninput="window.sayiGuncelle(${oIdx}, this.value)">` : 
                 `<div class="circle s${o.durum}" 
                       style="width:26px; height:26px; margin:auto; ${(typeof isFuture === "function" && isFuture()) ? 'pointer-events: none; opacity: 0.3;' : ''}" 
                       onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
