@@ -28,6 +28,7 @@
             <button class="info-btn" onclick="window.showHelp()">i</button>
         </div>
     </div>
+	<div id="dunOzetKonteyner"></div>
 <div id="icBildirimPaneli" style="display:none; margin: 10px; padding: 12px; background: linear-gradient(135deg, #2c3e50, #2980b9); color: white; border-radius: 10px; border-left: 5px solid #f39c12; box-shadow: 0 4px 15px rgba(0,0,0,0.3); animation: slideIn 0.5s ease-out;">
     <div style="display: flex; align-items: center; justify-content: space-between;">
         <div style="display: flex; align-items: center; gap: 10px;">
@@ -1484,7 +1485,50 @@ document.addEventListener('mouseup', dragEnd);
 el.addEventListener('touchstart', dragStart, { passive: false });
 document.addEventListener('touchmove', dragMove, { passive: false });
 document.addEventListener('touchend', dragEnd);
+//yeni kodlar hatırlatıcı için-----------------
+	window.dunRaporuGoster = () => {
+    const simdi = new Date();
+    const dun = new Date(simdi);
+    dun.setDate(simdi.getDate() - 1);
+    
+    const dunKey = getLocalKey(dun);
+    const dunVeri = JSON.parse(localStorage.getItem(dunKey));
+    const konteyner = document.getElementById('dunOzetKonteyner');
 
+    let mesaj = "";
+    let eksikSayisi = 0;
+
+    // Kontrol Mekanizması
+    if (!dunVeri || !dunVeri.ozeller) {
+        mesaj = "Dün (Çarşamba) amellerini girmeyi unutmuşsun hocam!";
+        eksikSayisi = "Tüm";
+    } else {
+        const yapilmayanlar = dunVeri.ozeller.filter(o => !o.durum || o.durum === 0 || o.durum === "hayir");
+        if (yapilmayanlar.length > 0) {
+            eksikSayisi = yapilmayanlar.length;
+            mesaj = `Dünden kalan <b>${eksikSayisi}</b> eksik amelin bulunuyor. Lütfen geçmiş günleri ihmal etmeyelim.`;
+        }
+    }
+
+    // Eğer eksik varsa kutuyu oluştur ve göster
+    if (mesaj !== "") {
+        konteyner.innerHTML = `
+            <div id="dunOzetPaneli" style="display: block;">
+                <span class="ozet-baslik">🌙 DÜNÜN ÖZETİ & UYARI</span>
+                <p>${mesaj}</p>
+                <div class="ozet-butonlar">
+                    <button class="git-btn" onclick="sayfaDegistir('takvim')">📅 DÜNE GİT VE DOLDUR</button>
+                    <button class="kapat-btn" onclick="this.parentElement.parentElement.style.display='none'">ANLADIM, KAPAT</button>
+                </div>
+            </div>
+        `;
+    }
+};
+
+// Uygulama açıldığında çalıştır
+window.addEventListener('DOMContentLoaded', () => {
+    window.dunRaporuGoster();
+});
 	window.dunKontrolEt = () => {
     const simdi = new Date();
     // Dünün tarihini alıyoruz
