@@ -75,33 +75,9 @@
 			}   
 		:root { --bg: #062619; --card: rgba(255, 255, 255, 0.07); --glass-border: rgba(255, 255, 255, 0.12); --light-green: #90ee90; --dark-green: #3F914E; --red: #e74c3c; --orange: #f39c12; --blue: #3498db; --today-border: #90ee90; }
 		* { box-sizing: border-box; }
-body { margin: 0; padding: 10px; color: white; font-family: sans-serif; background-color: #0b3d59;  overflow: hidden; min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; }		
+body { margin: 0; padding: 10px; color: white; font-family: sans-serif; background-color: #0b3d59; min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; }		
 .container { width: 100%; max-width: 500px; margin: 0 auto; padding-bottom: 120px; }
-//son eklenen
 
-#anaIcerik {
-    flex: 1; /* Kalan tüm alanı kapla */
-    overflow-y: auto; /* İçerik sığmazsa sadece burası kaysın */
-    padding-bottom: 20px; /* En alttaki kartın footer'a yapışmaması için */
-    padding-bottom: 100px !important; /* Menünün yüksekliğinden biraz fazla boşluk */
-    box-sizing: border-box;
-    /* Kaydırma çubuğunu gizlemek istersen (daha mobil hissi verir) */
-    -ms-overflow-style: none;  
-    scrollbar-width: none; 
-}
-#anaIcerik::-webkit-scrollbar {
-    display: none; 
-}
-
-.alt-menu {
-    height: 70px; /* Footer'ın sabit yüksekliği */
-    background: #1e272e;
-    position: sticky;
-    bottom: 0;
-    width: 100%;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    z-index: 1000;
-}
 		.main-title { display: inline-block; font-size: 24px; font-weight: 800; color: #f1c40f; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
 		.habit-card, .nav-header, .ozel-kart { background: var(--card); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 12px; margin-bottom: 8px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); }
 .footer { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; background: rgba(13, 27, 42, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 40px; padding: 10px 18px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); border: 1.5px solid #1e88e5; z-index: 9000; justify-content: space-between; }
