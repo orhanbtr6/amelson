@@ -820,7 +820,9 @@ window.sayiGuncelle = (i, v) => {
     </div>`; 
     document.getElementById('statModal').style.display = 'flex'; 
 };
-    window.exportData = () => { let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
+    window.exportData = () => { if (typeof render === "function") {
+        render(); 
+    }let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
   window.importData = () => {
     let i = document.createElement('input');
     i.type = 'file';
