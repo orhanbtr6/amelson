@@ -1495,81 +1495,53 @@ document.addEventListener('touchend', dragEnd);
     const dunVeriRaw = localStorage.getItem(dunKey);
     const konteyner = document.getElementById('dunOzetKonteyner');
 
-    if (!konteyner) return;
-    if (!dunVeriRaw) {
-        gosterRapor("Dün amellerinizi girmeyi tamamen unutmuşsunuz hocam!", "Hepsi");
-        return;
-    }
+    if (!konteyner || !dunVeriRaw) return;
 
     const dunVeri = JSON.parse(dunVeriRaw);
+    let eksikSayisi = 0;
     let eksikIsimleri = [];
 
-    // 1. NAMAZLARI (VAKİTLERİ) KONTROL ET
-    // Senin yapında: v.durumlar[0] -> Farz, [1] -> Sünnet, [2] -> Tesbihat
-    if (dunVeri.vakitler) {
-        const vakitIsimleri = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
-        dunVeri.vakitler.forEach((v, idx) => {
-            // Farz (durumlar[0]) kılınmamışsa (0 ise) eksik say
-            if (v.durumlar[0] === 0) {
-                eksikIsimleri.push(vakitIsimleri[idx] + " Namazı");
-            }
-        });
-    }
-
-    // 2. ÖZEL AMELLERİ KONTROL ET
+    // 1. ÖZEL AMELLERİ SAY (Çalışan eski mantığın)
     if (dunVeri.ozeller) {
         dunVeri.ozeller.forEach(o => {
-            if (o.arsiv) return; // Arşivlenmişse sayma
-            
-            // Senin render mantığındaki "isDone" kontrolünün tersi
-            const yapildiMi = (o.tip === 'sayi' && Number(o.durum) > 0) || 
-                             (o.tip === 'renk' && Number(o.durum) > 0);
-            
+            if (o.arsiv) return;
+            const yapildiMi = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
             if (!yapildiMi) {
+                eksikSayisi++;
                 eksikIsimleri.push(o.ad);
             }
         });
     }
 
-    // SONUÇ: Eğer eksik varsa raporu bas
-    if (eksikIsimleri.length > 0) {
-        let ozetListe = eksikIsimleri.slice(0, 3).join(", ");
-        if (eksikIsimleri.length > 3) ozetListe += "...";
-        
-        gosterRapor(
-            `Dünden kalan <b>${eksikIsimleri.length}</b> eksik göreviniz bulunuyor.`, 
-            eksikIsimleri.length, 
-            ozetListe
-        );
+    // 2. NAMAZLARI SAY (Farz durumuna göre: durumlar[0])
+    if (dunVeri.vakitler) {
+        // İsim listesi yoksa hata vermemesi için biz tanımlayalım
+        const vAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
+        dunVeri.vakitler.forEach((v, idx) => {
+            if (v.durumlar && v.durumlar[0] === 0) { // Farz kılınmamışsa
+                eksikSayisi++;
+                eksikIsimleri.push(vAdlari[idx]);
+            }
+        });
+    }
+
+    // EĞER EKSİK VARSA GÖSTER
+    if (eksikSayisi > 0) {
+        konteyner.innerHTML = `
+            <div id="dunOzetPaneli" style="display: block; background: #2c3e50; color: white; padding: 15px; border-radius: 10px; border: 2px solid #f1c40f; margin: 10px;">
+                <b style="color:#f1c40f">🌙 DÜNÜN RAPORU</b><br>
+                Dünden kalan <b>${eksikSayisi}</b> eksik görevin var.<br>
+                <small style="color:#ccc">${eksikIsimleri.slice(0,3).join(", ")}${eksikIsimleri.length > 3 ? '...' : ''}</small>
+                <div style="margin-top:10px">
+                    <button onclick="document.getElementById('dunOzetPaneli').style.display='none'" style="background:#f1c40f; border:none; padding:5px 10px; border-radius:5px; font-weight:bold;">TAMAM</button>
+                </div>
+            </div>
+        `;
     }
 };
 
-// HTML'e basan yardımcı fonksiyon (CSS'inle uyumlu)
-function gosterRapor(mesaj, sayi, liste) {
-    const konteyner = document.getElementById('dunOzetKonteyner');
-    konteyner.innerHTML = `
-        <div id="dunOzetPaneli" style="display: block; border-left: 5px solid #f1c40f;">
-            <span class="ozet-baslik">🌙 DÜNÜN RAPORU</span>
-            <p>${mesaj}</p>
-            <p style="font-size: 12px; color: #ccc;">Eksikler: ${liste}</p>
-            <div class="ozet-butonlar">
-                <button class="git-btn" onclick="gitDune()">📅 DÜNE GİT</button>
-                <button class="kapat-btn" onclick="this.parentElement.parentElement.style.display='none'">ANLADIM</button>
-            </div>
-        </div>
-    `;
-}
-
-// Düne gitmek için yardımcı fonksiyon
-function gitDune() {
-    const dun = new Date();
-    dun.setDate(dun.getDate() - 1);
-    // Senin takvim sistemindeki tarihi değiştirme fonksiyonun (muhtemelen setDate veya benzeri)
-    if (typeof seciliTarih !== 'undefined') {
-        seciliTarih = dun;
-        render(); // Sayfayı dünkü verilerle tekrar çiz
-    }
-}
+// Fonksiyonu çağırmayı unutmayalım
+window.dunRaporuGoster();
 </script>
 </body>
 </html>
