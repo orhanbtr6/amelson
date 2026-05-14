@@ -833,16 +833,15 @@ window.sayiGuncelle = (i, v) => {
             try {
                 let d = JSON.parse(fr.result);
                 
-                // 1. ADIM: Mevcut karmaşayı temizle
-                // Sadece amel verilerini temizliyoruz ki ayarların gitmesin
+                // 1. ADIM: Eski verileri temizle
                 Object.keys(localStorage).forEach(k => {
                     if(k.startsWith('amel_')) localStorage.removeItem(k);
                 });
 
-                // 2. ADIM: Yedeği yükle
+                // 2. ADIM: Yedeği yükle (Sayılar ve işaretler burayla içeri girer)
                 Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
 
-                // 3. ADIM: Global Listeyi Tekilleştir (Mülk, Teravih vb. için)
+                // 3. ADIM: Global Listeyi Tekilleştir
                 let globalListe = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
                 let tekilGlobal = [];
                 let isimKontrol = new Set();
@@ -850,7 +849,7 @@ window.sayiGuncelle = (i, v) => {
                 globalListe.forEach(amel => {
                     let temizAd = amel.ad.trim();
                     if (!isimKontrol.has(temizAd)) {
-                        amel.arsiv = false; // Hepsini aktif yapıyoruz
+                        amel.arsiv = false; 
                         amel.ad = temizAd;
                         tekilGlobal.push(amel);
                         isimKontrol.add(temizAd);
@@ -858,23 +857,12 @@ window.sayiGuncelle = (i, v) => {
                 });
                 localStorage.setItem('amel_global_ozeller', JSON.stringify(tekilGlobal));
 
-                // 4. ADIM: Bugünün verisini tertemiz yeniden oluştur
-                // Çift kayıtları engellemenin en garantisi yolu bugünün listesini 
-                // sıfırdan global listeye göre kurmaktır.
-                let simdi = new Date();
-                let key = getLocalKey(simdi);
-                let bugun = JSON.parse(localStorage.getItem(key)) || {};
+                // 4. ADIM: VERİYİ SIFIRLAMADAN GÜNCELLE
+                // location.reload() zaten veriYukle() fonksiyonunu tetikleyeceği için 
+                // burada manuel olarak "bugun.ozeller"ı sıfırlamana GEREK YOK.
+                // Sadece sayfayı yenilemek yeterli olacak.
 
-                // Namaz vakitleri zaten standart, özelleri ise yeni tekil listeden alıyoruz
-                bugun.ozeller = tekilGlobal.map(g => ({
-                    ...g,
-                    durum: (g.tip === 'sayi' ? "" : 0),
-                    arsiv: false
-                }));
-
-                localStorage.setItem(key, JSON.stringify(bugun));
-
-                alert("Tüm mükerrer kayıtlar temizlendi ve verileriniz birleştirildi!");
+                alert("Veriler başarıyla yüklendi ve tekilleştirildi!");
                 location.reload(); 
 
             } catch (err) {
