@@ -1483,6 +1483,59 @@ document.addEventListener('mouseup', dragEnd);
 
 el.addEventListener('touchstart', dragStart, { passive: false });
 document.addEventListener('touchmove', dragMove, { passive: false });
-document.addEventListener('touchend', dragEnd);</script>
+document.addEventListener('touchend', dragEnd);
+
+	window.dunKontrolEt = () => {
+    const simdi = new Date();
+    // Dünün tarihini alıyoruz
+    const dun = new Date(simdi);
+    dun.setDate(simdi.getDate() - 1);
+    
+    const dunKey = getLocalKey(dun); // Daha önce yazdığımız tarih formatlama fonksiyonu
+    const dunVeri = JSON.parse(localStorage.getItem(dunKey));
+    
+    // Eğer dünkü veri hiç yoksa veya ameller listesi boşsa/eksikse
+    if (!dunVeri || !dunVeri.ozeller) {
+        return { durum: "veri_yok", mesaj: "Dünkü kayıtlarını hiç girmemişsin hocam." };
+    }
+
+    // Yapılmayanları (durumu 0 veya boş olanları) filtrele
+    const yapilmayanlar = dunVeri.ozeller.filter(o => !o.durum || o.durum === 0 || o.durum === "hayir");
+
+    if (yapilmayanlar.length > 0) {
+        return {
+            durum: "eksik_var",
+            sayi: yapilmayanlar.length,
+            liste: yapilmayanlar.map(o => o.baslik).join(", ")
+        };
+    }
+
+    return { durum: "tamam" };
+};
+
+	// Uygulama açılışında çalışacak
+const dunSonuc = window.dunKontrolEt();
+
+if (dunSonuc.durum !== "tamam") {
+    let uyarıMetni = "";
+    
+    if (dunSonuc.durum === "veri_yok") {
+        uyarıMetni = "Dün amellerini hiç kaydetmemişsin. Eksik bırakmayalım!";
+    } else {
+        uyarıMetni = `Dünden kalan <b>${dunSonuc.sayi}</b> eksik amelin var: <br><small>${dunSonuc.liste}</small>`;
+    }
+
+    // Ekrana şık bir uyarı çıkar (SweetAlert veya kendi panelinle)
+    // Örnek basit bir div gösterimi:
+    document.getElementById('ozetPaneli').innerHTML = `
+        <div style="background: #e74c3c; color: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+            <p>🌙 <b>Dünün Özeti:</b></p>
+            <p>${uyarıMetni}</p>
+            <button onclick="this.parentElement.style.display='none'" style="background: white; color: #e74c3c; border:none; border-radius:5px; padding:5px 10px;">Anladım, Bugün Tamamlayacağım</button>
+        </div>
+    `;
+}
+
+</script>
 </body>
 </html>
