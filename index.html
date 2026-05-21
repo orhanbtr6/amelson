@@ -439,8 +439,11 @@ window.analizEt = function() {
     const kaydedilmis = JSON.parse(localStorage.getItem(key));
     const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
     
-    // Bugünün tarihini string olarak alalım
-    const bugunStr = new Date().toISOString().split('T')[0];
+    // 1. DÜNÜN TARİHİNİ BULALIM (Sadece dün için işlem yapacağız)
+    const simdi = new Date();
+    const dun = new Date(simdi);
+    dun.setDate(simdi.getDate() - 1);
+    const dunStr = dun.toISOString().split('T')[0];
 
     // Global listeyi al
     const globalListe = getGlobalOzeller().filter(g => {
@@ -472,42 +475,65 @@ window.analizEt = function() {
         );
 
         // =================================================================
-        // 🔴 OTOMATİK KIRMIZIYA BOYAMA MANTIĞI (SADECE VERİ VARSA)
+        // 🔴 SADECE "DÜN" VE "EN AZ BİR İŞARETLİ AMEL VARSA" BOYAMA MANTIĞI
         // =================================================================
-        // İŞTE DEĞİŞİKLİK BURADA: Sadece 'kaydedilmis' veri varsa ve tarih dündeyse çalışacak!
-        if (seciliTarihStr < bugunStr) {
-            let degisiklikVarMi = false;
+        // KURAL 1: Seçili tarih sadece ve sadece DÜN ise bu bloğa gir
+        if (seciliTarihStr === dunStr) {
+            
+            // KURAL 2: Dünün içinde kullanıcı herhangi bir şeyi işaretlemiş mi? (Kontrol edelim)
+            let enAzBirIsaretliVarMi = false;
 
-            // 1. Namaz Vakitlerini Kontrol Et
+            // Namazlardan işaretli (durumu 0'dan farklı olan) var mı?
             gunlukVeriler.vakitler.forEach(v => {
-                if (v.durumlar) {
-                    for (let i = 0; i < 3; i++) {
-                        if (v.durumlar[i] === 0) {
-                            v.durumlar[i] = 3; // İşaretlenmeyeni Kırmızı yap
-                            degisiklikVarMi = true;
+                if (v.durumlar && v.durumlar.some(d => d > 0)) {
+                    enAzBirIsaretliVarMi = true;
+                }
+            });
+
+            // Özel amellerden işaretli (sayı girilmiş veya çentik atılmış) var mı?
+            gunlukVeriler.ozeller.forEach(o => {
+                if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) {
+                    enAzBirIsaretliVarMi = true;
+                }
+                if (o.tip === 'renk' && Number(o.durum) > 0) {
+                    enAzBirIsaretliVarMi = true;
+                }
+            });
+
+            // EĞER DÜN EN AZ BİR AMEL İŞARETLENDİYSE, GERİ KALAN GRİLERİ KIRMIZI YAP
+            if (enAzBirIsaretliVarMi) {
+                let degisiklikVarMi = false;
+
+                // Boş kalan namazları kırmızı yap
+                gunlukVeriler.vakitler.forEach(v => {
+                    if (v.durumlar) {
+                        for (let i = 0; i < 3; i++) {
+                            if (v.durumlar[i] === 0) {
+                                v.durumlar[i] = 3; 
+                                degisiklikVarMi = true;
+                            }
                         }
                     }
-                }
-            });
+                });
 
-            // 2. Özel Amelleri Kontrol Et (Renk/Çentik olanlar)
-            gunlukVeriler.ozeller.forEach(o => {
-                if (o.tip === 'renk' && !o.arsiv && o.durum === 0) {
-                    o.durum = 3; // Yapılmadı (Kırmızı)
-                    degisiklikVarMi = true;
-                }
-            });
+                // Boş kalan özel renkli amelleri kırmızı yap
+                gunlukVeriler.ozeller.forEach(o => {
+                    if (o.tip === 'renk' && !o.arsiv && o.durum === 0) {
+                        o.durum = 3; 
+                        degisiklikVarMi = true;
+                    }
+                });
 
-            // Değişiklikleri diske yaz
-            if (degisiklikVarMi) {
-                localStorage.setItem(key, JSON.stringify(gunlukVeriler));
+                // Değişiklikleri kaydet
+                if (degisiklikVarMi) {
+                    localStorage.setItem(key, JSON.stringify(gunlukVeriler));
+                }
             }
         }
         // =================================================================
 
     } else {
-        // HOCAM SENİN DEDİĞİN GİBİ: Eğer o güne dair hiç kayıt yoksa sıfırdan boş oluşturuyoruz
-        // Ve yukarıdaki kırmızıya boyama mantığına SOKMUYORUZ. Tertemiz gri kalıyor.
+        // Eğer o güne dair hiç kayıt yoksa sıfırdan boş oluştur (Boyama asla yok)
         gunlukVeriler = { 
             vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
             ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
