@@ -439,7 +439,10 @@ window.analizEt = function() {
     const kaydedilmis = JSON.parse(localStorage.getItem(key));
     const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
     
-    // Global listeyi al (Arşivli olsa bile getiriyoruz, render'da gizleyeceğiz)
+    // Bugünün tarihini string olarak alalım (Karşılaştırma için)
+    const bugunStr = new Date().toISOString().split('T')[0];
+
+    // Global listeyi al
     const globalListe = getGlobalOzeller().filter(g => {
         if(!g.eklenmeTarihi) return true;
         return seciliTarihStr >= g.eklenmeTarihi;
@@ -448,37 +451,72 @@ window.analizEt = function() {
     if (kaydedilmis) {
         gunlukVeriler = kaydedilmis;
         
-        // --- KRİTİK DÜZELTME BURADA ---
-        // Global listede olup bugünün verisinde eksik olanları EKLE
+        // --- GLOBAL LİSTEDEKİ EKSİKLERİ TAMAMLAMA ---
         globalListe.forEach(g => { 
-            // Sadece ID ile değil, İSİM ile de kontrol et (Çift kayıt engelleyici)
             const varMi = gunlukVeriler.ozeller.find(o => 
                 (o.id && g.id && o.id === g.id) || 
                 (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase())
             );
 
             if(!varMi) {
-                // Eğer gerçekten yoksa ekle
                 gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)}); 
             } else {
-                // Varsa sadece arşiv ve tip gibi özelliklerini güncelle, yeni kayıt oluşturma!
                 varMi.arsiv = g.arsiv;
-                varMi.id = g.id; // ID'leri eşitleyelim ki ileride çakışmasın
+                varMi.id = g.id;
             }
         });
 
-        // Eğer bugünün içinde artık global listede OLMAYAN (silinmiş) bir amel kalmışsa onu temizle
+        // Silinen amelleri temizle
         gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => 
             globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase())
         );
 
     } else {
-        // Eğer o güne dair hiç kayıt yoksa sıfırdan oluştur
+        // Eğer o güne dair HİÇ kayıt yoksa sıfırdan oluştur
         gunlukVeriler = { 
             vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
             ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
         };
     }
+
+    // =================================================================
+    // 🔴 OTOMATİK KIRMIZIYA BOYAMA MANTIĞI (ERTESİ GÜN KONTROLÜ)
+    // =================================================================
+    // Eğer bakılan tarih BUGÜNDEN ÖNCEYSE (yani dünde kalmışsa)
+    if (seciliTarihStr < bugunStr) {
+        let degisiklikVarMi = false;
+
+        // 1. Namaz Vakitlerini Kontrol Et (Farz, Sünnet, Tesbihat)
+        gunlukVeriler.vakitler.forEach(v => {
+            if (v.durumlar) {
+                // durumlar[0] = Farz, durumlar[1] = Sünnet, durumlar[2] = Tesbihat
+                for (let i = 0; i < 3; i++) {
+                    // Eğer durum hala 0 (gri/işaretlenmemiş) ise direkt 3 (Kırmızı) yap
+                    if (v.durumlar[i] === 0) {
+                        v.durumlar[i] = 3; 
+                        degisiklikVarMi = true;
+                    }
+                }
+            }
+        });
+
+        // 2. Özel Amellerden "Renk/Çentik" Tipinde Olanları Kontrol Et
+        gunlukVeriler.ozeller.forEach(o => {
+            // Sadece çentikli (renkli) olanlar ve arşivlenmemiş olanlar için
+            if (o.tip === 'renk' && !o.arsiv && o.durum === 0) {
+                o.durum = 3; // Yapılmadı (Kırmızı)
+                degisiklikVarMi = true;
+            }
+            // Not: Sayı tipindekileri (Cevşen vb.) sıfır bırakıyoruz ki grafiğe 0 yansısın.
+        });
+
+        // Eğer gri bir şeyleri kırmızıya çevirdiysek, veriyi localStorage'a geri gömelim
+        if (degisiklikVarMi) {
+            localStorage.setItem(key, JSON.stringify(gunlukVeriler));
+        }
+    }
+    // =================================================================
+
     render();
 }
 function render() {
