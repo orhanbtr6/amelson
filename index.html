@@ -439,7 +439,7 @@ window.analizEt = function() {
     const kaydedilmis = JSON.parse(localStorage.getItem(key));
     const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
     
-    // Bugünün tarihini string olarak alalım (Karşılaştırma için)
+    // Bugünün tarihini string olarak alalım
     const bugunStr = new Date().toISOString().split('T')[0];
 
     // Global listeyi al
@@ -471,51 +471,48 @@ window.analizEt = function() {
             globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase())
         );
 
+        // =================================================================
+        // 🔴 OTOMATİK KIRMIZIYA BOYAMA MANTIĞI (SADECE VERİ VARSA)
+        // =================================================================
+        // İŞTE DEĞİŞİKLİK BURADA: Sadece 'kaydedilmis' veri varsa ve tarih dündeyse çalışacak!
+        if (seciliTarihStr < bugunStr) {
+            let degisiklikVarMi = false;
+
+            // 1. Namaz Vakitlerini Kontrol Et
+            gunlukVeriler.vakitler.forEach(v => {
+                if (v.durumlar) {
+                    for (let i = 0; i < 3; i++) {
+                        if (v.durumlar[i] === 0) {
+                            v.durumlar[i] = 3; // İşaretlenmeyeni Kırmızı yap
+                            degisiklikVarMi = true;
+                        }
+                    }
+                }
+            });
+
+            // 2. Özel Amelleri Kontrol Et (Renk/Çentik olanlar)
+            gunlukVeriler.ozeller.forEach(o => {
+                if (o.tip === 'renk' && !o.arsiv && o.durum === 0) {
+                    o.durum = 3; // Yapılmadı (Kırmızı)
+                    degisiklikVarMi = true;
+                }
+            });
+
+            // Değişiklikleri diske yaz
+            if (degisiklikVarMi) {
+                localStorage.setItem(key, JSON.stringify(gunlukVeriler));
+            }
+        }
+        // =================================================================
+
     } else {
-        // Eğer o güne dair HİÇ kayıt yoksa sıfırdan oluştur
+        // HOCAM SENİN DEDİĞİN GİBİ: Eğer o güne dair hiç kayıt yoksa sıfırdan boş oluşturuyoruz
+        // Ve yukarıdaki kırmızıya boyama mantığına SOKMUYORUZ. Tertemiz gri kalıyor.
         gunlukVeriler = { 
             vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
             ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
         };
     }
-
-    // =================================================================
-    // 🔴 OTOMATİK KIRMIZIYA BOYAMA MANTIĞI (ERTESİ GÜN KONTROLÜ)
-    // =================================================================
-    // Eğer bakılan tarih BUGÜNDEN ÖNCEYSE (yani dünde kalmışsa)
-    if (seciliTarihStr < bugunStr) {
-        let degisiklikVarMi = false;
-
-        // 1. Namaz Vakitlerini Kontrol Et (Farz, Sünnet, Tesbihat)
-        gunlukVeriler.vakitler.forEach(v => {
-            if (v.durumlar) {
-                // durumlar[0] = Farz, durumlar[1] = Sünnet, durumlar[2] = Tesbihat
-                for (let i = 0; i < 3; i++) {
-                    // Eğer durum hala 0 (gri/işaretlenmemiş) ise direkt 3 (Kırmızı) yap
-                    if (v.durumlar[i] === 0) {
-                        v.durumlar[i] = 3; 
-                        degisiklikVarMi = true;
-                    }
-                }
-            }
-        });
-
-        // 2. Özel Amellerden "Renk/Çentik" Tipinde Olanları Kontrol Et
-        gunlukVeriler.ozeller.forEach(o => {
-            // Sadece çentikli (renkli) olanlar ve arşivlenmemiş olanlar için
-            if (o.tip === 'renk' && !o.arsiv && o.durum === 0) {
-                o.durum = 3; // Yapılmadı (Kırmızı)
-                degisiklikVarMi = true;
-            }
-            // Not: Sayı tipindekileri (Cevşen vb.) sıfır bırakıyoruz ki grafiğe 0 yansısın.
-        });
-
-        // Eğer gri bir şeyleri kırmızıya çevirdiysek, veriyi localStorage'a geri gömelim
-        if (degisiklikVarMi) {
-            localStorage.setItem(key, JSON.stringify(gunlukVeriler));
-        }
-    }
-    // =================================================================
 
     render();
 }
