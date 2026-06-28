@@ -632,9 +632,12 @@ function render() {
     
 
     }
-	if (typeof seriHesaplaVeGoster === "function") {
+	// render() fonksiyonunun içindeki en alt satır böyle olmalı:
+setTimeout(() => {
+    if (typeof seriHesaplaVeGoster === "function") {
         seriHesaplaVeGoster();
-	}
+    }
+}, 100);
 
 }
 	 window.showHeatmap = (id, tip, subIdx = null) => {
