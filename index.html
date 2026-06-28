@@ -16,9 +16,10 @@
     <div class="main-title-container" onclick="window.gitBugun()">
         <span class="main-title">Amel Defteri Pro</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.1.0</span>
     </div>
+	<div id="seriPaneli" class="seri-paneli"></div>
     <div class="nav-header">
 		<!-- Nav header'ın hemen altına yapıştır -->
-<div id="seriPaneli" class="seri-paneli"></div>
+
 
         <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
         <div class="date-display-box">
@@ -630,8 +631,8 @@ function render() {
 	
     if (typeof seriHesaplaVeGoster === "function") {
         seriHesaplaVeGoster();
-    }
-}
+	}
+
 
     }
 }
