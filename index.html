@@ -1635,57 +1635,59 @@ window.raporuKapat = (key) => {
 
 // Sayfa yüklendiğinde çalıştır
 window.dunRaporuGoster();
-	function seriHesaplaVeGoster() {
-    let seriSayaci = 0;
-    let kontrolTarihi = new Date(); // Bugünden geriye doğru sayacağız
-    
-    while (true) {
-        // Tarihi YYYY-MM-DD formatına getiriyoruz
-        let yil = kontrolTarihi.getFullYear();
-        let ay = String(kontrolTarihi.getMonth() + 1).padStart(2, '0');
-        let gun = String(kontrolTarihi.getDate()).padStart(2, '0');
-        let tarihStr = `${yil}-${ay}-${gun}`;
-        
-        // LocalStorage'dan o günün verisini senin sistemindeki key yapısına göre çekiyoruz
-        // Not: Eğer localstorage key yapın "veri_2026-06-28" ise altı "veri_" + tarihStr yapmalısın.
-        let oGununVerisi = localStorage.getItem(`amel_${tarihStr}`);
-        if (oGununVerisi) {
-    let veriObj = JSON.parse(oGununVerisi);
-    // Dinamik olarak o günün puanını hesaplatıyoruz
-    let gununYuzdesi = hesaplaPuan(veriObj, `amel_${tarihStr}`); 
-    
-    if (gununYuzdesi === 100) {
-        seriSayaci++;
-    } else {
-        // ... (mevcut bugün kontrolü mantığınız kalabilir)
 
-                // Bugün henüz %100 olmamış olabilir, o yüzden bugünü es geçip dünden devam etmesi için:
-                if (tarihStr === new Date().toISOString().split('T')[0]) {
-                    // Bugün %100 değilse seriyi bozma, dünden itibaren geriye doğru bakmaya devam et
-                } else {
-                    break; // Geçmiş bir gün %100 değilse seri bozulmuştur, döngüden çık.
+function seriHesaplaVeGoster() {
+    try {
+        let seriSayaci = 0;
+        let bugun = new Date();
+        
+        // Geriye dönük 30 günü güvenli bir döngüyle kontrol edelim
+        for (let i = 0; i < 30; i++) {
+            let kontrolTarihi = new Date();
+            kontrolTarihi.setDate(bugun.getDate() - i);
+            
+            let yil = kontrolTarihi.getFullYear();
+            let ay = String(kontrolTarihi.getMonth() + 1).padStart(2, '0');
+            let gun = String(kontrolTarihi.getDate()).padStart(2, '0');
+            
+            let tarihStr = `${yil}-${ay}-${gun}`;
+            // localStorage key uyuşmazlığını çözüyoruz
+            let oGununVerisi = localStorage.getItem(`amel_${tarihStr}`); 
+            
+            if (oGununVerisi) {
+                let veriObj = JSON.parse(oGununVerisi);
+                
+                // Puan hesaplama fonksiyonunuz globalde değilse hata vermemesi için kontrol:
+                let gununYuzdesi = 0;
+                if (typeof hesaplaPuan === "function") {
+                    gununYuzdesi = hesaplaPuan(veriObj, `amel_${tarihStr}`);
+                } else if (veriObj.yuzde) {
+                    gununYuzdesi = veriObj.yuzde;
                 }
-            }
-        } else {
-            // Kayıtlı veri yoksa ve aradığımız gün BUGÜN değilse döngüyü bitir
-            if (tarihStr !== new Date().toISOString().split('T')[0]) {
-                break;
+                
+                if (gununYuzdesi === 100) {
+                    seriSayaci++;
+                } else {
+                    // Bugün henüz tamamlanmamış olabilir, seriyi bozmasın
+                    if (i !== 0) break; 
+                }
+            } else {
+                if (i !== 0) break;
             }
         }
         
-        // Bir önceki güne git
-        kontrolTarihi.setDate(kontrolTarihi.getDate() - 1);
-    }
-
-    // DOM Güncelleme
-    let seriElemente = document.getElementById("seriPaneli");
-    if (seriElemente) {
-        if (seriSayaci >= 3) {
-            seriElemente.style.display = "block";
-            seriElemente.innerHTML = `🔥 Maşallah! Kesintisiz %100 Amel Serisi: <span class="seri-sayi">${seriSayaci} Gün</span>`;
-        } else {
-            seriElemente.style.display = "none";
+        // Ekrana yazdırma kısmı (HTML ID'nizin 'seriAlani' olduğunu varsayıyoruz)
+        let seriDiv = document.getElementById("seriAlani");
+        if (seriDiv) {
+            if (seriSayaci >= 3) {
+                seriDiv.innerHTML = `🔥 <strong>${seriSayaci} Günlük</strong> Muazzam Seri!`;
+                seriDiv.style.display = "block";
+            } else {
+                seriDiv.style.display = "none";
+            }
         }
+    } catch (error) {
+        console.error("Seri hesaplanırken hata oluştu, ancak uygulama kilitlenmedi:", error);
     }
 }
 
