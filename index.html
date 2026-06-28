@@ -1154,7 +1154,7 @@
                 let oGununVerisi = localStorage.getItem(`amel_${tarihStr}`); 
                 if (oGununVerisi) {
                     let gununYuzdesi = hesaplaPuan(JSON.parse(oGununVerisi), `amel_${tarihStr}`);
-                    if (gununYuzdesi >= 50) { seriSayaci++; } else { if (i !== 0) break; }
+                    if (gununYuzdesi ===100) { seriSayaci++; } else { if (i !== 0) break; }
                 } else { if (i !== 0) break; }
             }
             let seriDiv = document.getElementById("seriAlani");
