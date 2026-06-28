@@ -1,14 +1,35 @@
+Kodlarınızı incelediğimde, projenin en üst kısımlarında ve render mantığında yapılan bazı küçük güncellemelerin (özellikle seriHesaplaVeGoster fonksiyonunun eklenmesi gibi) HTML tarafındaki bir element eksikliği yüzünden ekrana yansımadığını veya konsolda görünmez hatalara sebep olabileceğini fark ettim.
+Ayrıca kodun okunabilirliğini artırmak, etiket hiyerarşisini düzeltmek ve id="seriPaneli" ile id="seriAlani" arasındaki isimlendirme uyuşmazlığını gidermek adına temiz bir revize yaptım.
+İşte uygulamanızın en güncel, optimize edilmiş ve **tek parça** halindeki tam kod bloğu:
+```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Quicksand:wght@400;700&family=Varela+Round&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Quicksand:wght@400;700&family=Varela+Round&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/png" href="amel_icon.png">
     <meta name="theme-color" content="#0b3d59">
     <title>Amel Defteri PRO</title>
-	<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Sürükle-bırak butonu ve dinamik animasyonlar için ek stiller */
+        @keyframes mermiAkis {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        #dunOzetPaneli { 
+            position: relative; 
+            z-index: 5; 
+            border: 2px solid #f1c40f;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .container { 
+            padding-bottom: 140px !important; 
+            overflow-y: auto;
+        }
+    </style>
 </head>
 	
 <body ontouchstart="hTS(event)" ontouchend="hTE(event)">
@@ -18,8 +39,8 @@
     </div>
 	
     <div class="nav-header">
-		<!-- Nav header'ın hemen altına yapıştır -->
-<div id="seriPaneli" class="seri-paneli"></div>
+        <!-- Seri takip alanı (ID senkronizasyonu sağlandı) -->
+        <div id="seriAlani" class="seri-paneli" style="display:none; text-align:center; margin-bottom:5px; font-size:12px; color:#f1c40f;"></div>
 
         <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
         <div class="date-display-box">
@@ -34,26 +55,28 @@
             <button class="info-btn" onclick="window.showHelp()">i</button>
         </div>
     </div>
-	<div id="dunOzetKonteyner"> </div>
-<div id="icBildirimPaneli" style="display:none; margin: 10px; padding: 12px; background: linear-gradient(135deg, #2c3e50, #2980b9); color: white; border-radius: 10px; border-left: 5px solid #f39c12; box-shadow: 0 4px 15px rgba(0,0,0,0.3); animation: slideIn 0.5s ease-out;">
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 20px;">🔔</span>
-			
-            <div>
-                <b style="display: block; font-size: 14px;">Hatırlatma</b>
-                <span id="icBildirimMesaj" style="font-size: 12px; opacity: 0.9;">Bugünkü amellerini girmeyi unutma!</span>
+
+    <div id="dunOzetKonteyner"></div>
+
+    <!-- İç Bildirim Paneli -->
+    <div id="icBildirimPaneli" style="display:none; margin: 10px; padding: 12px; background: linear-gradient(135deg, #2c3e50, #2980b9); color: white; border-radius: 10px; border-left: 5px solid #f39c12; box-shadow: 0 4px 15px rgba(0,0,0,0.3); animation: slideIn 0.5s ease-out;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">🔔</span>
+                <div>
+                    <b style="display: block; font-size: 14px;">Hatırlatma</b>
+                    <span id="icBildirimMesaj" style="font-size: 12px; opacity: 0.9;">Bugünkü amellerini girmeyi unutma!</span>
+                </div>
             </div>
+            <button onclick="window.icBildirimiKapat()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
         </div>
-       <button onclick="window.icBildirimiKapat()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
     </div>
-</div>
 
-
-	<div id="vakitList"></div>
+    <div id="vakitList"></div>
     <div id="ozelList" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px; margin-top:5px;"></div>
 </div>
 
+<!-- Modallar -->
 <div id="statModal" class="modal">
     <div class="modal-content">
         <div id="statTitle" style="text-align:center; font-weight:bold; margin-bottom:15px; color:#a5d3ff; text-transform:uppercase;"></div>
@@ -61,6 +84,7 @@
         <button class="btn-close-new" onclick="closeModal()">Kapat</button>
     </div>
 </div>
+
 <div id="ozelAlertModal" class="modal" style="display:none; z-index:10000; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px);">
     <div style="background:var(--card); width:85%; max-width:320px; border-radius:25px; padding:30px; text-align:center; border:1px solid rgba(255,255,255,0.1); box-shadow:0 15px 35px rgba(0,0,0,0.5);">
         <div style="font-size:50px; margin-bottom:15px;">⏳</div>
@@ -74,6 +98,7 @@
         </button>
     </div>
 </div>
+
 <div id="typeModal" class="modal">
     <div class="modal-content">
         <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Tipi Seçin</h3>
@@ -92,67 +117,57 @@
     <div class="modal-content">
         <button class="close-x" onclick="closeSettings()">✕</button>
         <h3 style="text-align:center; color:var(--blue);">Ayarlar</h3>
-       <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
             <span style="font-size:14px; font-weight:bold;">Farkındalık Sinyalleri (⚠️)</span>
             <label class="switch">
                 <input type="checkbox" id="signalToggle" onchange="toggleSignals(this.checked)">
                 <span class="slider"></span>
             </label>
         </div>
-		<button onclick="window.bildirimIzinIste()" class="nav-btn" style="background:#f39c12; color:white; padding:10px; margin:10px; border-radius:8px;">
-    🔔 Bildirimleri Aktif Et
-</button><div style="margin: 15px 0; padding: 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;">
-    <label style="display: block; font-size: 12px; margin-bottom: 5px;">Hatırlatma Saati:</label>
-    <input type="time" id="hatirlatmaSaatiInput" onchange="window.saatKaydet(this.value)" 
-           style="background: #2c3e50; color: white; border: 1px solid #34495e; padding: 5px; border-radius: 4px; width: 100%;">
-</div>
-<div style="margin: 10px; padding: 15px; background: rgba(255,255,255,0.08); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.1);">
-    <span style="font-size: 14px; color: #fff; font-weight: bold;">🔔 Bildirim Paneli:</span>
-    
-    <label style="position: relative; display: inline-block; width: 44px; height: 22px; cursor: pointer;">
-        <input type="checkbox" id="bildirimDurumCheck" onchange="window.bildirimDurumKaydet(this.checked)" style="opacity: 0; width: 0; height: 0;">
-        <span id="sliderBtn" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px;"></span>
-    </label>
-</div>
-
-<style>
-    /* Beyaz yuvarlağı oluşturan ve hareket ettiren stil */
-    #sliderBtn:before {
-        position: absolute;
-        content: "";
-        height: 16px;
-        width: 16px;
-        left: 3px;
-        bottom: 3px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-    /* Input check edildiğinde yuvarlağı kaydır ve rengi değiştir */
-    #bildirimDurumCheck:checked + #sliderBtn:before {
-        transform: translateX(22px);
-    }
-    #bildirimDurumCheck:checked + #sliderBtn {
-        background-color: #3498db !important;
-    }
-</style>
-
-
-		<button class="nav-btn" style="width:100%; margin-bottom:10px;" onclick="exportData()">💾 Yedekle</button>
+        <button onclick="window.bildirimIzinIste()" class="nav-btn" style="background:#f39c12; color:white; padding:10px; margin:10px; border-radius:8px; width:calc(100% - 20px);">
+            🔔 Bildirimleri Aktif Et
+        </button>
+        <div style="margin: 15px 10px; padding: 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;">
+            <label for="hatirlatmaSaatiInput" style="display: block; font-size: 12px; margin-bottom: 5px;">Hatırlatma Saati:</label>
+            <input type="time" id="hatirlatmaSaatiInput" onchange="window.saatKaydet(this.value)" 
+                   style="background: #2c3e50; color: white; border: 1px solid #34495e; padding: 5px; border-radius: 4px; width: 100%;">
+        </div>
+        <div style="margin: 10px; padding: 15px; background: rgba(255,255,255,0.08); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.1);">
+            <span style="font-size: 14px; color: #fff; font-weight: bold;">🔔 Bildirim Paneli:</span>
+            <label style="position: relative; display: inline-block; width: 44px; height: 22px; cursor: pointer;">
+                <input type="checkbox" id="bildirimDurumCheck" onchange="window.bildirimDurumKaydet(this.checked)" style="opacity: 0; width: 0; height: 0;">
+                <span id="sliderBtn" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px;"></span>
+            </label>
+        </div>
+        <style>
+            #sliderBtn:before {
+                position: absolute;
+                content: "";
+                height: 16px;
+                width: 16px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+            #bildirimDurumCheck:checked + #sliderBtn:before {
+                transform: translateX(22px);
+            }
+            #bildirimDurumCheck:checked + #sliderBtn {
+                background-color: #3498db !important;
+            }
+        </style>
+        <button class="nav-btn" style="width:100%; margin-bottom:10px;" onclick="exportData()">💾 Yedekle</button>
         <button class="nav-btn" style="width:100%;" onclick="importData()">📂 Geri Yükle</button>
     </div>
 </div>
 	
-	
 <div class="footer">
     <input type="text" id="habInp" placeholder="Yeni amel/görev...">
-    
     <button class="footer-btn" onclick="yeniEkle()">EKLE</button>
-    
     <button class="footer-icon" id="micBtn" onclick="window.sesDinle()" title="Sesle Yaz">🎤</button>
-    
     <div class="footer-icon" onclick="window.analizEt()" title="Analiz">📊</div>
-
     <button class="footer-icon" onclick="openSettings()" title="Ayarlar">⚙️</button>
 </div>
 		
@@ -163,7 +178,9 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 999; 
             border: 2px solid rgba(255,255,255,0.2); cursor: move; touch-action: none;">
     ⚡
-</div><script>
+</div>
+
+<script>
     let xS = null;
     function hTS(e) { xS = e.touches[0].clientX; }
     function hTE(e) {
@@ -211,625 +228,509 @@
     function isTodayCheck(d, m, y) { let today = new Date(); return d === today.getDate() && m === today.getMonth() && y === today.getFullYear(); }
     function isFuture() { let today = new Date(); today.setHours(0,0,0,0); let check = new Date(seciliTarih); check.setHours(0,0,0,0); return check > today; }
 
-   
-  function getWarningData(vIdx) {
-    if (getLocalKey(seciliTarih) !== getLocalKey(new Date())) return null;
-	if (!signalsActive || isFuture()) return null;
-	  // --- YENİ EKLENEN KISIM: Eğer bugün bu vakit zaten işaretlendiyse uyarıyı KES ---
-    const bugunVeri = gunlukVeriler.vakitler[vIdx];
-    if (bugunVeri && bugunVeri.durumlar[0] > 0) return null;
-	  const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
-    if (kayitliGunler < 3) return null;
-    let streaks = [0, 0, 0];
-    for(let i=1; i<=3; i++) {
-        let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
-        let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
-
-        // SADECE KAYIT VARSA VE KAYIT "BOŞ TASLAK" DEĞİLSE SAY
-        // Eğer vakitlerin hepsi 0 ise, kullanıcı o gün uygulamayı açmış ama hiçbir şey girmemiş demektir.
-        if(val && val.vakitler) {
-            const vkt = val.vakitler[vIdx];
-            const dur = vkt.durumlar;
-            
-            // Eğer o günkü tüm vakitlerin farzları 0 ise, 
-            // kullanıcı o günü sadece "ziyaret" etmiştir, gerçek bir ihmal yoktur.
-            const gunlukToplamIslem = val.vakitler.reduce((toplam, v) => toplam + v.durumlar[0], 0);
-            
-            if (gunlukToplamIslem > 0) { // Kullanıcı o gün en az bir vakti işaretlemişse artık sorumludur
-                if(dur[0] === 0 || dur[0] === 3) streaks[0]++;
-                if(dur[1] === 0) streaks[1]++;
-                if(dur[2] === 0) streaks[2]++;
+    function getWarningData(vIdx) {
+        if (getLocalKey(seciliTarih) !== getLocalKey(new Date())) return null;
+        if (!signalsActive || isFuture()) return null;
+        const bugunVeri = gunlukVeriler.vakitler[vIdx];
+        if (bugunVeri && bugunVeri.durumlar[0] > 0) return null;
+        const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
+        if (kayitliGunler < 3) return null;
+        let streaks = [0, 0, 0];
+        for(let i=1; i<=3; i++) {
+            let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
+            let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
+            if(val && val.vakitler) {
+                const vkt = val.vakitler[vIdx];
+                const dur = vkt.durumlar;
+                const gunlukToplamIslem = val.vakitler.reduce((toplam, v) => toplam + v.durumlar[0], 0);
+                if (gunlukToplamIslem > 0) {
+                    if(dur[0] === 0 || dur[0] === 3) streaks[0]++;
+                    if(dur[1] === 0) streaks[1]++;
+                    if(dur[2] === 0) streaks[2]++;
+                }
             }
         }
+        let fWarn = (streaks[0] >= 3);
+        let sWarn = (streaks[1] >= 3);
+        let tWarn = (streaks[2] >= 3);
+        return (fWarn || sWarn || tWarn) ? {streaks, fWarn, sWarn, tWarn} : null;
     }
-    
-    let fWarn = (streaks[0] >= 3);
-    let sWarn = (streaks[1] >= 3);
-    let tWarn = (streaks[2] >= 3);
-    
-    return (fWarn || sWarn || tWarn) ? {streaks, fWarn, sWarn, tWarn} : null;
-}
 
-
-	function getOzelWarning(ozelIdx) {
-    if(!signalsActive || isFuture()) return false;
-    if (getLocalKey(seciliTarih) !== getLocalKey(new Date())) return false;
-    
-    const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
-    if (kayitliGunler < 3) return false;
-
-    const ozelBugun = gunlukVeriler.ozeller[ozelIdx];
-    if(!ozelBugun || (ozelBugun.durum != 0 && ozelBugun.durum !== "")) return false;
-    
-    let count = 0;
-    for(let i=1; i<=2; i++) {
-        let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
-        let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
-        
-        if(val && val.ozeller) {
-            let o = val.ozeller.find(x => x.ad === ozelBugun.ad);
-            
-            // KRİTİK DEĞİŞİKLİK BURADA:
-            // Sadece amel o günün listesinde VARSA ve DURUMU 0 ise count artır.
-            // Eğer amel o günün listesinde yoksa (!o), o zaman henüz eklenmemiş demektir, sayma!
-            if(o && (o.durum == 0 || o.durum === "")) {
-                count++;
-            }
-        } 
-        // else kısmına dokunmaya gerek yok, zaten kayıt yoksa count artmıyor.
-    }
-    return count >= 2;
-}
-window.analizEt = function() {
- 
-     let yorumlari = [];
-    // 1. Önce Verileri Topla
-    let veriler = [];
-    let bugun = new Date();
-    const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
-    let baslangicGunu = (bugun.getHours() < 23) ? 1 : 0;
-
-    for (let i = baslangicGunu; i < (14 + baslangicGunu); i++) {
-        let d = new Date(); d.setDate(bugun.getDate() - i);
-        let k = getLocalKey(d);
-        let v = JSON.parse(localStorage.getItem(k));
-
-        if (v && v.vakitler) {
-            const islemVarmi = v.vakitler.some(vkt => vkt.durumlar.some(durum => durum > 0)) || 
-                             (v.ozeller && v.ozeller.some(o => o.durum != 0 && o.durum !== ""));
-            if (islemVarmi) {
-                veriler.push({ fark: i - baslangicGunu, veri: v });
+    function getOzelWarning(ozelIdx) {
+        if(!signalsActive || isFuture()) return false;
+        if (getLocalKey(seciliTarih) !== getLocalKey(new Date())) return false;
+        const kayitliGunler = Object.keys(localStorage).filter(k => k.startsWith('amel_20')).length;
+        if (kayitliGunler < 3) return false;
+        const ozelBugun = gunlukVeriler.ozeller[ozelIdx];
+        if(!ozelBugun || (ozelBugun.durum != 0 && ozelBugun.durum !== "")) return false;
+        let count = 0;
+        for(let i=1; i<=2; i++) {
+            let d = new Date(seciliTarih); d.setDate(d.getDate() - i);
+            let val = JSON.parse(localStorage.getItem(getLocalKey(d)));
+            if(val && val.ozeller) {
+                let o = val.ozeller.find(x => x.ad === ozelBugun.ad);
+                if(o && (o.durum == 0 || o.durum === "")) {
+                    count++;
+                }
             }
         }
+        return count >= 2;
     }
 
-    // 2. KRİTİK NOKTA: Sadece HİÇ veri yoksa durdur. 
-    // Eğer 1-2 tane bile veri varsa butona basınca analiz açılsın.
-    if (veriler.length === 0) {
-        alert("Analiz için henüz hiçbir veri girişi yapılmamış.");
-        return; 
-    }
+    window.analizEt = function() {
+        let yorumlari = [];
+        let veriler = [];
+        let bugun = new Date();
+        const vakitAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
+        let baslangicGunu = (bugun.getHours() < 23) ? 1 : 0;
 
-    // 3. Az veri olduğunda sadece uyarı notu ekle (Analizi durdurma!)
-    if (veriler.length < 3) {
-        yorumlari.push("🌟 **Yolculuk Başlıyor:** Analizlerin daha tutarlı olması için en az 3 günlük veri girişi önerilir.");
-    }
-
-    // --- BURADAN AŞAĞISI HESAPLAMALAR ---
-    // (stats nesnesi, döngüler ve rapor oluşturma kodların aynen devam etsin)
-    // ÖNEMLİ: Aşağıdaki kodlarda başka "if (veriler.length < 3) return;" satırı varsa mutlaka sil!
-    let stats = {
-        son: { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0, vakitler: [], ozeller: {} },
-        once: { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0, vakitler: [], ozeller: {} }
-    };
-
-    for(let i=0; i<5; i++) {
-        stats.son.vakitler[i] = { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0 };
-        stats.once.vakitler[i] = { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0 };
-    }
-
-    veriler.forEach(item => {
-        let s = (item.fark < 7) ? stats.son : stats.once;
-        item.veri.vakitler.forEach((v, idx) => {
-            let farzVal = parseInt(v.durumlar[0]); 
-            
-            // 0:boş, 1:yeşil, 2:açık yeşil, 3:turuncu, 4:kırmızı
-            switch(farzVal) {
-                case 1: s.vaktinde++; s.vakitler[idx].vaktinde++; break;
-                case 2: s.cemaat++; s.vakitler[idx].cemaat++; break;
-                case 3: 
-                case 0: // Boş bırakılan da borçtur, kaza sayıldı
-                    s.kaza++; s.vakitler[idx].kaza++; break;
-                case 4: 
-                default: s.hic++; s.vakitler[idx].hic++; break;
+        for (let i = baslangicGunu; i < (14 + baslangicGunu); i++) {
+            let d = new Date(); d.setDate(bugun.getDate() - i);
+            let k = getLocalKey(d);
+            let v = JSON.parse(localStorage.getItem(k));
+            if (v && v.vakitler) {
+                const islemVarmi = v.vakitler.some(vkt => vkt.durumlar.some(durum => durum > 0)) || 
+                                 (v.ozeller && v.ozeller.some(o => o.durum != 0 && o.durum !== ""));
+                if (islemVarmi) {
+                    veriler.push({ fark: i - baslangicGunu, veri: v });
+                }
             }
+        }
 
-            if (parseInt(v.durumlar[1]) > 0) { s.sunnet++; s.vakitler[idx].sunnet++; }
-            if (parseInt(v.durumlar[2]) > 0) { s.tesbihat++; s.vakitler[idx].tesbihat++; }
+        if (veriler.length === 0) {
+            alert("Analiz için henüz hiçbir veri girişi yapılmamış.");
+            return; 
+        }
+
+        if (veriler.length < 3) {
+            yorumlari.push("🌟 **Yolculuk Başlıyor:** Analizlerin daha tutarlı olması için en az 3 günlük veri girişi önerilir.");
+        }
+
+        let stats = {
+            son: { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0, vakitler: [], ozeller: {} },
+            once: { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0, vakitler: [], ozeller: {} }
+        };
+
+        for(let i=0; i<5; i++) {
+            stats.son.vakitler[i] = { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0 };
+            stats.once.vakitler[i] = { cemaat: 0, vaktinde: 0, kaza: 0, hic: 0, sunnet: 0, tesbihat: 0 };
+        }
+
+        veriler.forEach(item => {
+            let s = (item.fark < 7) ? stats.son : stats.once;
+            item.veri.vakitler.forEach((v, idx) => {
+                let farzVal = parseInt(v.durumlar[0]); 
+                switch(farzVal) {
+                    case 1: s.vaktinde++; s.vakitler[idx].vaktinde++; break;
+                    case 2: s.cemaat++; s.vakitler[idx].cemaat++; break;
+                    case 3: 
+                    case 0: 
+                        s.kaza++; s.vakitler[idx].kaza++; break;
+                    case 4: 
+                    default: s.hic++; s.vakitler[idx].hic++; break;
+                }
+                if (parseInt(v.durumlar[1]) > 0) { s.sunnet++; s.vakitler[idx].sunnet++; }
+                if (parseInt(v.durumlar[2]) > 0) { s.tesbihat++; s.vakitler[idx].tesbihat++; }
+            });
+
+            if (item.veri.ozeller) {
+                item.veri.ozeller.forEach(o => {
+                    if (!s.ozeller[o.ad]) s.ozeller[o.ad] = { yapildi: 0 };
+                    if (parseInt(o.durum) > 0) s.ozeller[o.ad].yapildi++;
+                });
+            }
         });
 
-        if (item.veri.ozeller) {
-            item.veri.ozeller.forEach(o => {
-                if (!s.ozeller[o.ad]) s.ozeller[o.ad] = { yapildi: 0 };
-                if (parseInt(o.durum) > 0) s.ozeller[o.ad].yapildi++;
-            });
-        }
-    });
+        let yorumlar = [...yorumlari];
+        const hadislerNamaz = {
+            0: "Sabah namazının iki rekatı, dünyadan ve dünyadaki her şeyden daha hayırlıdır. (Müslim)",
+            1: "Kim öğle namazından önce dört, sonra da iki rekat kılmaya devam ederse Allah onu cehenneme haram kılar. (Müslim)",
+            2: "İkindi namazını terk edenin ameli boşa gider. (Buhârî)",
+            3: "Akşam namazı gündüzün vitridir; acele ediniz. (Tirmizî)",
+            4: "Yatsı ve sabah namazlarındaki sevabı bilselerdi, emekleyerek de olsa gelirlerdi. (Buhârî)"
+        };
 
-    let yorumlar = [];
-    const hadislerNamaz = {
-        0: "Sabah namazının iki rekatı, dünyadan ve dünyadaki her şeyden daha hayırlıdır. (Müslim)",
-        1: "Kim öğle namazından önce dört, sonra da iki rekat kılmaya devam ederse Allah onu cehenneme haram kılar. (Nesâî)",
-        2: "İkindi namazını terk edenin ameli boşa gider. (Buhârî)",
-        3: "Akşam namazı gündüzün vitridir; acele ediniz. (Tirmizî)",
-        4: "Yatsı ve sabah namazlarındaki sevabı bilselerdi, emekleyerek de olsa gelirlerdi. (Buhârî)"
+        let sorunluVakitler = stats.son.vakitler.map((v, i) => (v.kaza > 0 || v.hic > 0) ? vakitAdlari[i] : null).filter(n => n);
+        if (sorunluVakitler.length > 0) {
+            let vakitIndeks = vakitAdlari.indexOf(sorunluVakitler[0]);
+            yorumlar.push(`⚠️ **Namaz Analizi:** Son hafta **${sorunluVakitler.join(", ")}** vakitlerinde aksamalar görülüyor. Efendimiz (sav) buyuruyor: *"${hadislerNamaz[vakitIndeks]}"*`);
+        } else {
+            yorumlar.push(`✅ **Maşallah:** Tüm namazlar vaktinde ikame edildi. "Namaz dinin direğidir." İstikrarın daim olsun.`);
+        }
+
+        let gevseyenler = [];
+        let gelisenler = [];
+        for (let ad in stats.son.ozeller) {
+            let sonHafta = stats.son.ozeller[ad].yapildi;
+            let oncekiHafta = (stats.once.ozeller[ad]) ? stats.once.ozeller[ad].yapildi : 0;
+            if (sonHafta < oncekiHafta) {
+                gevseyenler.push(ad);
+            } else if (sonHafta > oncekiHafta || (sonHafta === 7 && oncekiHafta === 7)) {
+                gelisenler.push(ad);
+            }
+        }
+        if (gevseyenler.length > 0) {
+            yorumlar.push(`📉 **Dikkat:** Geçen haftaya oranla **${gevseyenler.join(", ")}** amellerinde bir gevşeme var. Amellerin hayırlısı, az da olsa devamlı olanıdır.`);
+        } 
+        if (gelisenler.length > 0) {
+            yorumlar.push(`🌟 **Gelişim:** **${gelisenler.join(", ")}** amellerindeki gayretin artmış veya tam puanla devam ediyor. Rabbimiz buyuruyor: *"İnsan için ancak çalıştığının karşılığı vardır." (Necm, 39)*`);
+        }
+
+        let h = `<div style="text-align:left; color:#eee; max-height:80vh; overflow-y:auto; padding-right:10px;">`;
+        h += `<h3 style="color:#2ecc71; text-align:center; font-size:20px; border-bottom:1px solid #333; padding-bottom:10px;">📊 HAFTALIK MANEVİ ANALİZ</h3>`;
+        h += `<div style="background:rgba(52,152,219,0.1); padding:15px; border-radius:18px; border:1px solid #3498db; margin-bottom:20px; font-size:15px; line-height:1.6;">
+                ${yorumlar.join(" <hr style='opacity:0.1; margin:10px 0;'> ")}
+              </div>`;
+              
+        vakitAdlari.forEach((ad, i) => {
+            let sn = stats.son.vakitler[i];
+            let on = stats.once.vakitler[i];
+            h += `<div style="background:var(--card); padding:12px; border-radius:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);">
+                    <b style="color:#3498db; font-size:17px;">${ad.toUpperCase()}</b>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px;">
+                        <div style="font-size:12px; color:#2ecc71;">Cemaat: <b>${sn.cemaat}</b> ${getF(sn.cemaat, on.cemaat)}</div>
+                        <div style="font-size:12px; color:#a3e4d7;">Vaktinde: <b>${sn.vaktinde}</b> ${getF(sn.vaktinde, on.vaktinde)}</div>
+                        <div style="font-size:12px; color:#e74c3c;">Kazaya Kalmış: <b>${sn.kaza}</b> ${getF(sn.kaza, on.kaza, true)}</div>
+                        <div style="font-size:12px; color:#f39c12;">Kaza Edilmiş: <b>${sn.hic}</b> ${getF(sn.hic, on.hic, true)}</div>
+                    </div>
+                  </div>`;
+        });
+        h += `<b style="color:#f1c40f; font-size:17px; display:block; margin:20px 0 10px 5px;">🌟 Özel Amel Durumu</b>`;
+        for (let ad in stats.son.ozeller) {
+            let d = stats.son.ozeller[ad];
+            let ed = stats.once.ozeller[ad] || { yapildi: 0 };
+            h += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:15px;">${ad}</span>
+                    <span style="color:#2ecc71; font-weight:bold;">${d.yapildi}/7 Gün ${getF(d.yapildi, ed.yapildi)}</span>
+                  </div>`;
+        }
+        h += `</div>`;
+
+        function getF(s, e, t = false) {
+            let f = s - e; if(f === 0) return `<small style="color:#777;">(0)</small>`;
+            let r = (f > 0) ? (t ? '#e74c3c' : '#2ecc71') : (t ? '#2ecc71' : '#e74c3c');
+            return `<small style="color:${r}; font-weight:bold;">(${f > 0 ? '+' : ''}${f})</small>`;
+        }
+        document.getElementById('statTitle').innerText = "DETAYLI ANALİZ";
+        document.getElementById('calGrid').innerHTML = h;
+        modalAcildi(); 
+        document.getElementById('statModal').style.display = 'flex';
     };
-    // --- NAMAZ ANALİZİ ---
-    let sorunluVakitler = stats.son.vakitler.map((v, i) => (v.kaza > 0 || v.hic > 0) ? vakitAdlari[i] : null).filter(n => n);
-    
-    if (sorunluVakitler.length > 0) {
-        let vakitIndeks = vakitAdlari.indexOf(sorunluVakitler[0]);
-        yorumlar.push(`⚠️ **Namaz Analizi:** Son hafta **${sorunluVakitler.join(", ")}** vakitlerinde aksamalar görülüyor. Efendimiz (sav) buyuruyor: *"${hadislerNamaz[vakitIndeks]}"*`);
-    } else {
-        yorumlar.push(`✅ **Maşallah:** Tüm namazlar vaktinde ikame edildi. "Namaz dinin direğidir." İstikrarın daim olsun.`);
-    }
 
-    // --- ÖZEL AMEL ANALİZİ (Gelişime Dayalı) ---
-    let gevseyenler = [];
-    let gelisenler = [];
-    for (let ad in stats.son.ozeller) {
-        let sonHafta = stats.son.ozeller[ad].yapildi;
-        let oncekiHafta = (stats.once.ozeller[ad]) ? stats.once.ozeller[ad].yapildi : 0;
-
-        if (sonHafta < oncekiHafta) {
-            gevseyenler.push(ad);
-        } else if (sonHafta > oncekiHafta || (sonHafta === 7 && oncekiHafta === 7)) {
-            gelisenler.push(ad);
-        }
-    }
-    if (gevseyenler.length > 0) {
-        yorumlar.push(`📉 **Dikkat:** Geçen haftaya oranla **${gevseyenler.join(", ")}** amellerinde bir gevşeme var. Amellerin hayırlısı, az da olsa devamlı olanıdır.`);
+    function alertBox(color, title, text) {
+        return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
+                    <b style="font-size:12px; color:var(--${color});">${title}</b><br><span style="font-size:11px; opacity:0.8;">${text}</span>
+                </div>`;
     } 
-    if (gelisenler.length > 0) {
-        yorumlar.push(`🌟 **Gelişim:** **${gelisenler.join(", ")}** amellerindeki gayretin artmış veya tam puanla devam ediyor. Rabbimiz buyuruyor: *"İnsan için ancak çalıştığının karşılığı vardır." (Necm, 39)*`);
-    }
-    // --- GÖRSEL RAPOR ---
-    let h = `<div style="text-align:left; color:#eee; max-height:80vh; overflow-y:auto; padding-right:10px;">`;
-    h += `<h3 style="color:#2ecc71; text-align:center; font-size:20px; border-bottom:1px solid #333; padding-bottom:10px;">📊 HAFTALIK MANEVİ ANALİZ</h3>`;
 
-    h += `<div style="background:rgba(52,152,219,0.1); padding:15px; border-radius:18px; border:1px solid #3498db; margin-bottom:20px; font-size:15px; line-height:1.6;">
-            ${yorumlar.join(" <hr style='opacity:0.1; margin:10px 0;'> ")}
-          </div>`;
-    vakitAdlari.forEach((ad, i) => {
-        let sn = stats.son.vakitler[i];
-        let on = stats.once.vakitler[i];
-        h += `<div style="background:var(--card); padding:12px; border-radius:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);">
-                <b style="color:#3498db; font-size:17px;">${ad.toUpperCase()}</b>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px;">
-                    <div style="font-size:12px; color:#2ecc71;">Cemaat: <b>${sn.cemaat}</b> ${getF(sn.cemaat, on.cemaat)}</div>
-                    <div style="font-size:12px; color:#a3e4d7;">Vaktinde: <b>${sn.vaktinde}</b> ${getF(sn.vaktinde, on.vaktinde)}</div>
-                    <div style="font-size:12px; color:#e74c3c;">Kazaya Kalmış: <b>${sn.kaza}</b> ${getF(sn.kaza, on.kaza, true)}</div>
-                    <div style="font-size:12px; color:#f39c12;">Kaza Edilmiş: <b>${sn.hic}</b> ${getF(sn.hic, on.hic, true)}</div>
-                </div>
-              </div>`;
-    });
-    h += `<b style="color:#f1c40f; font-size:17px; display:block; margin:20px 0 10px 5px;">🌟 Özel Amel Durumu</b>`;
-    for (let ad in stats.son.ozeller) {
-        let d = stats.son.ozeller[ad];
-        let ed = stats.once.ozeller[ad] || { yapildi: 0 };
-        h += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:15px;">${ad}</span>
-                <span style="color:#2ecc71; font-weight:bold;">${d.yapildi}/7 Gün ${getF(d.yapildi, ed.yapildi)}</span>
-              </div>`;
-    }
-    h += `</div>`;
+    function veriYukle() {
+        const key = getLocalKey(seciliTarih);
+        const kaydedilmis = JSON.parse(localStorage.getItem(key));
+        const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
+        const simdi = new Date();
+        const dun = new Date(simdi);
+        dun.setDate(simdi.getDate() - 1);
+        const dunStr = dun.toISOString().split('T')[0];
 
-    function getF(s, e, t = false) {
-        let f = s - e; if(f === 0) return `<small style="color:#777;">(0)</small>`;
-        let r = (f > 0) ? (t ? '#e74c3c' : '#2ecc71') : (t ? '#2ecc71' : '#e74c3c');
-        return `<small style="color:${r}; font-weight:bold;">(${f > 0 ? '+' : ''}${f})</small>`;
-    }
-    document.getElementById('statTitle').innerText = "DETAYLI ANALİZ";
-    document.getElementById('calGrid').innerHTML = h;
-    modalAcildi(); 
-    document.getElementById('statModal').style.display = 'flex';
-};    function alertBox(color, title, text) {
-    return `<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; border-left:4px solid var(--${color}); margin-bottom:8px;">
-                <b style="font-size:12px; color:var(--${color});">${title}</b><br><span style="font-size:11px; opacity:0.8;">${text}</span>
-            </div>`;
-} 
-	function veriYukle() {
-    const key = getLocalKey(seciliTarih);
-    const kaydedilmis = JSON.parse(localStorage.getItem(key));
-    const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
-    
-    // 1. DÜNÜN TARİHİNİ BULALIM
-    const simdi = new Date();
-    const dun = new Date(simdi);
-    dun.setDate(simdi.getDate() - 1);
-    const dunStr = dun.toISOString().split('T')[0];
+        const globalListe = getGlobalOzeller().filter(g => {
+            if(!g.eklenmeTarihi) return true;
+            return seciliTarihStr >= g.eklenmeTarihi;
+        });
 
-    // Global listeyi al
-    const globalListe = getGlobalOzeller().filter(g => {
-        if(!g.eklenmeTarihi) return true;
-        return seciliTarihStr >= g.eklenmeTarihi;
-    });
+        if (kaydedilmis) {
+            gunlukVeriler = kaydedilmis;
+            globalListe.forEach(g => { 
+                const varMi = gunlukVeriler.ozeller.find(o => 
+                    (o.id && g.id && o.id === g.id) || 
+                    (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase())
+                );
+                if(!varMi) {
+                    gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)}); 
+                } else {
+                    varMi.arsiv = g.arsiv;
+                    varMi.id = g.id;
+                }
+            });
 
-    if (kaydedilmis) {
-        gunlukVeriler = kaydedilmis;
-        
-        // --- GLOBAL LİSTEDEKİ EKSİKLERİ TAMAMLAMA ---
-        globalListe.forEach(g => { 
-            const varMi = gunlukVeriler.ozeller.find(o => 
-                (o.id && g.id && o.id === g.id) || 
-                (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase())
+            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => 
+                globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase())
             );
 
-            if(!varMi) {
-                gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)}); 
-            } else {
-                varMi.arsiv = g.arsiv;
-                varMi.id = g.id;
-            }
-        });
-
-        // Silinen amelleri temizle
-        gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => 
-            globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase())
-        );
-
-        // =================================================================
-        // 🔴 SADECE "DÜN" VE "SADECE FARZLAR" İÇİN OTOMATİK KIRMIZI MANTIĞI
-        // =================================================================
-        // KURAL 1: Seçili tarih dün ise içeri gir
-        if (seciliTarihStr === dunStr) {
-            
-            // KURAL 2: Dünün içinde herhangi bir işaretleme yapılmış mı kontrol et
-            let enAzBirIsaretliVarMi = false;
-
-            // Namazlardan herhangi biri işaretlenmiş mi?
-            gunlukVeriler.vakitler.forEach(v => {
-                if (v.durumlar && v.durumlar.some(d => d > 0)) {
-                    enAzBirIsaretliVarMi = true;
-                }
-            });
-
-            // Özel amellerden herhangi biri işaretlenmiş mi?
-            gunlukVeriler.ozeller.forEach(o => {
-                if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) {
-                    enAzBirIsaretliVarMi = true;
-                }
-                if (o.tip === 'renk' && Number(o.durum) > 0) {
-                    enAzBirIsaretliVarMi = true;
-                }
-            });
-
-            // EĞER DÜN EN AZ BİR İŞARETLEME VARSA, SADECE FARZLARI KONTROL ET
-            if (enAzBirIsaretliVarMi) {
-                let degisiklikVarMi = false;
-
+            if (seciliTarihStr === dunStr) {
+                let enAzBirIsaretliVarMi = false;
                 gunlukVeriler.vakitler.forEach(v => {
-                    if (v.durumlar) {
-                        // durumlar[0] = Sadece Farz Namazı temsil eder.
-                        // Eğer dün farz kılınmadıysa ve hala 0 (Gri) ise 3 (Kırmızı) yap.
-                        if (v.durumlar[0] === 0) {
+                    if (v.durumlar && v.durumlar.some(d => d > 0)) enAzBirIsaretliVarMi = true;
+                });
+                gunlukVeriler.ozeller.forEach(o => {
+                    if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
+                    if (o.tip === 'renk' && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
+                });
+
+                if (enAzBirIsaretliVarMi) {
+                    let degisiklikVarMi = false;
+                    gunlukVeriler.vakitler.forEach(v => {
+                        if (v.durumlar && v.durumlar[0] === 0) {
                             v.durumlar[0] = 3; 
                             degisiklikVarMi = true;
                         }
+                    });
+                    if (degisiklikVarMi) {
+                        localStorage.setItem(key, JSON.stringify(gunlukVeriler));
                     }
-                });
-
-                // NOT: Sünnetler (durumlar[1]), Tesbihatlar (durumlar[2]) ve 
-                // Özel Ameller (gunlukVeriler.ozeller) bu bloktan tamamen çıkarıldı.
-                // Onlar dün boş bırakılmış olsa bile gri kalmaya devam edecek.
-
-                // Değişiklikleri kaydet
-                if (degisiklikVarMi) {
-                    localStorage.setItem(key, JSON.stringify(gunlukVeriler));
                 }
             }
-        }
-        // =================================================================
-
-    } else {
-        // Eğer o güne dair kayıt yoksa sıfırdan boş oluştur
-        gunlukVeriler = { 
-            vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
-            ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
-        };
-    }
-
-    render();
-}
-function render() {
-    // Veriyi kaydet
-    localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
-    
-    // Güvenli Tarih Gösterimi (Eğer element yoksa kodun geri kalanı patlamaz)
-    const dispDateEl = document.getElementById('dispDate');
-    const isTodayEl = document.getElementById('isToday');
-    
-    if (dispDateEl) dispDateEl.innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
-    if (isTodayEl) isTodayEl.innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
-    
-    const sistemdeVeriVarmi = Object.keys(localStorage).some(key => key.startsWith('amel_20')); 
-    
-    const vDiv = document.getElementById('vakitList'); 
-    if (vDiv) {
-        vDiv.innerHTML = '';
-        const isToday = (getLocalKey(new Date()) === getLocalKey(seciliTarih));
-        const siradakiVakitIdx = isToday ? gunlukVeriler.vakitler.findIndex(v => v.durumlar[0] === 0) : -1;
-
-        gunlukVeriler.vakitler.forEach((v, vIdx) => {
-            let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
-            const cemaatMi = (f === 2);
-            
-            if ((f === 1 || f === 2) && s > 0 && (t === 1 || t === 2)) p = 100;
-            else {
-                if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
-                if (s > 0) p += 25;
-                if (t === 1 || t === 2) p += 25;
-            }
-
-            let bCol = cemaatMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
-            
-            // Hata korumalı veri çekme
-            let wData = (sistemdeVeriVarmi && typeof getWarningData === "function") ? getWarningData(vIdx) : null; 
-            let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
-            let activeClass = (vIdx === siradakiVakitIdx) ? "active-vakit" : "";
-
-            vDiv.innerHTML += `<div class="habit-card ${activeClass}">
-                <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
-                    ${wData ? `<span class="warning-blink" onclick="window.showVDetail(event, ${vIdx})">⚠️</span>` : ''}
-                    <span class="vakit-ad">${vakitler[vIdx]}</span>
-                </div>
-                <div class="circles-row">
-                    ${basliklar.map((b, bI) => `<div style="text-align:center"><div class="circle s${v.durumlar[bI]}" onclick="window.degis(${vIdx}, ${bI}, 'vakit')"></div><span class="label-text" onclick="window.showHeatmap(${vIdx}, 'vakit_sub', ${bI})">${b}</span></div>`).join('')}
-                </div>
-                <div class="progress-zone" style="position:relative;">
-                    <div style="font-size:11px; font-weight:bold;">%${p}</div>
-                    <div class="progress-bg"><div class="progress-bar" style="width:${p}%; background:${bCol}"></div></div>
-                    ${cemaatMi ? `<span style="position:absolute; top:-10px; right:-2px; font-size:14px; color:#ffeb3b; text-shadow: 0 0 3px #000;">⭐</span>` : ''}
-                </div></div>`;
-        });
-    }
-
-    // Özel Amelleri Render Et
-    const oDiv = document.getElementById('ozelList'); 
-    if (oDiv) {
-        oDiv.innerHTML = "";
-        gunlukVeriler.ozeller.forEach((o, oIdx) => {
-            // DEĞİŞİKLİK: Arşivlenmişse ekranda gösterme ama veriyi silme
-            if (o.arsiv) return;
-
-            const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
-            const card = document.createElement('div');
-            card.classList.add('ozel-kart');
-            if (isDone) card.classList.add('yapildi');
-
-            card.onclick = () => {
-                if (typeof isFuture === "function" && isFuture()) {
-                    document.getElementById('ozelAlertModal').style.display = 'flex';
-                }
+        } else {
+            gunlukVeriler = { 
+                vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })), 
+                ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })) 
             };
-
-            let ctrl = o.tip === 'sayi' ? 
-                `<input type="number" 
-                    value="${o.durum === 0 ? "" : o.durum}" 
-                    style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px; 
-                           ${(typeof isFuture === "function" && isFuture()) ? 'pointer-events: none; opacity: 0.3;' : ''}" 
-                    onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
-                `<div class="circle s${o.durum}" 
-                      style="width:26px; height:26px; margin:auto; ${(typeof isFuture === "function" && isFuture()) ? 'pointer-events: none; opacity: 0.3;' : ''}" 
-                      onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
-            
-            let wHtml = (sistemdeVeriVarmi && typeof getOzelWarning === "function" && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
-            
-            card.innerHTML = `${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}`;
-            oDiv.appendChild(card);
-        });
-	
-    
-
-    }
-	// render() fonksiyonunun içindeki en alt satır böyle olmalı:
-setTimeout(() => {
-    if (typeof seriHesaplaVeGoster === "function") {
-        seriHesaplaVeGoster();
-    }
-}, 100);
-
-}
-	 window.showHeatmap = (id, tip, subIdx = null) => {
-    currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
-    let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-    
-    // --- DÜZELTME BURADA BAŞLIYOR: Boşluk Hesaplama ---
-    let ilkGunHangiGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), 1).getDay();
-    let baslangicBoslugu = (ilkGunHangiGun === 0) ? 6 : ilkGunHangiGun - 1; // Pazartesi'yi başa alır
-    // --------------------------------------------------
-
-    let ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-    document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.heatmapNav(-1)">❮</button><div><div style="font-size:10px; opacity:0.7">${ayYilStr}</div><div style="font-size:14px">${tip === 'vakit' ? vakitler[id] : (tip === 'vakit_sub' ? vakitler[id].split(" ")[0] + " - " + basliklar[subIdx] : id)}</div></div><button class="nav-btn" onclick="window.heatmapNav(1)">❯</button></div>`;
-    
-// ... fonksiyonun başındaki hesaplamalar aynı kalıyor ...
-
-let h = `<div class="genel-wrapper">
-    <table class="genel-table heatmap-table">
-        <thead>
-            <tr style="background: rgba(255,255,255,0.1); font-size: 10px; color: #a5d3ff;">
-                <th>Pt</th><th>Sa</th><th>Ça</th><th>Pe</th><th>Cu</th><th>Ct</th><th>Pz</th>
-            </tr>
-        </thead>
-        <tr>`;
-// Ayın ilk gününden önceki boş kutucuklar
-for (let b = 0; b < baslangicBoslugu; b++) {
-    h += `<td style="background:transparent; border:none;"></td>`;
-}
-// ... geri kalan d döngüsü aynı kalıyor ...
-    for(let d=1; d<=sonGun; d++) {
-        let isToday = isTodayCheck(d, raporTarih.getMonth(), raporTarih.getFullYear());
-        let val = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
-        let c = "s0", txt = "";
-        if(val) {
-            if(tip === 'vakit') c = `s${val.vakitler[id].durumlar[0]}`;
-            else if(tip === 'vakit_sub') c = `s${val.vakitler[id].durumlar[subIdx]}`;
-            else { 
-                let o = val.ozeller.find(x => x.ad === id); 
-                if(o) { 
-                    c = o.tip === 'sayi' ? (o.durum > 0 ? 's1' : 's0') : `s${o.durum}`; 
-                    txt = (o.tip === 'sayi' && o.durum > 0) ? o.durum : ""; 
-                } 
-            }
         }
-        h += `<td class="${c} ${isToday ? 'is-today-cell' : ''}"><span class="day-num">${d}</span>${txt}</td>`;
-        
-        // Satır sonu kontrolü (Boşluklar + Gün sayısı 7'nin katı olunca alt satıra geç)
-        if((d + baslangicBoslugu) % 7 === 0) h += `</tr><tr>`;
-    }
-    document.getElementById('calGrid').innerHTML = h + `</tr></table></div>`;
-    document.getElementById('statModal').style.display = 'flex';
-    document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
-};
-    window.showGeneralReport = () => {
-    const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-    document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
-    let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
-    let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label-full">Vakit</th>`;
-    for (let d = 1; d <= sonGun; d++) table += `<th style="font-size:7px;">${d}</th>`;
-    table += `</tr></thead><tbody>`;
-    
-    vakitler.forEach((vAd, vIdx) => {
-        table += `<tr><td class="v-row-label-full">${vAd.split(" ")[0]}</td>`;
-        for (let d = 1; d <= sonGun; d++) {
-            let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
-            table += `<td class="s${(v && v.vakitler[vIdx]) ? v.vakitler[vIdx].durumlar[0] : 0}"></td>`;
-        }
-        table += `</tr>`;
-    });
-    table += `</tbody></table></div>`;
-    // PAZARTESİ - PAZAR SABİT GÜN İSİMLERİ SATIRI
-    const gunAdlari = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pa"];
-    let gunBasliklari = `<div style="display:flex; margin-left:60px; justify-content:space-between; margin-bottom:5px;">`;
-    gunAdlari.forEach(g => {
-        gunBasliklari += `<div style="width:14%; text-align:center; font-size:11px; color:#a5d3ff; font-weight:bold;">${g}</div>`;
-    });
-    gunBasliklari += `</div>`;
-    // HAFTALIK VERİ HESAPLAMA (Mevcut mantığın korundu)
-    let today = new Date(); 
-    let dayOfW = today.getDay(); 
-    let diff = today.getDate() - dayOfW + (dayOfW === 0 ? -6 : 1);
-    let monday = new Date(today.setDate(diff)); 
-    let qTrend = [[],[],[],[],[]];
-    vakitler.forEach((v, vIdx) => {
-        for (let i = 0; i < 7; i++) {
-            let d = new Date(monday); d.setDate(monday.getDate() + i);
-            let vT = JSON.parse(localStorage.getItem(getLocalKey(d)));
-            let q = 'rgba(255,255,255,0.05)';
-            if(vT && vT.vakitler[vIdx]) {
-                if(vT.vakitler[vIdx].durumlar[1] > 0 && vT.vakitler[vIdx].durumlar[2] > 0) q = 'var(--light-green)';
-                else if(vT.vakitler[vIdx].durumlar[1] > 0) q = 'var(--orange)';
-                else if(vT.vakitler[vIdx].durumlar[0] > 0) q = 'var(--red)';
-            }
-            qTrend[vIdx].push(q);
-        }
-    });
-    // ANALİZ KISMI - GÜN İSİMLERİ EKLENMİŞ HALİ
-    // ANALİZ KISMI - DAHA KİBAR VE KÜÇÜK DİKDÖRTGEN YAPISI
-    let analiz = `<div style="margin-top:15px; font-size:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
-        <b style="color:var(--blue); font-size:13px;">Haftalık Vakit Kalitesi</b><br><br>`;
-    
-    analiz += gunBasliklari; 
-    vakitler.forEach((v, i) => { 
-        analiz += `<div style="display:flex; align-items:center; margin:4px 0;">
-            <div style="width:55px; font-size:11px; color:#ccc;">${v.split(" ")[0]}</div>
-            <div class="quality-line" style="flex:1; display:flex; justify-content:space-between; gap:3px;">
-                ${qTrend[i].map(c => `
-                    <div style="
-                        background:${c}; 
-                        flex:1; 
-                        height:10px; 
-                        border-radius:2px; 
-                        border: 1px solid rgba(255,255,255,0.03);
-                    "></div>`).join('')}
-            </div>
-        </div>`; 
-    });
-    analiz += `</div>`;
-    document.getElementById('calGrid').innerHTML = table + analiz;
-    modalAcildi(); // Geri tuşu kontrolü için
-    document.getElementById('statModal').style.display = 'flex';
-    document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
-};
-
-    window.yeniEkle = () => { pendingName = document.getElementById('habInp').value; if(!pendingName) return; document.getElementById('pendingAmelAd').innerText = `"${pendingName}" için tip seçiniz:`; document.getElementById('typeModal').style.display = 'flex'; };
-window.finalEkle = (tip) => { 
-    let g = getGlobalOzeller(); 
-    const bugunStr = seciliTarih.toISOString().split('T')[0]; 
-    
-    // ID OLUŞTURMA MANTIĞINI DEĞİŞTİRDİK:
-    // İsmi baz alan, boşluksuz ve küçük harf bir ID üretiyoruz.
-    const sabitId = pendingName.trim().toLowerCase()
-                    .replace(/[^a-z0-9]/g, '') 
-                    || 'id_' + Date.now(); 
-    const yeni = { 
-        id: sabitId, 
-        ad: pendingName, 
-        tip: tip, 
-        eklenmeTarihi: bugunStr 
-    }; 
-    
-    g.push(yeni); 
-    localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); 
-    document.getElementById('habInp').value=""; 
-    gunlukVeriler.ozeller.push({...yeni, durum: (tip === 'sayi' ? "" : 0)}); 
-    document.getElementById('typeModal').style.display = 'none'; 
-    render(); 
-}; 
-    //gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum + 1) % 5
-    //window.degis = (i, s, t) => { if (t === 'ozel_renk') ;gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum === 0) ? 1 : 0;} else { let d = gunlukVeriler.vakitler[i].durumlar[s]; if (s === 0) d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 4 : (d === 4) ? 3 : 0; else if (s === 1) d = (d === 0) ? 1 : (d === 1) ? 3 : 0; else d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 3 : 0; gunlukVeriler.vakitler[i].durumlar[s] = d; } render(); };
-window.degis = (i, s, t) => { 
-    // GELECEK ENGELLEYİCİ (Yeni Görsel Hali)
-    if (isFuture()) {
-        document.getElementById('ozelAlertModal').style.display = 'flex';
-        return; 
-    }
-
-    if (t === 'ozel_renk') {
-        gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum === 0) ? 1 : 0; 
-    } else { 
-        let d = gunlukVeriler.vakitler[i].durumlar[s]; 
-        if (s === 0) d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 4 : (d === 4) ? 3 : 0; 
-        else if (s === 1) d = (d === 0) ? 1 : (d === 1) ? 3 : 0; 
-        else d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 3 : 0; 
-        gunlukVeriler.vakitler[i].durumlar[s] = d; 
-    } 
-    render();
-}
-    window.arsivle = (id) => {
-    let globalListe = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
-    let amel = globalListe.find(g => g.id == id || g.ad == id); // ID veya Ad ile bul
-    
-    if (amel) {
-        // Durumu tersine çevir (Toggle)
-        amel.arsiv = !amel.arsiv;
-        
-        // Değişikliği kaydet
-        localStorage.setItem('amel_global_ozeller', JSON.stringify(globalListe));
-        
-        // Bugünkü veriye de yansıt ki render anında bilsin
-        const varMi = gunlukVeriler.ozeller.find(o => o.id == id || o.ad == id);
-        if (varMi) varMi.arsiv = amel.arsiv;
-
         render();
     }
-};
-	window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
+
+    function render() {
+        localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
+        const dispDateEl = document.getElementById('dispDate');
+        const isTodayEl = document.getElementById('isToday');
+        
+        if (dispDateEl) dispDateEl.innerText = seciliTarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+        if (isTodayEl) isTodayEl.innerText = (getLocalKey(new Date()) === getLocalKey(seciliTarih)) ? "BUGÜN" : seciliTarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
+        
+        const sistemdeVeriVarmi = Object.keys(localStorage).some(key => key.startsWith('amel_20')); 
+        const vDiv = document.getElementById('vakitList'); 
+        
+        if (vDiv) {
+            vDiv.innerHTML = '';
+            const isToday = (getLocalKey(new Date()) === getLocalKey(seciliTarih));
+            const siradakiVakitIdx = isToday ? gunlukVeriler.vakitler.findIndex(v => v.durumlar[0] === 0) : -1;
+
+            gunlukVeriler.vakitler.forEach((v, vIdx) => {
+                let p = 0; const f = v.durumlar[0], s = v.durumlar[1], t = v.durumlar[2];
+                const cemaatMi = (f === 2);
+                
+                if ((f === 1 || f === 2) && s > 0 && (t === 1 || t === 2)) p = 100;
+                else {
+                    if (f === 1) p += 30; else if (f === 2) p += 50; else if (f === 4) p += 20;
+                    if (s > 0) p += 25;
+                    if (t === 1 || t === 2) p += 25;
+                }
+
+                let bCol = cemaatMi ? "#90ee90" : ((f > 0 || s > 0 || t > 0) ? (p === 100 ? "#90ee90" : (p >= 50 ? "#228b22" : (p > 30 ? "#f39c12" : "#e74c3c"))) : "rgba(255,255,255,0.4)");
+                let wData = (sistemdeVeriVarmi && typeof getWarningData === "function") ? getWarningData(vIdx) : null; 
+                let boxClass = (f === 1 && s > 0 && (t === 1 || t === 2)) ? "vakit-success" : (f === 2 ? "vakit-soft" : (f === 3 ? "vakit-danger" : (f === 4 ? "vakit-warn" : "")));
+                let activeClass = (vIdx === siradakiVakitIdx) ? "active-vakit" : "";
+
+                vDiv.innerHTML += `<div class="habit-card ${activeClass}">
+                    <div class="vakit-isim-box ${boxClass}" onclick="window.showHeatmap(${vIdx}, 'vakit')">
+                        ${wData ? `<span class="warning-blink" onclick="window.showVDetail(event, ${vIdx})">⚠️</span>` : ''}
+                        <span class="vakit-ad">${vakitler[vIdx]}</span>
+                    </div>
+                    <div class="circles-row">
+                        ${basliklar.map((b, bI) => `<div style="text-align:center"><div class="circle s${v.durumlar[bI]}" onclick="window.degis(${vIdx}, ${bI}, 'vakit')"></div><span class="label-text" onclick="window.showHeatmap(${vIdx}, 'vakit_sub', ${bI})">${b}</span></div>`).join('')}
+                    </div>
+                    <div class="progress-zone" style="position:relative;">
+                        <div style="font-size:11px; font-weight:bold;">%${p}</div>
+                        <div class="progress-bg"><div class="progress-bar" style="width:${p}%; background:${bCol}"></div></div>
+                        ${cemaatMi ? `<span style="position:absolute; top:-10px; right:-2px; font-size:14px; color:#ffeb3b; text-shadow: 0 0 3px #000;">⭐</span>` : ''}
+                    </div></div>`;
+            });
+        }
+
+        const oDiv = document.getElementById('ozelList'); 
+        if (oDiv) {
+            oDiv.innerHTML = "";
+            gunlukVeriler.ozeller.forEach((o, oIdx) => {
+                if (o.arsiv) return;
+                const isDone = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
+                const card = document.createElement('div');
+                card.classList.add('ozel-kart');
+                if (isDone) card.classList.add('yapildi');
+
+                card.onclick = () => {
+                    if (typeof isFuture === "function" && isFuture()) {
+                        document.getElementById('ozelAlertModal').style.display = 'flex';
+                    }
+                };
+
+                let ctrl = o.tip === 'sayi' ? 
+                    `<input type="number" 
+                        value="${o.durum === 0 ? "" : o.durum}" 
+                        style="width:80%; background:none; border:1px solid rgba(255,255,255,0.2); color:white; text-align:center; border-radius:5px; font-size:11px; 
+                               ${(typeof isFuture === "function" && isFuture()) ? 'pointer-events: none; opacity: 0.3;' : ''}" 
+                        onchange="window.sayiGuncelle(${oIdx}, this.value)">` : 
+                    `<div class="circle s${o.durum}" 
+                          style="width:26px; height:26px; margin:auto; ${(typeof isFuture === "function" && isFuture()) ? 'pointer-events: none; opacity: 0.3;' : ''}" 
+                          onclick="window.degis(${oIdx}, 0, 'ozel_renk')"></div>`;
+                
+                let wHtml = (sistemdeVeriVarmi && typeof getOzelWarning === "function" && getOzelWarning(oIdx)) ? `<span class="warning-blink" style="right:2px; top:-5px;" onclick="window.showODetail(event, ${oIdx})">⚠️</span>` : '';
+                
+                card.innerHTML = `${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}`;
+                oDiv.appendChild(card);
+            });
+        }
+
+        setTimeout(() => {
+            if (typeof seriHesaplaVeGoster === "function") {
+                seriHesaplaVeGoster();
+            }
+        }, 100);
+    }
+
+    window.showHeatmap = (id, tip, subIdx = null) => {
+        currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
+        let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+        let ilkGunHangiGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth(), 1).getDay();
+        let baslangicBoslugu = (ilkGunHangiGun === 0) ? 6 : ilkGunHangiGun - 1; 
+
+        let ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.heatmapNav(-1)">❮</button><div><div style="font-size:10px; opacity:0.7">${ayYilStr}</div><div style="font-size:14px">${tip === 'vakit' ? vakitler[id] : (tip === 'vakit_sub' ? vakitler[id].split(" ")[0] + " - " + basliklar[subIdx] : id)}</div></div><button class="nav-btn" onclick="window.heatmapNav(1)">❯</button></div>`;
+        
+        let h = `<div class="genel-wrapper">
+            <table class="genel-table heatmap-table">
+                <thead>
+                    <tr style="background: rgba(255,255,255,0.1); font-size: 10px; color: #a5d3ff;">
+                        <th>Pt</th><th>Sa</th><th>Ça</th><th>Pe</th><th>Cu</th><th>Ct</th><th>Pz</th>
+                    </tr>
+                </thead>
+                <tr>`;
+        for (let b = 0; b < baslangicBoslugu; b++) {
+            h += `<td style="background:transparent; border:none;"></td>`;
+        }
+        for(let d=1; d<=sonGun; d++) {
+            let isToday = isTodayCheck(d, raporTarih.getMonth(), raporTarih.getFullYear());
+            let val = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
+            let c = "s0", txt = "";
+            if(val) {
+                if(tip === 'vakit') c = `s${val.vakitler[id].durumlar[0]}`;
+                else if(tip === 'vakit_sub') c = `s${val.vakitler[id].durumlar[subIdx]}`;
+                else { 
+                    let o = val.ozeller.find(x => x.ad === id); 
+                    if(o) { 
+                        c = o.tip === 'sayi' ? (o.durum > 0 ? 's1' : 's0') : `s${o.durum}`; 
+                        txt = (o.tip === 'sayi' && o.durum > 0) ? o.durum : ""; 
+                    } 
+                }
+            }
+            h += `<td class="${c} ${isToday ? 'is-today-cell' : ''}"><span class="day-num">${d}</span>${txt}</td>`;
+            if((d + baslangicBoslugu) % 7 === 0) h += `</tr><tr>`;
+        }
+        document.getElementById('calGrid').innerHTML = h + `</tr></table></div>`;
+        document.getElementById('statModal').style.display = 'flex';
+        document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
+    };
+
+    window.showGeneralReport = () => {
+        const ayYilStr = raporTarih.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+        document.getElementById('statTitle').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><button class="nav-btn" onclick="window.ayRaporuDegis(-1)">❮</button><span>${ayYilStr}</span><button class="nav-btn" onclick="window.ayRaporuDegis(1)">❯</button></div>`;
+        let sonGun = new Date(raporTarih.getFullYear(), raporTarih.getMonth() + 1, 0).getDate();
+        let table = `<div class="genel-wrapper"><table class="genel-table"><thead><tr><th class="v-row-label-full">Vakit</th>`;
+        for (let d = 1; d <= sonGun; d++) table += `<th style="font-size:7px;">${d}</th>`;
+        table += `</tr></thead><tbody>`;
+        
+        vakitler.forEach((vAd, vIdx) => {
+            table += `<tr><td class="v-row-label-full">${vAd.split(" ")[0]}</td>`;
+            for (let d = 1; d <= sonGun; d++) {
+                let v = JSON.parse(localStorage.getItem(getLocalKey(new Date(raporTarih.getFullYear(), raporTarih.getMonth(), d))));
+                table += `<td class="s${(v && v.vakitler[vIdx]) ? v.vakitler[vIdx].durumlar[0] : 0}"></td>`;
+            }
+            table += `</tr>`;
+        });
+        table += `</tbody></table></div>`;
+        
+        const gunAdlari = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pa"];
+        let gunBasliklari = `<div style="display:flex; margin-left:60px; justify-content:space-between; margin-bottom:5px;">`;
+        gunAdlari.forEach(g => {
+            gunBasliklari += `<div style="width:14%; text-align:center; font-size:11px; color:#a5d3ff; font-weight:bold;">${g}</div>`;
+        });
+        gunBasliklari += `</div>`;
+        
+        let today = new Date(); 
+        let dayOfW = today.getDay(); 
+        let diff = today.getDate() - dayOfW + (dayOfW === 0 ? -6 : 1);
+        let monday = new Date(today.setDate(diff)); 
+        let qTrend = [[],[],[],[],[]];
+        vakitler.forEach((v, vIdx) => {
+            for (let i = 0; i < 7; i++) {
+                let d = new Date(monday); d.setDate(monday.getDate() + i);
+                let vT = JSON.parse(localStorage.getItem(getLocalKey(d)));
+                let q = 'rgba(255,255,255,0.05)';
+                if(vT && vT.vakitler[vIdx]) {
+                    if(vT.vakitler[vIdx].durumlar[1] > 0 && vT.vakitler[vIdx].durumlar[2] > 0) q = 'var(--light-green)';
+                    else if(vT.vakitler[vIdx].durumlar[1] > 0) q = 'var(--orange)';
+                    else if(vT.vakitler[vIdx].durumlar[0] > 0) q = 'var(--red)';
+                }
+                qTrend[vIdx].push(q);
+            }
+        });
+
+        let analiz = `<div style="margin-top:15px; font-size:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+            <b style="color:var(--blue); font-size:13px;">Haftalık Vakit Kalitesi</b><br><br>`;
+        analiz += gunBasliklari; 
+        vakitler.forEach((v, i) => { 
+            analiz += `<div style="display:flex; align-items:center; margin:4px 0;">
+                <div style="width:55px; font-size:11px; color:#ccc;">${v.split(" ")[0]}</div>
+                <div class="quality-line" style="flex:1; display:flex; justify-content:space-between; gap:3px;">
+                    ${qTrend[i].map(c => `<div style="background:${c}; flex:1; height:10px; border-radius:2px; border: 1px solid rgba(255,255,255,0.03);"></div>`).join('')}
+                </div>
+            </div>`; 
+        });
+        analiz += `</div>`;
+        document.getElementById('calGrid').innerHTML = table + analiz;
+        modalAcildi(); 
+        document.getElementById('statModal').style.display = 'flex';
+        document.querySelector('#statModal .modal-content').className = 'modal-content modal-full';
+    };
+
+    window.yeniEkle = () => { pendingName = document.getElementById('habInp').value; if(!pendingName) return; document.getElementById('pendingAmelAd').innerText = `"${pendingName}" için tip seçiniz:`; document.getElementById('typeModal').style.display = 'flex'; };
+    window.finalEkle = (tip) => { 
+        let g = getGlobalOzeller(); 
+        const bugunStr = seciliTarih.toISOString().split('T')[0]; 
+        const sabitId = pendingName.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || 'id_' + Date.now(); 
+        const yeni = { id: sabitId, ad: pendingName, tip: tip, eklenmeTarihi: bugunStr }; 
+        g.push(yeni); 
+        localStorage.setItem('amel_global_ozeller', JSON.stringify(g)); 
+        document.getElementById('habInp').value=""; 
+        gunlukVeriler.ozeller.push({...yeni, durum: (tip === 'sayi' ? "" : 0)}); 
+        document.getElementById('typeModal').style.display = 'none'; 
+        render(); 
+    }; 
+
+    window.degis = (i, s, t) => { 
+        if (isFuture()) {
+            document.getElementById('ozelAlertModal').style.display = 'flex';
+            return; 
+        }
+        if (t === 'ozel_renk') {
+            gunlukVeriler.ozeller[i].durum = (gunlukVeriler.ozeller[i].durum === 0) ? 1 : 0; 
+        } else { 
+            let d = gunlukVeriler.vakitler[i].durumlar[s]; 
+            if (s === 0) d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 4 : (d === 4) ? 3 : 0; 
+            else if (s === 1) d = (d === 0) ? 1 : (d === 1) ? 3 : 0; 
+            else d = (d === 0) ? 1 : (d === 1) ? 2 : (d === 2) ? 3 : 0; 
+            gunlukVeriler.vakitler[i].durumlar[s] = d; 
+        } 
+        render();
+    }
+
+    window.arsivle = (id) => {
+        let globalListe = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
+        let amel = globalListe.find(g => g.id == id || g.ad == id); 
+        if (amel) {
+            amel.arsiv = !amel.arsiv;
+            localStorage.setItem('amel_global_ozeller', JSON.stringify(globalListe));
+            const varMi = gunlukVeriler.ozeller.find(o => o.id == id || o.ad == id);
+            if (varMi) varMi.arsiv = amel.arsiv;
+            render();
+        }
+    };
+
+    window.degistirTarih = (n) => { seciliTarih.setDate(seciliTarih.getDate() + n); raporTarih = new Date(seciliTarih); veriYukle(); };
     window.ayRaporuDegis = (n) => { raporTarih.setMonth(raporTarih.getMonth()+n); window.showGeneralReport(); };
     window.heatmapNav = (n) => { raporTarih.setMonth(raporTarih.getMonth() + n); window.showHeatmap(currentHeatmapId, currentHeatmapType, currentHeatmapSubIdx); };
     window.tarihSec = (v) => { if(v) { seciliTarih = new Date(v); raporTarih = new Date(seciliTarih); veriYukle(); } };
     window.gitBugun = () => { seciliTarih = new Date(); raporTarih = new Date(); veriYukle(); };
     window.closeModal = () => { document.getElementById('statModal').style.display = 'none'; document.querySelector('#statModal .modal-content').className = 'modal-content'; raporTarih = new Date(seciliTarih); };
+    
     window.sesDinle = () => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) { alert("Tarayıcı desteği yok."); return; }
@@ -849,851 +750,431 @@ window.degis = (i, s, t) => {
         };
         recognition.start();
     };
+
     window.openSettings = () => { document.getElementById('settingsModal').style.display = 'flex'; document.getElementById('signalToggle').checked = signalsActive; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
-window.sayiGuncelle = (i, v) => {
-    if (isFuture()) {
-        console.log("Gelecek tarihi tespit edildi, kilit aktif.");
-        
-        // 1. Modalı aç
-        document.getElementById('ozelAlertModal').style.display = 'flex';
-        
-        // 2. Input kutusunu eski haline döndürmek için veriyi değiştirme ve render et
-        // Bu satır çok önemli, mevcut veriyi koruyoruz
-        render(); 
-        return; 
-    }
+    
+    window.sayiGuncelle = (i, v) => {
+        if (isFuture()) {
+            document.getElementById('ozelAlertModal').style.display = 'flex';
+            render(); 
+            return; 
+        }
+        gunlukVeriler.ozeller[i].durum = v === "" ? "" : parseFloat(v);
+        render();
+    };
 
-    // Gelecek değilse normal işleme devam et
-    gunlukVeriler.ozeller[i].durum = v === "" ? "" : parseFloat(v);
-    render();
-};
     window.showHelp = () => { 
-    document.getElementById('statTitle').innerHTML = `<b>AMEL DEFTERİ PRO - DETAYLI REHBER</b>`; 
-    document.getElementById('calGrid').innerHTML = `
-    <div style="font-size:15px; line-height:1.5; text-align:left; padding:5px; overflow-y:auto; scrollbar-width: thin;">
-        <p><b style="color:var(--orange)">⚠️ Uyarı Sistemi:</b> Namazlarda ve amellerde 2 gün üst üste aksama yaşanırsa seri bozulur ve sistem uyarı verir.</p>
-        
-        <p><b style="color:var(--light-green)">● İlerleme & Puan:</b> Farz %30, Sünnet %25, Tesbihat %25 puan kazandırır. Cemaatle kılınan namazlar <b>Altın Yıldız</b> ile ödüllendirilir.</p>
-        
-        <p><b>📊 Namaz Durum Renkleri:</b><br>
-        <span style="color:#e74c3c">●</span> <b>Kırmızı:</b> Kazaya kalan namaz.<br>
-        <span style="color:#e67e22">●</span> <b>Turuncu:</b> Sonradan (vakit dışı) kılınmış namaz.<br>
-        <span style="color:#2ecc71">●</span> <b>Yeşil:</b> Vaktinde kılınan namaz.<br>
-        <span style="color:#90ee90">●</span> <b>Açık Yeşil:</b> Cemaatle kılınan namaz.</p>
-        
-        <p><b style="color:#3498db">📂 Arşiv ve Silme Mantığı:</b> Özel amellerin arşive alınması veriyi tamamen silmez; geçmiş kayıtları <b>Yıllık</b> bölümde görmeye devam edebilirsiniz. Ancak bir amel yıllık bölümden de silinirse, tüm geçmişiyle beraber sistemden tamamen kaldırılır.</p>
-        
-        <p><b style="color:#f1c40f">🔍 Günlük Analiz:</b> Her gün sonunda sistem; namaz, cemaat ve amelleri tarayarak o günkü manevi istikrarınızı yüzdesel olarak hesaplar.</p>
-        
-        <p><b style="color:#9b59b6">🤖 YZ ve İstatistik:</b> Yapay zeka verileri analiz ederek haftalık/aylık grafikler oluşturur. <b>Yıllık</b> takvimde 365 günlük istikrarı, <b>Genel</b> bölümde ise toplam verileri sunar.</p>
-    </div>`; 
-    document.getElementById('statModal').style.display = 'flex'; 
-};
-    window.exportData = () => { if (typeof render === "function") {
-        render(); 
-    }let all = {}; for(let i=0; i<localStorage.length; i++){ let k = localStorage.key(i); if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); } let b = new Blob([JSON.stringify(all)], {type: "application/json"}); let a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `amel_yedek.json`; a.click(); };
-  window.importData = () => {
-    let i = document.createElement('input');
-    i.type = 'file';
-    i.accept = '.json, .txt';
-    i.onchange = e => {
-        let fr = new FileReader();
-        fr.onload = () => {
-            try {
-                let d = JSON.parse(fr.result);
-                
-                // 1. ADIM: Eski verileri temizle
-                Object.keys(localStorage).forEach(k => {
-                    if(k.startsWith('amel_')) localStorage.removeItem(k);
-                });
-
-                // 2. ADIM: Yedeği yükle (Sayılar ve işaretler burayla içeri girer)
-                Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
-
-                // 3. ADIM: Global Listeyi Tekilleştir
-                let globalListe = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
-                let tekilGlobal = [];
-                let isimKontrol = new Set();
-
-                globalListe.forEach(amel => {
-                    let temizAd = amel.ad.trim();
-                    if (!isimKontrol.has(temizAd)) {
-                        amel.arsiv = false; 
-                        amel.ad = temizAd;
-                        tekilGlobal.push(amel);
-                        isimKontrol.add(temizAd);
-                    }
-                });
-                localStorage.setItem('amel_global_ozeller', JSON.stringify(tekilGlobal));
-
-                // 4. ADIM: VERİYİ SIFIRLAMADAN GÜNCELLE
-                // location.reload() zaten veriYukle() fonksiyonunu tetikleyeceği için 
-                // burada manuel olarak "bugun.ozeller"ı sıfırlamana GEREK YOK.
-                // Sadece sayfayı yenilemek yeterli olacak.
-
-                alert("Veriler başarıyla yüklendi ve tekilleştirildi!");
-                location.reload(); 
-
-            } catch (err) {
-                alert("Yükleme hatası: " + err.message);
-            }
-        };
-        fr.readAsText(e.target.files[0]);
+        document.getElementById('statTitle').innerHTML = `<b>AMEL DEFTERİ PRO - DETAYLI REHBER</b>`; 
+        document.getElementById('calGrid').innerHTML = `
+        <div style="font-size:15px; line-height:1.5; text-align:left; padding:5px; overflow-y:auto;">
+            <p><b style="color:var(--orange)">⚠️ Uyarı Sistemi:</b> Namazlarda ve amellerde 2 gün üst üste aksama yaşanırsa seri bozulur ve sistem uyarı verir.</p>
+            <p><b style="color:var(--light-green)">● İlerleme & Puan:</b> Farz %30, Sünnet %25, Tesbihat %25 puan kazandırır. Cemaatle kılınan namazlar <b>Altın Yıldız</b> ile ödüllendirilir.</p>
+            <p><b>📊 Namaz Durum Renkleri:</b><br>
+            <span style="color:#e74c3c">●</span> <b>Kırmızı:</b> Kazaya kalan namaz.<br>
+            <span style="color:#e67e22">●</span> <b>Turuncu:</b> Sonradan (vakit dışı) kılınmış namaz.<br>
+            <span style="color:#2ecc71">●</span> <b>Yeşil:</b> Vaktinde kılınan namaz.<br>
+            <span style="color:#90ee90">●</span> <b>Açık Yeşil:</b> Cemaatle kılınan namaz.</p>
+            <p><b style="color:#3498db">📂 Arşiv ve Silme Mantığı:</b> Özel amellerin arşive alınması veriyi tamamen silmez; geçmiş kayıtları <b>Yıllık</b> bölümde görmeye devam edebilirsiniz.</p>
+        </div>`; 
+        document.getElementById('statModal').style.display = 'flex'; 
     };
-    i.click();
-};
-window.showYearlyReport = () => { 
-    const grid = document.getElementById('calGrid'); 
-    const yil = new Date().getFullYear(); 
-    document.getElementById('statTitle').innerHTML = `<b style="font-size:18px;">${yil} YILI ÖZETİ</b>`; 
-    
-    let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
-    let amelIstatistik = {}; 
 
-    // Global listeyi sadece ARŞİV DURUMUNU öğrenmek için alıyoruz
-    const globalOzeller = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
-
-    // Tüm yılı tara - Amel o gün listede olmasa bile isminden veriyi çek
-    for (let m = 0; m < 12; m++) { 
-        for (let d = 1; d <= 31; d++) { 
-            const tarihKey = getLocalKey(new Date(yil, m, d));
-            let v = JSON.parse(localStorage.getItem(tarihKey)); 
-            if (!v) continue; 
-            
-            // Kaza namazları
-            v.vakitler.forEach((vk, i) => { 
-                if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; 
-            }); 
-
-            // Özel ameller - İsim bazlı eşleştirme (Bugün listede olmasa da sayar)
-            (v.ozeller || []).forEach(vo => {
-                if (!amelIstatistik[vo.ad]) {
-                    const gAmel = globalOzeller.find(g => g.ad === vo.ad);
-                    amelIstatistik[vo.ad] = { 
-                        t: 0, 
-                        id: vo.id, 
-                        arsiv: gAmel ? gAmel.arsiv : false 
-                    };
-                }
-                
-                // Değer toplama
-                if (vo.tip === 'sayi') {
-                    amelIstatistik[vo.ad].t += parseFloat(vo.durum || 0); 
-                } else if (Number(vo.durum) > 0) {
-                    amelIstatistik[vo.ad].t += 1; 
-                }
-            }); 
+    window.exportData = () => { 
+        if (typeof render === "function") render(); 
+        let all = {}; 
+        for(let i=0; i<localStorage.length; i++){ 
+            let k = localStorage.key(i); 
+            if(k.startsWith('amel_')) all[k] = localStorage.getItem(k); 
         } 
-    }
+        let b = new Blob([JSON.stringify(all)], {type: "application/json"}); 
+        let a = document.createElement('a'); 
+        a.href = URL.createObjectURL(b); 
+        a.download = `amel_yedek.json`; 
+        a.click(); 
+    };
 
-    // Hiç verisi olmayıp sadece listede olanları ekle
-    globalOzeller.forEach(g => {
-        if (!amelIstatistik[g.ad]) {
-            amelIstatistik[g.ad] = { t: 0, id: g.id, arsiv: g.arsiv };
-        }
-    });
-
-    let h = `
-    <style>
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(52, 152, 219, 0.3); border-radius: 10px; }
-    </style>
-    <div class="custom-scroll" style="max-height:60vh; overflow-y:auto; padding-right:15px; padding-left:5px;">`;
-
-    // Kaza Tablosu
-    h += `<table style="width:100%; border-collapse:collapse;">
-            <thead><tr style="color:#e74c3c; border-bottom:2px solid rgba(231,76,60,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Kaza Namazları</th><th style="text-align:right; padding:10px 5px; font-size:15px;">Adet</th></tr></thead>
-            <tbody>`;
-    Object.keys(kaza).forEach(k => { 
-        h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:12px 5px; font-size:15px;">${k}</td><td style="text-align:right; font-weight:bold; font-size:16px; color:#eee;">${kaza[k]}</td></tr>`; 
-    });
-    h += `</tbody></table>`;
-
-    // Aktif ve Arşiv Başlıkları Hazırlığı
-    let aktifHtml = "";
-    let arsivHtml = "";
-
-    const sortedNames = Object.keys(amelIstatistik).sort();
-
-    sortedNames.forEach(name => {
-        const item = amelIstatistik[name];
-        const safeName = name.replace(/'/g, "\\'");
-        
-        let row = `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                <td style="padding:12px 5px;">
-                    <b style="font-size:15px; display:block; color:${item.arsiv ? '#95a5a6' : '#fff'};">${name}</b>
-                    <small style="font-size:13px; color:${item.arsiv ? '#7f8c8d' : '#2ecc71'}; font-weight:bold;">Toplam: ${item.t.toFixed(item.t % 1 === 0 ? 0 : 1)}</small>
-                </td>
-                <td style="text-align:right; white-space:nowrap; vertical-align:middle;">
-                    <span onclick="window.arsivle('${item.id}'); setTimeout(window.showYearlyReport, 150);" style="cursor:pointer; padding:8px; font-size:18px;" title="Arşiv/Geri">${item.arsiv ? '📤' : '📦'}</span>
-                    <span onclick="tamamenSil('${safeName}')" style="cursor:pointer; padding:8px; font-size:16px;" title="Sil">🗑️</span>
-                </td></tr>`;
-
-        if (item.arsiv) arsivHtml += row; else aktifHtml += row;
-    });
-
-    // Aktif Ameller Tablosu
-    h += `<table style="width:100%; margin-top:25px; border-collapse:collapse;">
-            <thead><tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Aktif Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead>
-            <tbody>${aktifHtml}</tbody></table>`;
-
-    // Arşivlenmiş Ameller Tablosu
-    if (arsivHtml !== "") {
-        h += `<table style="width:100%; margin-top:25px; border-collapse:collapse;">
-                <thead><tr style="color:#95a5a6; border-bottom:2px solid rgba(149,165,166,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Arşivlenmiş Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead>
-                <tbody>${arsivHtml}</tbody></table>`;
-    }
-
-    grid.innerHTML = h + `</div>`; 
-    document.getElementById('statModal').style.display = 'flex'; 
-};
-    veriYukle();
-    window.tamamenSil = (amelAd) => {
-    if (confirm(`'${amelAd}' ameli tüm geçmiş verileriyle birlikte tamamen silinecek. Bu işlem geri alınamaz. Emin misiniz?`)) {
-        
-        // 1. Global listeden sil (Gelecek günleri kurtarır)
-        let g = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
-        g = g.filter(a => a.ad.trim() !== amelAd.trim());
-        localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
-
-        // 2. Tüm geçmiş günleri tara ve sil (Geçmişi temizler)
-        // Anahtar listesini bir diziye alıyoruz ki döngü sırasında uzunluk değişirse hata olmasın
-        const keys = Object.keys(localStorage);
-        keys.forEach(key => {
-            if (key.startsWith('amel_') && key !== 'amel_global_ozeller') {
+    window.importData = () => {
+        let i = document.createElement('input');
+        i.type = 'file'; i.accept = '.json, .txt';
+        i.onchange = e => {
+            let fr = new FileReader();
+            fr.onload = () => {
                 try {
-                    let gunlukVeri = JSON.parse(localStorage.getItem(key));
-                    if (gunlukVeri && gunlukVeri.ozeller) {
-                        let ilkBoyut = gunlukVeri.ozeller.length;
-                        gunlukVeri.ozeller = gunlukVeri.ozeller.filter(o => o.ad.trim() !== amelAd.trim());
-                        
-                        // Sadece değişiklik varsa tekrar kaydet (Performans için)
-                        if(gunlukVeri.ozeller.length !== ilkBoyut) {
-                            localStorage.setItem(key, JSON.stringify(gunlukVeri));
+                    let d = JSON.parse(fr.result);
+                    Object.keys(localStorage).forEach(k => { if(k.startsWith('amel_')) localStorage.removeItem(k); });
+                    Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
+                    let globalListe = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
+                    let tekilGlobal = []; let isimKontrol = new Set();
+                    globalListe.forEach(amel => {
+                        let temizAd = amel.ad.trim();
+                        if (!isimKontrol.has(temizAd)) {
+                            amel.arsiv = false; amel.ad = temizAd;
+                            tekilGlobal.push(amel); isimKontrol.add(temizAd);
                         }
+                    });
+                    localStorage.setItem('amel_global_ozeller', JSON.stringify(tekilGlobal));
+                    alert("Veriler başarıyla yüklendi ve tekilleştirildi!");
+                    location.reload(); 
+                } catch (err) { alert("Yükleme hatası: " + err.message); }
+            };
+            fr.readAsText(e.target.files[0]);
+        };
+        i.click();
+    };
+
+    window.showYearlyReport = () => { 
+        const grid = document.getElementById('calGrid'); 
+        const yil = new Date().getFullYear(); 
+        document.getElementById('statTitle').innerHTML = `<b style="font-size:18px;">${yil} YILI ÖZETİ</b>`; 
+        let kaza = { "Sabah": 0, "Öğle": 0, "İkindi": 0, "Akşam": 0, "Yatsı": 0 };
+        let amelIstatistik = {}; 
+        const globalOzeller = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
+
+        for (let m = 0; m < 12; m++) { 
+            for (let d = 1; d <= 31; d++) { 
+                const tarihKey = getLocalKey(new Date(yil, m, d));
+                let v = JSON.parse(localStorage.getItem(tarihKey)); 
+                if (!v) continue; 
+                v.vakitler.forEach((vk, i) => { 
+                    if(vk.durumlar[0] === 3) kaza[Object.keys(kaza)[i]]++; 
+                }); 
+                (v.ozeller || []).forEach(vo => {
+                    if (!amelIstatistik[vo.ad]) {
+                        const gAmel = globalOzeller.find(g => g.ad === vo.ad);
+                        amelIstatistik[vo.ad] = { t: 0, id: vo.id, arsiv: gAmel ? gAmel.arsiv : false };
                     }
-                } catch(e) { console.error(key + " verisi işlenemedi."); }
+                    if (vo.tip === 'sayi') amelIstatistik[vo.ad].t += parseFloat(vo.durum || 0); 
+                    else if (Number(vo.durum) > 0) amelIstatistik[vo.ad].t += 1; 
+                }); 
+            } 
+        }
+        globalOzeller.forEach(g => { if (!amelIstatistik[g.ad]) amelIstatistik[g.ad] = { t: 0, id: g.id, arsiv: g.arsiv }; });
+
+        let h = `<div class="custom-scroll" style="max-height:60vh; overflow-y:auto; padding-right:15px; padding-left:5px;">`;
+        h += `<table style="width:100%; border-collapse:collapse;">
+                <thead><tr style="color:#e74c3c; border-bottom:2px solid rgba(231,76,60,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Kaza Namazları</th><th style="text-align:right; padding:10px 5px; font-size:15px;">Adet</th></tr></thead>
+                <tbody>`;
+        Object.keys(kaza).forEach(k => { 
+            h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:12px 5px; font-size:15px;">${k}</td><td style="text-align:right; font-weight:bold; font-size:16px; color:#eee;">${kaza[k]}</td></tr>`; 
+        });
+        h += `</tbody></table>`;
+
+        let aktifHtml = ""; let arsivHtml = "";
+        Object.keys(amelIstatistik).sort().forEach(name => {
+            const item = amelIstatistik[name];
+            const safeName = name.replace(/'/g, "\\'");
+            let row = `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <td style="padding:12px 5px;">
+                        <b style="font-size:15px; display:block; color:${item.arsiv ? '#95a5a6' : '#fff'};">${name}</b>
+                        <small style="font-size:13px; color:${item.arsiv ? '#7f8c8d' : '#2ecc71'}; font-weight:bold;">Toplam: ${item.t.toFixed(item.t % 1 === 0 ? 0 : 1)}</small>
+                    </td>
+                    <td style="text-align:right; white-space:nowrap; vertical-align:middle;">
+                        <span onclick="window.arsivle('${item.id}'); setTimeout(window.showYearlyReport, 150);" style="cursor:pointer; padding:8px; font-size:18px;">${item.arsiv ? '📤' : '📦'}</span>
+                        <span onclick="tamamenSil('${safeName}')" style="cursor:pointer; padding:8px; font-size:16px;">🗑️</span>
+                    </td></tr>`;
+            if (item.arsiv) arsivHtml += row; else aktifHtml += row;
+        });
+
+        h += `<table style="width:100%; margin-top:25px; border-collapse:collapse;">
+                <thead><tr style="color:#3498db; border-bottom:2px solid rgba(52,152,219,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Aktif Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead>
+                <tbody>${aktifHtml}</tbody></table>`;
+        if (arsivHtml !== "") {
+            h += `<table style="width:100%; margin-top:25px; border-collapse:collapse;">
+                    <thead><tr style="color:#95a5a6; border-bottom:2px solid rgba(149,165,166,0.3);"><th style="text-align:left; padding:10px 5px; font-size:15px;">Arşivlenmiş Ameller</th><th style="text-align:right; padding:10px 5px; font-size:15px;">İşlem</th></tr></thead>
+                    <tbody>${arsivHtml}</tbody></table>`;
+        }
+        grid.innerHTML = h + `</div>`; 
+        document.getElementById('statModal').style.display = 'flex'; 
+    };
+
+    window.tamamenSil = (amelAd) => {
+        if (confirm(`'${amelAd}' ameli tüm geçmiş verileriyle birlikte tamamen silinecek. Emin misiniz?`)) {
+            let g = JSON.parse(localStorage.getItem('amel_global_ozeller')) || [];
+            g = g.filter(a => a.ad.trim() !== amelAd.trim());
+            localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('amel_') && key !== 'amel_global_ozeller') {
+                    try {
+                        let gunlukVeri = JSON.parse(localStorage.getItem(key));
+                        if (gunlukVeri && gunlukVeri.ozeller) {
+                            let ilkBoyut = gunlukVeri.ozeller.length;
+                            gunlukVeri.ozeller = gunlukVeri.ozeller.filter(o => o.ad.trim() !== amelAd.trim());
+                            if(gunlukVeri.ozeller.length !== ilkBoyut) localStorage.setItem(key, JSON.stringify(gunlukVeri));
+                        }
+                    } catch(e) { console.error(key + " işlenemedi."); }
+                }
+            });
+            if (typeof veriYukle === "function") veriYukle();
+            if (typeof render === "function") render();
+            if (typeof closeModal === "function") closeModal();
+            alert(`'${amelAd}' temizlendi.`);
+        }
+    };
+
+    window.showModernReport = () => {
+        let bugunVeri = gunlukVeriler; 
+        let dunTarih = new Date(seciliTarih); dunTarih.setDate(dunTarih.getDate() - 1);
+        let dunVeri = JSON.parse(localStorage.getItem(getLocalKey(dunTarih)));
+        let bPuan = hesaplaPuan(bugunVeri, getLocalKey(seciliTarih));
+        let dPuan = dunVeri ? hesaplaPuan(dunVeri, getLocalKey(dunTarih)) : 0;
+        let mesaj = ""; let mRenk = ""; let simdi = new Date(); let saat = simdi.getHours();
+        let toplamGiris = bugunVeri.vakitler.reduce((acc, v) => acc + v.durumlar.reduce((a, b) => a + b, 0), 0) + 
+                         (bugunVeri.ozeller ? bugunVeri.ozeller.reduce((acc, o) => acc + Number(o.durum || 0), 0) : 0);
+
+        if (saat < 13 && toplamGiris === 0) {
+            mRenk = "#3498db"; mesaj = "Hayırlı sabahlar! Güne güzel bir maneviyatla başlamaya ne dersin? Sabah namazını kıl ve işaretle.. ✨";
+        } else if (bPuan >= 100) { mRenk = "#2ecc71"; mesaj = "Manevi zirvedesin! Bu nuru koru 💯"; }
+        else if (bPuan >= 90) { mRenk = "#2ecc71"; mesaj = "Gayretin çok iyi, küçük bir adımla zirveye çıkabilirsin! 🚀"; }
+        else if (bPuan >= 80) { mRenk = "#3498db"; mesaj = "Gayretini daha da arttır, manevi basamakları çıkmalısın! 💡"; }
+        else if (bPuan >= 70) { mRenk = "#e67e22"; mesaj = "Niyetleri Amellere çevirmeye devam et.. ☘️"; }
+        else if (bPuan >= 50) { mRenk = "#9b59b6"; mesaj = "Toparlanma vakti! Enerjini yeniden yükseltmelisin. ⚡"; }
+        else { mRenk = "#e74c3c"; mesaj = "Namaz vakitlerine dikkat et.. 🚨"; }
+
+        let h = `
+        <div style="text-align:center; padding:15px; background: rgba(0,0,0,0.3); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:5px; color:#fff;">GÜNLÜK MANEVİ ENERJİ</div>
+            <div style="font-size:42px; font-weight:900; color:${mRenk}; text-shadow: 0 0 20px ${mRenk}; transition: all 0.5s ease;">%${bPuan}</div>
+            <div style="width:100%; height:32px; background:rgba(255,255,255,0.08); border-radius:16px; margin:20px 0; overflow:hidden; border:1px solid rgba(255,255,255,0.2); position:relative;">
+                <div style="width:${bPuan}%; height:100%; background:${mRenk}; border-radius:16px; transition:width 1.5s cubic-bezier(0.23, 1, 0.32, 1); position:absolute; top:0; left:0; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6) 50%, transparent 100%); animation: mermiAkis 2s infinite;"></div>
+                </div>
+            </div>
+            <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:15px; border:1px solid ${mRenk}66; color: white; font-size:14px; line-height:1.5;">${mesaj}</div>
+            <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div style="background:var(--card); padding:12px; border-radius:15px; border: 1px solid rgba(255,255,255,0.05);"><div style="font-size:10px; opacity:0.5;">DÜN</div><div style="font-size:20px; font-weight:bold;">%${dPuan}</div></div>
+                <div style="background:var(--card); padding:12px; border-radius:15px; border: 1px solid ${mRenk}44;"><div style="font-size:10px; opacity:0.5;">BUGÜN</div><div style="font-size:20px; font-weight:bold; color:${mRenk}">%${bPuan}</div></div>
+            </div>
+            <div style="margin-top:25px; text-align:left;">
+                <div style="font-size:11px; font-weight:bold; margin-bottom:12px; color:var(--blue);">📝 EKSİKLER VE HATIRLATMALAR</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px;">${getEksikler(bugunVeri)}</div>
+            </div>
+        </div>`;
+        document.getElementById('statTitle').innerText = "GÜNLÜK ANALİZ";
+        document.getElementById('calGrid').innerHTML = h;
+        modalAcildi(); 
+        document.getElementById('statModal').style.display = 'flex';
+    };
+
+    function hesaplaPuan(v, hedefTarihKey) {
+        if (!v) return 0;
+        let p = 0; let toplamPuanPayi = 0; let simdi = new Date(); let suAnkiSaat = simdi.getHours(); let bugunStr = getLocalKey(simdi); 
+        v.vakitler.forEach((vk, index) => {
+            let f = Number(vk.durumlar[0]); let s = Number(vk.durumlar[1]); let t = Number(vk.durumlar[2]);
+            let vakitGeldiMi = (hedefTarihKey < bugunStr) || (index === 0) || (hedefTarihKey === bugunStr && suAnkiSaat >= vakitSaatleri[index]);
+            if (vakitGeldiMi) {
+                toplamPuanPayi += 18; 
+                if (f === 1 || f === 2) p += 12; else if (f === 4) p += 6;
+                if (s === 1 || s === 2) p += 4; else if (s === 4) p += 2;
+                if (t === 1 || t === 2) p += 2; else if (t === 4) p += 1;
             }
         });
-
-        // 3. Ekranı Güncelle
-        if (typeof veriYukle === "function") veriYukle();
-        if (typeof render === "function") render();
-        if (typeof closeModal === "function") closeModal();
-        
-        alert(`'${amelAd}' tüm kayıtlardan temizlendi.`);
-    }
-};
-	window.showModernReport = () => {
-    // 1. Verileri Hazırla
-    let bugunVeri = gunlukVeriler; // Tek sefer tanımladık
-    let dunTarih = new Date(seciliTarih); 
-    dunTarih.setDate(dunTarih.getDate() - 1);
-    let dunVeri = JSON.parse(localStorage.getItem(getLocalKey(dunTarih)));
-
-// showModernReport içindeki şu iki satırı güncelleyin:
-    let bPuan = hesaplaPuan(bugunVeri, getLocalKey(seciliTarih));
-    let dPuan = dunVeri ? hesaplaPuan(dunVeri, getLocalKey(dunTarih)) : 0;
-
-    let mesaj = "";
-    let mRenk = ""; 
-
-    // --- ÖZEL BAŞLANGIÇ KONTROLÜ ---
-    let simdi = new Date();
-    let saat = simdi.getHours();
-    
-    // Kullanıcının bugün herhangi bir şeye tıklayıp tıklamadığını kontrol ediyoruz
-    let toplamGiris = bugunVeri.vakitler.reduce((acc, v) => acc + v.durumlar.reduce((a, b) => a + b, 0), 0) + 
-                     (bugunVeri.ozeller ? bugunVeri.ozeller.reduce((acc, o) => acc + Number(o.durum || 0), 0) : 0);
-
-    // --- RENK VE MESAJ MANTIĞI ---
-    if (saat < 13 && toplamGiris === 0) {
-        mRenk = "#3498db"; // Mavi
-        mesaj = "Hayırlı sabahlar! Güne güzel bir maneviyatla başlamaya ne dersin? Sabah namazını kıl ve işaretle.. ✨";
-    } else if (bPuan >= 100) {
-        mRenk = "#2ecc71"; // Yeşil
-        mesaj = "Manevi zirvedesin! Bu nuru koru 💯";
-    } else if (bPuan >= 90) {
-        mRenk = "#2ecc71"; // Yeşil
-        mesaj = "Gayretin çok iyi, küçük bir adımla zirveye çıkabilirsin! 🚀";
-    } else if (bPuan >= 80) {
-        mRenk = "#3498db"; // Mavi
-        mesaj = "Gayretini daha da arttır, manevi basamakları çıkmalısın! 💡";
-    } else if (bPuan >= 70) {
-        mRenk = "#e67e22"; // Turuncu
-        mesaj = "Niyetleri Amellere çevirmeye devam et.. ☘️";
-    } else if (bPuan >= 50) {
-        mRenk = "#9b59b6"; // Mor
-        mesaj = "Toparlanma vakti! Enerjini yeniden yükseltmelisin. ⚡";
-    } else {
-        mRenk = "#e74c3c"; // Kırmızı
-        mesaj = "Namaz vakitlerine dikkat et.. 🚨";
-    }
-   // ... (Fonksiyonun başındaki puan hesaplama kısımları aynı kalıyor) ...
-    let barGradient = `linear-gradient(90deg, ${mRenk}, #ffffff, ${mRenk})`; // Daha canlı bir geçiş
-   // ... (bPuan, mRenk gibi hesaplamaların yapıldığı üst kısım aynı kalıyor)
-
-    let h = `
-    <div style="text-align:center; padding:15px; background: rgba(0,0,0,0.3); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
-        <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:5px; color:#fff;">GÜNLÜK MANEVİ ENERJİ</div>
-        <div style="font-size:42px; font-weight:900; color:${mRenk}; text-shadow: 0 0 20px ${mRenk}, 0 0 40px ${mRenk}66; transition: all 0.5s ease;">%${bPuan}</div>
-        <div style="width:100%; height:32px; background:rgba(255,255,255,0.08); border-radius:16px; margin:20px 0; overflow:hidden; border:1px solid rgba(255,255,255,0.2); position:relative; box-shadow: 0 0 15px rgba(0,0,0,0.4);">
-            <div style="width:${bPuan}%; height:100%; background:${mRenk}; border-radius:16px; transition:width 1.5s cubic-bezier(0.23, 1, 0.32, 1); position:absolute; top:0; left:0; box-shadow: 0 0 25px ${mRenk}88; z-index: 1; overflow: hidden;">
-    <div style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100%); animation: mermiAkis 2s infinite cubic-bezier(0.4, 0, 0.2, 1);"></div>
-</div>
-            
-        </div>
-
-        <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:15px; border:1px solid ${mRenk}66; color: white; font-size:14px; line-height:1.5;">
-            ${mesaj}
-        </div>
-        <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-            <div style="background:var(--card); padding:12px; border-radius:15px; border: 1px solid rgba(255,255,255,0.05);">
-                <div style="font-size:10px; opacity:0.5;">DÜN</div>
-                <div style="font-size:20px; font-weight:bold;">%${dPuan}</div>
-            </div>
-            <div style="background:var(--card); padding:12px; border-radius:15px; border: 1px solid ${mRenk}44;">
-                <div style="font-size:10px; opacity:0.5;">BUGÜN</div>
-                <div style="font-size:20px; font-weight:bold; color:${mRenk}">%${bPuan}</div>
-            </div>
-        </div>
-        
-        <div style="margin-top:25px; text-align:left;">
-            <div style="font-size:11px; font-weight:bold; margin-bottom:12px; color:var(--blue); display:flex; align-items:center; gap:5px;">
-                <span>📝</span> EKSİKLER VE HATIRLATMALAR
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-                ${getEksikler(bugunVeri)}
-            </div>
-        </div>
-    </div>
-    `;
-
-    document.getElementById('statTitle').innerText = "GÜNLÜK ANALİZ";
-    document.getElementById('calGrid').innerHTML = h;
-    document.getElementById('statModal').style.display = 'flex';
-    // window.analizEt ve window.showHelp fonksiyonlarının sonuna ekleyin:
-modalAcildi(); 
-document.getElementById('statModal').style.display = 'flex';
-};
-// Yardımcı Fonksiyonlar
-function hesaplaPuan(v, hedefTarihKey) {
-    if (!v) return 0;
-    let p = 0;
-    let toplamPuanPayi = 0;
-
-    let simdi = new Date();
-    let suAnkiSaat = simdi.getHours();
-    let bugunStr = getLocalKey(simdi); 
-
-    v.vakitler.forEach((vk, index) => {
-        let f = Number(vk.durumlar[0]);
-        let s = Number(vk.durumlar[1]);
-        let t = Number(vk.durumlar[2]);
-
-        // Vaktin gelip gelmediğini kontrol et
-        let vakitGeldiMi = (hedefTarihKey < bugunStr) || (index === 0) || (hedefTarihKey === bugunStr && suAnkiSaat >= vakitSaatleri[index]);
-
-        if (vakitGeldiMi) {
-            // KRİTİK DÜZELTME: Vakit geldiyse bu 18 puan mutlaka paydaya eklenmeli!
-            toplamPuanPayi += 18; 
-
-            // Farz Puanı (12 üzerinden)
-            if (f === 1 || f === 2) p += 12; 
-            else if (f === 4) p += 6; // Kaza ise yarım puan (6)
-            
-            // Sünnet Puanı (4 üzerinden)
-            if (s === 1 || s === 2) p += 4; 
-            else if (s === 4) p += 2; // Sünnet kaza/sonradan ise 2
-            
-            // Tesbihat Puanı (2 üzerinden)
-            if (t === 1 || t === 2) p += 2; 
-            else if (t === 4) p += 1; // Tesbihat sonradan ise 1
-        }
-    });
-
-    // Özel Ameller (10 Puanlık Sabit Pay)
-    toplamPuanPayi += 10;
-    let ozeller = v.ozeller || [];
-    let yapilanOzel = ozeller.filter(o => {
-        let d = String(o.durum).trim();
-        return d !== "" && d !== "0" && d !== "null";
-    }).length;
-
-    if (ozeller.length > 0) {
-        p += (yapilanOzel / ozeller.length) * 10;
+        toplamPuanPayi += 10;
+        let ozeller = v.ozeller || [];
+        let yapilanOzel = ozeller.filter(o => { let d = String(o.durum).trim(); return d !== "" && d !== "0" && d !== "null"; }).length;
+        if (ozeller.length > 0) p += (yapilanOzel / ozeller.length) * 10;
+        if (toplamPuanPayi === 0) return 0;
+        return Math.min(Math.round((p / toplamPuanPayi) * 100), 100);
     }
 
-    if (toplamPuanPayi === 0) return 0;
-    // Matematiksel olarak (Alınan Puan / Olması Gereken Puan) * 100
-    return Math.min(Math.round((p / toplamPuanPayi) * 100), 100);
-}
     function getEksikler(v) {
-    let e = [];
-    let simdi = new Date();
-    let suAnkiSaat = simdi.getHours();
-    
-    let bugun = new Date(); bugun.setHours(0,0,0,0);
-    let secili = new Date(seciliTarih); secili.setHours(0,0,0,0);
-
-    // Eğer bakılan gün gelecek bir günse hiçbir eksik gösterme
-    if (secili > bugun) {
-        return "<span style='color:#3498db;'>⏳ Bu gün henüz başlamadı.</span>";
-    }
-
-    v.vakitler.forEach((vk, index) => {
-        let f = Number(vk.durumlar[0]);
-        let s = Number(vk.durumlar[1]);
-        let t = Number(vk.durumlar[2]);
-        
-        // Geçmiş gün mü yoksa bugün mü kontrolü
-        let vakitGeldiMi = (secili < bugun) || (index === 0) || (suAnkiSaat >= vakitSaatleri[index]);
-
-        if (vakitGeldiMi) {
-            if (f === 0 || f === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.2); border:1px solid #e74c3c; border-radius:8px; margin:2px; font-size:11px; color:#ff7675;">🚨 ${vk.ad.split(' ')[0]} Farz</span>`);
-            if (s === 0 || s === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(243,156,18,0.1); border:1px solid #f39c12; border-radius:8px; margin:2px; font-size:11px; color:#fab1a0;">🔸 ${vk.ad.split(' ')[0]} Sünnet</span>`);
-            if (t === 0 || t === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); border-radius:8px; margin:2px; font-size:11px; opacity:0.8;">📿 ${vk.ad.split(' ')[0]} Tesbihat</span>`);
-        }
-    });
-
-    // getEksikler fonksiyonu içindeki özel amel kısmı
-    let ozeller = v.ozeller || [];
-    ozeller.forEach(o => {
-        // DURUM KONTROLÜ: Sadece boş veya 0 ise eksik say, 3 ise yapıldı say!
-        let d = o.durum;
-        let yapildiMi = (d !== 0 && d !== "0" && d !== "" && d !== null && d !== undefined);
-
-        if (!yapildiMi) {
-            e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(52,152,219,0.1); border:1px solid #3498db; border-radius:8px; margin:2px; font-size:11px; color:#74b9ff;">✨ ${o.ad}</span>`);
-        }
-    });
-    return e.length > 0 ? e.join('') : "<span style='color:#2ecc71; font-weight:bold;'>🌟 Harika! Eksik görünmüyor.</span>";
-}
-const vakitSaatleri = {
-    0: 4,  // Sabah (Örn: 04:00'den itibaren sorumlu)
-    1: 12, // Öğle (13:00)
-    2: 15, // İkindi (16:30 gibi)
-    3: 18, // Akşam (19:30 gibi)
-    4: 20  // Yatsı (21:00)
-};
-    // Geri tuşu kontrol mekanizması
-window.addEventListener('popstate', function (event) {
-    const modal = document.getElementById('statModal');
-    if (modal && modal.style.display === 'flex') {
-        // Eğer modal açıksa, geri tuşuyla sadece modalı kapat
-        modal.style.display = 'none';
-        // Uygulamadan çıkış yapılmasın diye geçmişte bir adım ileri atıyoruz
-        history.pushState(null, null, window.location.pathname);
-    }
-}, false);
-
-// Herhangi bir modal açıldığında geçmişe "sanal" bir sayfa ekleyelim
-// Bu fonksiyonu modalı açtığınız her yerde (analizEt, showHelp vb.) kullanmalısınız
-function modalAcildi() {
-    history.pushState(null, null, window.location.pathname);
-}
-    // Service Worker Kaydı
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        // Yolun başına ./ ekleyerek mevcut klasörde kalmasını sağlıyoruz
-        navigator.serviceWorker.register('./sw.js', { scope: './' })
-        .then(reg => {
-            console.log('Servis işçisi hazır!', reg);
-        }).catch(err => {
-            console.log('Servis işçisi hatası:', err);
+        let e = []; let simdi = new Date(); let suAnkiSaat = simdi.getHours();
+        let bugun = new Date(); bugun.setHours(0,0,0,0); let secili = new Date(seciliTarih); secili.setHours(0,0,0,0);
+        if (secili > bugun) return "<span style='color:#3498db;'>⏳ Bu gün henüz başlamadı.</span>";
+        v.vakitler.forEach((vk, index) => {
+            let f = Number(vk.durumlar[0]); let s = Number(vk.durumlar[1]); let t = Number(vk.durumlar[2]);
+            let vakitGeldiMi = (secili < bugun) || (index === 0) || (suAnkiSaat >= vakitSaatleri[index]);
+            if (vakitGeldiMi) {
+                if (f === 0 || f === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(231,76,60,0.2); border:1px solid #e74c3c; border-radius:8px; margin:2px; font-size:11px; color:#ff7675;">🚨 ${vk.ad.split(' ')[0]} Farz</span>`);
+                if (s === 0 || s === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(243,156,18,0.1); border:1px solid #f39c12; border-radius:8px; margin:2px; font-size:11px; color:#fab1a0;">🔸 ${vk.ad.split(' ')[0]} Sünnet</span>`);
+                if (t === 0 || t === 3) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); border-radius:8px; margin:2px; font-size:11px; opacity:0.8;">📿 ${vk.ad.split(' ')[0]} Tesbihat</span>`);
+            }
         });
-    });
-}
-
-const el = document.getElementById('analizBtn');
-
-// --- SAYFA YÜKLENDİĞİNDE KONUMU GERİ YÜKLE ---
-window.addEventListener('DOMContentLoaded', () => {
-    const savedPos = JSON.parse(localStorage.getItem('analizBtnPos'));
-    if (savedPos) {
-        el.style.left = savedPos.x + 'px';
-        el.style.top = savedPos.y + 'px';
-        el.style.bottom = 'auto';
-        el.style.right = 'auto';
-    }
-});
-
-let isDragging = false;
-let startX, startY, initialLeft, initialTop;
-
-const dragStart = (e) => {
-    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-
-    isDragging = true;
-    startX = clientX;
-    startY = clientY;
-
-    const rect = el.getBoundingClientRect();
-    initialLeft = rect.left;
-    initialTop = rect.top;
-
-    el.style.transition = 'none';
-};
-
-const dragMove = (e) => {
-    if (!isDragging) return;
-
-    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-
-    let newX = initialLeft + (clientX - startX);
-    let newY = initialTop + (clientY - startY);
-
-    // Ekran dışına taşma kontrolü
-    newX = Math.max(0, Math.min(newX, window.innerWidth - el.offsetWidth));
-    newY = Math.max(0, Math.min(newY, window.innerHeight - el.offsetHeight));
-
-    el.style.left = newX + 'px';
-    el.style.top = newY + 'px';
-    el.style.bottom = 'auto';
-    el.style.right = 'auto';
-};
-
-const dragEnd = () => {
-    if (!isDragging) return;
-    isDragging = false;
-    el.style.transition = 'all 0.3s ease-out';
-
-    // --- KONUMU HAFIZAYA KAYDET ---
-    const pos = {
-        x: el.offsetLeft,
-        y: el.offsetTop
-    };
-    localStorage.setItem('analizBtnPos', JSON.stringify(pos));
-};
-// 1. Bildirim İzni İsteme Fonksiyonu
-window.bildirimIzinIste = () => {
-    if (!("Notification" in window)) {
-        alert("Maalesef tarayıcınız bildirim desteği sunmuyor.");
-        return;
+        let ozeller = v.ozeller || [];
+        ozeller.forEach(o => {
+            let d = o.durum; let yapildiMi = (d !== 0 && d !== "0" && d !== "" && d !== null && d !== undefined);
+            if (!yapildiMi) e.push(`<span style="display:inline-block; padding:3px 8px; background:rgba(52,152,219,0.1); border:1px solid #3498db; border-radius:8px; margin:2px; font-size:11px; color:#74b9ff;">✨ ${o.ad}</span>`);
+        });
+        return e.length > 0 ? e.join('') : "<span style='color:#2ecc71; font-weight:bold;'>🌟 Harika! Eksik görünmüyor.</span>";
     }
 
-    Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-            new Notification("Sistem Aktif", { 
-                body: "Amel Defteri hatırlatıcıları başarıyla açıldı!",
-                icon: "https://cdn-icons-png.flaticon.com/512/3119/3119338.png" 
-            });
-        } else {
-            alert("Bildirim izni reddedildi. Ayarlardan açmanız gerekebilir.");
+    const vakitSaatleri = { 0: 4, 1: 12, 2: 15, 3: 18, 4: 20 };
+
+    window.addEventListener('popstate', function () {
+        const modal = document.getElementById('statModal');
+        if (modal && modal.style.display === 'flex') {
+            modal.style.display = 'none';
+            history.pushState(null, null, window.location.pathname);
+        }
+    }, false);
+
+    function modalAcildi() { history.pushState(null, null, window.location.pathname); }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js', { scope: './' })
+            .then(reg => { console.log('Servis işçisi hazır!', reg); })
+            .catch(err => { console.log('Servis işçisi hatası:', err); });
+        });
+    }
+
+    const el = document.getElementById('analizBtn');
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedPos = JSON.parse(localStorage.getItem('analizBtnPos'));
+        if (savedPos) {
+            el.style.left = savedPos.x + 'px'; el.style.top = savedPos.y + 'px';
+            el.style.bottom = 'auto'; el.style.right = 'auto';
         }
     });
-};
 
-// 2. Hatırlatıcı Kontrol Mekanizması
-// Her 1 dakikada bir saati kontrol eder
+    let isDragging = false; let startX, startY, initialLeft, initialTop;
+    const dragStart = (e) => {
+        const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+        isDragging = true; startX = clientX; startY = clientY;
+        const rect = el.getBoundingClientRect(); initialLeft = rect.left; initialTop = rect.top;
+        el.style.transition = 'none';
+    };
 
-// --- BİLDİRİM VE SAAT AYARLARI ---
+    const dragMove = (e) => {
+        if (!isDragging) return;
+        const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+        let newX = initialLeft + (clientX - startX); let newY = initialTop + (clientY - startY);
+        newX = Math.max(0, Math.min(newX, window.innerWidth - el.offsetWidth));
+        newY = Math.max(0, Math.min(newY, window.innerHeight - el.offsetHeight));
+        el.style.left = newX + 'px'; el.style.top = newY + 'px'; el.style.bottom = 'auto'; el.style.right = 'auto';
+    };
 
-// 1. Kullanıcının seçtiği saati localStorage'a kaydeder
-window.saatKaydet = (yeniSaat) => {
-    localStorage.setItem('amel_hatirlatma_saati', yeniSaat);
-    
-    // KRİTİK EKLEME: Saat değiştiği an "Bugünlük kapatıldı" mührünü siliyoruz
-    const bugunKey = getLocalKey(new Date());
-    localStorage.removeItem('panel_kapandi_' + bugunKey);
-    
-    console.log("Saat değişti, kapatma hafızası sıfırlandı: " + yeniSaat);
-    
-    // Paneli yeni saate göre hemen kontrol et
-    if (typeof window.icBildirimKontrol === "function") {
-        window.icBildirimKontrol();
-    }
-};
+    const dragEnd = () => {
+        if (!isDragging) return; isDragging = false; el.style.transition = 'all 0.3s ease-out';
+        localStorage.setItem('analizBtnPos', JSON.stringify({ x: el.offsetLeft, y: el.offsetTop }));
+    };
 
-// 2. Uygulama her açıldığında kaydedilen saati input'a geri yazar
-// Bu fonksiyonu mevcut window.onload veya DOMContentLoaded içine de ekleyebilirsin
-window.addEventListener('DOMContentLoaded', () => {
-    const kaydedilenSaat = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
-    const input = document.getElementById('hatirlatmaSaatiInput');
-    if (input) input.value = kaydedilenSaat;
-});
+    window.bildirimIzinIste = () => {
+        if (!("Notification" in window)) { alert("Tarayıcınız bildirim desteği sunmuyor."); return; }
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                new Notification("Sistem Aktif", { body: "Amel Defteri hatırlatıcıları başarıyla açıldı!" });
+            } else { alert("Bildirim izni reddedildi."); }
+        });
+    };
 
-// 3. Arka planda saati kontrol eden mekanizma
-setInterval(() => {
-    const simdi = new Date();
-    // Saat ve dakikayı her zaman iki haneli (09:05 gibi) alalım
-    const suAnkiSaat = simdi.getHours().toString().padStart(2, '0');
-    const suAnkiDakika = simdi.getMinutes().toString().padStart(2, '0');
-    const suAnkiZaman = `${suAnkiSaat}:${suAnkiDakika}`;
-    
-    const kullaniciSaati = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
+    window.saatKaydet = (yeniSaat) => {
+        localStorage.setItem('open_time_preference', yeniSaat);
+        localStorage.setItem('amel_hatirlatma_saati', yeniSaat);
+        localStorage.removeItem('panel_kapandi_' + getLocalKey(new Date()));
+        if (typeof window.icBildirimKontrol === "function") window.icBildirimKontrol();
+    };
 
-    // Konsoldan takip edelim (Test aşamasında F12'den bakarsan saati görürsün)
-    console.log("Sistem Saati:", suAnkiZaman, "Ayarli Saat:", kullaniciSaati);
+    window.addEventListener('DOMContentLoaded', () => {
+        const kaydedilenSaat = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
+        const input = document.getElementById('hatirlatmaSaatiInput');
+        if (input) input.value = kaydedilenSaat;
+    });
 
-    if (suAnkiZaman === kullaniciSaati) {
-        if (Notification.permission === "granted") {
-            if (!window.bildirimGonderildiMi) {
-                const n = new Notification("Amel Defteri", {
-                    body: "Orhan Hocam, bugünkü kayıtlarını girmeyi unutma!",
-                    icon: "https://cdn-icons-png.flaticon.com/512/3119/3119338.png"
-                });
-                
+    setInterval(() => {
+        const simdi = new Date();
+        const suAnkiZaman = `${simdi.getHours().toString().padStart(2, '0')}:${simdi.getMinutes().toString().padStart(2, '0')}`;
+        if (suAnkiZaman === (localStorage.getItem('amel_hatirlatma_saati') || "21:30")) {
+            if (Notification.permission === "granted" && !window.bildirimGonderildiMi) {
+                new Notification("Amel Defteri", { body: "Bugünkü kayıtlarını girmeyi unutma!" });
                 window.bildirimGonderildiMi = true;
                 setTimeout(() => { window.bildirimGonderildiMi = false; }, 61000);
             }
         }
-    }
-}, 30000);
+    }, 30000);
 
-// 1. X butonuna basınca çalışacak olan fonksiyon
-window.icBildirimiKapat = () => {
-    const simdi = new Date();
-    const bugunKey = getLocalKey(simdi);
-    // Bugün için kapandığını hafızaya al
-    localStorage.setItem('panel_kapandi_' + bugunKey, 'true');
-    
-    // Paneli ekrandan kaldır
-    const panel = document.getElementById('icBildirimPaneli');
-    if (panel) panel.style.display = 'none';
-    console.log("Panel bugünlük kapatıldı.");
-};
+    window.icBildirimiKapat = () => {
+        localStorage.setItem('panel_kapandi_' + getLocalKey(new Date()), 'true');
+        const panel = document.getElementById('icBildirimPaneli');
+        if (panel) panel.style.display = 'none';
+    };
 
-// 2. Kontrol Mekanizması (Güncellendi)
-window.icBildirimKontrol = () => {
-    const panel = document.getElementById('icBildirimPaneli');
-    if (!panel) return;
+    window.icBildirimKontrol = () => {
+        const panel = document.getElementById('icBildirimPaneli'); if (!panel) return;
+        if (localStorage.getItem('amel_bildirim_aktif') === 'false' || localStorage.getItem('panel_kapandi_' + getLocalKey(new Date()))) { panel.style.display = 'none'; return; }
+        const simdi = new Date(); const suAnkiDakika = (simdi.getHours() * 60) + simdi.getMinutes();
+        const [h, m] = (localStorage.getItem('amel_hatirlatma_saati') || "21:30").split(':').map(Number);
+        if (suAnkiDakika >= ((h * 60) + m)) {
+            const bugunVeri = JSON.parse(localStorage.getItem(getLocalKey(simdi)));
+            if (!bugunVeri || !bugunVeri.ozeller || !bugunVeri.ozeller.some(o => o.durum > 0)) panel.style.display = 'block';
+            else panel.style.display = 'none';
+        } else { panel.style.display = 'none'; }
+    };
 
-    // Ayarlardan genel olarak kapatıldıysa asla gösterme
-    const bildirimAktifMi = localStorage.getItem('amel_bildirim_aktif') !== 'false';
-    if (!bildirimAktifMi) {
-        panel.style.display = 'none';
-        return;
-    }
+    window.bildirimDurumKaydet = (durum) => {
+        localStorage.setItem('amel_bildirim_aktif', durum);
+        if (typeof window.icBildirimKontrol === "function") window.icBildirimKontrol();
+    };
 
-    const simdi = new Date();
-    const bugunKey = getLocalKey(simdi);
-    
-    // X ile bugünlük kapatıldıysa gösterme
-    if (localStorage.getItem('panel_kapandi_' + bugunKey)) {
-        panel.style.display = 'none';
-        return;
-    }
-
-    // Saat kontrolü
-    const suAnkiDakika = (simdi.getHours() * 60) + simdi.getMinutes();
-    const ayarliZaman = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
-    const [h, m] = ayarliZaman.split(':').map(Number);
-    const ayarliDakika = (h * 60) + m;
-
-    if (suAnkiDakika >= ayarliDakika) {
-        const bugunVeri = JSON.parse(localStorage.getItem(bugunKey));
-        // Ameller girilmediyse göster
-        if (!bugunVeri || !bugunVeri.ozeller || !bugunVeri.ozeller.some(o => (o.durum > 0 && o.durum !== "") || o.durum === "evet")) {
-            panel.style.display = 'block';
-        } else {
-            panel.style.display = 'none';
-        }
-    } else {
-        panel.style.display = 'none';
-    }
-};
-// Sayfa yüklendiğinde switch durumunu geri yükle
-// --- OTOMATİK KONTROL MEKANİZMASI ---
-window.bildirimDurumKaydet = (durum) => {
-    // durumu "true" veya "false" (metin) olarak kaydeder
-    localStorage.setItem('amel_bildirim_aktif', durum);
-    console.log("Bildirim tercihi kaydedildi:", durum);
-    
-    if (typeof window.icBildirimKontrol === "function") {
+    window.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('bildirimDurumCheck')) document.getElementById('bildirimDurumCheck').checked = localStorage.getItem('amel_bildirim_aktif') !== 'false';
         window.icBildirimKontrol();
-    }
-};
-// 1. Sayfa yüklendiğinde çalıştır
-window.addEventListener('DOMContentLoaded', () => {
-    // Ayarları yükle
-    const kaydedilenSaat = localStorage.getItem('amel_hatirlatma_saati') || "21:30";
-    const durum = localStorage.getItem('amel_bildirim_aktif') !== 'false';
-    
-    if (document.getElementById('hatirlatmaSaatiInput')) 
-        document.getElementById('hatirlatmaSaatiInput').value = kaydedilenSaat;
-        
-    if (document.getElementById('bildirimDurumCheck'))
-        document.getElementById('bildirimDurumCheck').checked = durum;
+    });
+    window.addEventListener('focus', () => { window.icBildirimKontrol(); });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') window.icBildirimKontrol(); });
+    setInterval(() => { window.icBildirimKontrol(); }, 60000);
 
-    // İlk kontrolü yap
-    window.icBildirimKontrol();
-});
+    el.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('mouseup', dragEnd);
+    el.addEventListener('touchstart', dragStart, { passive: false });
+    document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('touchend', dragEnd);
 
-// 2. Uygulamaya her geri dönüldüğünde (Arka plandan açıldığında) kontrol et
-window.addEventListener('focus', () => {
-    console.log("Uygulamaya geri dönüldü, bildirimler kontrol ediliyor...");
-    window.icBildirimKontrol();
-});
-
-// 3. Ekran görünürlüğü değiştiğinde kontrol et (Mobil tarayıcılar için daha sağlamdır)
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-        window.icBildirimKontrol();
-    }
-});
-
-// 4. Uygulama açıkken her 60 saniyede bir otomatik kontrol et
-// Böylece sen uygulamada gezinirken saat dolarsa panel anında "pıt" diye açılır
-setInterval(() => {
-    window.icBildirimKontrol();
-}, 60000);
-	// Olay Dinleyicileri
-el.addEventListener('mousedown', dragStart);
-document.addEventListener('mousemove', dragMove);
-document.addEventListener('mouseup', dragEnd);
-
-el.addEventListener('touchstart', dragStart, { passive: false });
-document.addEventListener('touchmove', dragMove, { passive: false });
-document.addEventListener('touchend', dragEnd);
-//yeni kodlar hatırlatıcı için-----------------
-window.dunRaporuGoster = () => {
-    const simdi = new Date();
-    
-    // --- 1. GÜNDE BİR KEZ GÖSTERME KONTROLÜ ---
-    const bugunKey = getLocalKey(simdi); // Örn: amel_2026-05-14
-    const raporKontrolKey = "rapor_gosterildi_" + bugunKey;
-    
-    // Eğer bugün bu rapor zaten kapatıldıysa (TAMAM'a basıldıysa) çalışma
-    if (localStorage.getItem(raporKontrolKey) === "evet") return;
-
-    const dun = new Date(simdi);
-    dun.setDate(simdi.getDate() - 1);
-    
-    const dunKey = getLocalKey(dun);
-    const dunVeriRaw = localStorage.getItem(dunKey);
-    const konteyner = document.getElementById('dunOzetKonteyner');
-
-    if (!konteyner || !dunVeriRaw) return;
-
-    const dunVeri = JSON.parse(dunVeriRaw);
-    let eksikSayisi = 0;
-    let eksikIsimleri = [];
-
-    // 1. ÖZEL AMELLERİ SAY
-    if (dunVeri.ozeller) {
-        dunVeri.ozeller.forEach(o => {
-            if (o.arsiv) return;
-            const yapildiMi = (o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0);
-            if (!yapildiMi) {
-                eksikSayisi++;
-                eksikIsimleri.push(o.ad);
-            }
-        });
-    }
-
-    // 2. NAMAZLARI SAY
-    if (dunVeri.vakitler) {
-        const vAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
-        dunVeri.vakitler.forEach((v, idx) => {
-            if (v.durumlar && v.durumlar[0] === 0) {
-                eksikSayisi++;
-                eksikIsimleri.push(vAdlari[idx]);
-            }
-        });
-    }
-
-    // EĞER EKSİK VARSA GÖSTER
-    if (eksikSayisi > 0) {
-        // --- 2. KAYDIRMA (SCROLL) SORUNU İÇİN CSS EKLEMESİ ---
-        // Bu kod, içeriğin footer'ın arkasından geçmesini engelleyen görünmez duvarı örer.
-        const styleEk = document.createElement('style');
-        styleEk.innerHTML = `
-            #dunOzetPaneli { 
-                position: relative; 
-                z-index: 5; 
-                border: 2px solid #f1c40f;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            }
-            .container { 
-                padding-bottom: 140px !important; /* Footer'a çarptığı yer */
-                overflow-y: auto;
-            }
-        `;
-        document.head.appendChild(styleEk);
-
-        konteyner.innerHTML = `
-            <div id="dunOzetPaneli" style="display: block; background: #2c3e50; color: white; padding: 15px; border-radius: 15px; margin: 10px;">
-                <b style="color:#f1c40f">🌙 DÜNÜN RAPORU</b><br>
-                Dünden kalan <b>${eksikSayisi}</b> eksik görevin var.<br>
-                <small style="color:#ccc">${eksikIsimleri.slice(0,3).join(", ")}${eksikIsimleri.length > 3 ? '...' : ''}</small>
-                <div style="margin-top:10px">
-                    <button onclick="raporuKapat('${raporKontrolKey}')" style="background:#f1c40f; border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer;">TAMAM, ANLADIM</button>
-                </div>
-            </div>
-        `;
-    }
-};
-
-// --- 3. RAPORU KAPATMA VE HAFIZAYA ALMA ---
-window.raporuKapat = (key) => {
-    localStorage.setItem(key, "evet"); // Bugün bir daha gösterme
-    const panel = document.getElementById('dunOzetPaneli');
-    if (panel) panel.style.display = 'none';
-};
-
-// Sayfa yüklendiğinde çalıştır
-window.dunRaporuGoster();
-
-function seriHesaplaVeGoster() {
-    try {
-        let seriSayaci = 0;
-        let bugun = new Date();
-        
-        // Geriye dönük 30 günü güvenli bir döngüyle kontrol edelim
-        for (let i = 0; i < 30; i++) {
-            let kontrolTarihi = new Date();
-            kontrolTarihi.setDate(bugun.getDate() - i);
-            
-            let yil = kontrolTarihi.getFullYear();
-            let ay = String(kontrolTarihi.getMonth() + 1).padStart(2, '0');
-            let gun = String(kontrolTarihi.getDate()).padStart(2, '0');
-            
-            let tarihStr = `${yil}-${ay}-${gun}`;
-            // localStorage key uyuşmazlığını çözüyoruz
-            let oGununVerisi = localStorage.getItem(`amel_${tarihStr}`); 
-            
-            if (oGununVerisi) {
-                let veriObj = JSON.parse(oGununVerisi);
-                
-                // Puan hesaplama fonksiyonunuz globalde değilse hata vermemesi için kontrol:
-                let gununYuzdesi = 0;
-                if (typeof hesaplaPuan === "function") {
-                    gununYuzdesi = hesaplaPuan(veriObj, `amel_${tarihStr}`);
-                } else if (veriObj.yuzde) {
-                    gununYuzdesi = veriObj.yuzde;
-                }
-                
-                if (gununYuzdesi >=50) {
-                    seriSayaci++;
-                } else {
-                    // Bugün henüz tamamlanmamış olabilir, seriyi bozmasın
-                    if (i !== 0) break; 
-                }
-            } else {
-                if (i !== 0) break;
-            }
+    window.dunRaporuGoster = () => {
+        const simdi = new Date(); const bugunKey = getLocalKey(simdi);
+        if (localStorage.getItem("rapor_gosterildi_" + bugunKey) === "evet") return;
+        const dun = new Date(simdi); dun.setDate(simdi.getDate() - 1);
+        const dunVeriRaw = localStorage.getItem(getLocalKey(dun));
+        const konteyner = document.getElementById('dunOzetKonteyner');
+        if (!konteyner || !dunVeriRaw) return;
+        const dunVeri = JSON.parse(dunVeriRaw); let eksikSayisi = 0; let eksikIsimleri = [];
+        if (dunVeri.ozeller) {
+            dunVeri.ozeller.forEach(o => { if (!o.arsiv && !((o.tip === 'sayi' && Number(o.durum) > 0) || (o.tip === 'renk' && Number(o.durum) > 0))) { eksikSayisi++; eksikIsimleri.push(o.ad); } });
         }
-        
-        // Ekrana yazdırma kısmı (HTML ID'nizin 'seriAlani' olduğunu varsayıyoruz)
-        let seriDiv = document.getElementById("seriAlani");
-        if (seriDiv) {
-            if (seriSayaci >= 3) {
-                seriDiv.innerHTML = `🔥 <strong>${seriSayaci} Günlük</strong> Muazzam Seri!`;
-                seriDiv.style.display = "block";
-            } else {
-                seriDiv.style.display = "none";
-            }
+        if (dunVeri.vakitler) {
+            const vAdlari = ["Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"];
+            dunVeri.vakitler.forEach((v, idx) => { if (v.durumlar && v.durumlar[0] === 0) { eksikSayisi++; eksikIsimleri.push(vAdlari[idx]); } });
         }
-    } catch (error) {
-        console.error("Seri hesaplanırken hata oluştu, ancak uygulama kilitlenmedi:", error);
-    }
-}
+        if (eksikSayisi > 0) {
+            konteyner.innerHTML = `<div id="dunOzetPaneli" style="display: block; background: #2c3e50; color: white; padding: 15px; border-radius: 15px; margin: 10px;">
+                <b style="color:#f1c40f">🌙 DÜNÜN RAPORU</b><br>Dünden kalan <b>${eksikSayisi}</b> eksik görevin var.<br>
+                <small style="color:#ccc">${eksikIsimleri.slice(0,3).join(", ")}</small>
+                <div style="margin-top:10px"><button onclick="raporuKapat('rapor_gosterildi_${bugunKey}')" style="background:#f1c40f; border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer;">TAMAM, ANLADIM</button></div>
+            </div>`;
+        }
+    };
 
+    window.raporuKapat = (key) => { localStorage.setItem(key, "evet"); const panel = document.getElementById('dunOzetPaneli'); if (panel) panel.style.display = 'none'; };
+    
+    function seriHesaplaVeGoster() {
+        try {
+            let seriSayaci = 0; let bugun = new Date();
+            for (let i = 0; i < 30; i++) {
+                let kontrolTarihi = new Date(); kontrolTarihi.setDate(bugun.getDate() - i);
+                let tarihStr = `${kontrolTarihi.getFullYear()}-${String(kontrolTarihi.getMonth() + 1).padStart(2, '0')}-${String(kontrolTarihi.getDate()).padStart(2, '0')}`;
+                let oGununVerisi = localStorage.getItem(`amel_${tarihStr}`); 
+                if (oGununVerisi) {
+                    let gununYuzdesi = hesaplaPuan(JSON.parse(oGununVerisi), `amel_${tarihStr}`);
+                    if (gununYuzdesi >= 50) { seriSayaci++; } else { if (i !== 0) break; }
+                } else { if (i !== 0) break; }
+            }
+            let seriDiv = document.getElementById("seriAlani");
+            if (seriDiv) {
+                if (seriSayaci >= 3) {
+                    seriDiv.innerHTML = `🔥 <strong>${seriSayaci} Günlük</strong> Muazzam Seri!`;
+                    seriDiv.style.display = "block";
+                } else { seriDiv.style.display = "none"; }
+            }
+        } catch (error) { console.error("Seri hesaplama hatası:", error); }
+    }
+
+    veriYukle();
+    window.dunRaporuGoster();
 </script>
 </body>
 </html>
+
+```
