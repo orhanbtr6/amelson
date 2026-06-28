@@ -629,12 +629,13 @@ function render() {
             oDiv.appendChild(card);
         });
 	
-    if (typeof seriHesaplaVeGoster === "function") {
+    
+
+    }
+	if (typeof seriHesaplaVeGoster === "function") {
         seriHesaplaVeGoster();
 	}
 
-
-    }
 }
 	 window.showHeatmap = (id, tip, subIdx = null) => {
     currentHeatmapId = id; currentHeatmapType = tip; currentHeatmapSubIdx = subIdx;
