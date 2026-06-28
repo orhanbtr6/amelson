@@ -627,6 +627,12 @@ function render() {
             card.innerHTML = `${wHtml}<b class="ozel-name" onclick="window.showHeatmap('${o.ad}', 'ozel')">${o.ad}</b>${ctrl}`;
             oDiv.appendChild(card);
         });
+	
+    if (typeof seriHesaplaVeGoster === "function") {
+        seriHesaplaVeGoster();
+    }
+}
+
     }
 }
 	 window.showHeatmap = (id, tip, subIdx = null) => {
@@ -1640,21 +1646,17 @@ window.dunRaporuGoster();
         
         // LocalStorage'dan o günün verisini senin sistemindeki key yapısına göre çekiyoruz
         // Not: Eğer localstorage key yapın "veri_2026-06-28" ise altı "veri_" + tarihStr yapmalısın.
-        let oGununVerisi = localStorage.getItem(tarihStr); 
-        
+        let oGununVerisi = localStorage.getItem(`amel_${tarihStr}`);
         if (oGununVerisi) {
-            let veriObj = JSON.parse(oGununVerisi);
-            
-            // --- %100 KONTROLÜ ---
-            // Senin mevcut kodundaki yüzde hesaplama mantığına göre burayı uyarlıyoruz:
-            // Eğer verilerinde doğrudan kaydedilen bir yüzde varsa (Örn: veriObj.yuzde) onu kullanabilirsin.
-            // Yoksa amellerin durumuna bakarız. Örnek genel mantık:
-            let gununYuzdesi = veriObj.yuzde || 0; 
-            
-            // Eğer yüzdeyi nesneden okuyamıyorsan, o günkü namazların kılınma durumuna göre sen hesaplatabilirsin.
-            if (gununYuzdesi === 100) {
-                seriSayaci++;
-            } else {
+    let veriObj = JSON.parse(oGununVerisi);
+    // Dinamik olarak o günün puanını hesaplatıyoruz
+    let gununYuzdesi = hesaplaPuan(veriObj, `amel_${tarihStr}`); 
+    
+    if (gununYuzdesi === 100) {
+        seriSayaci++;
+    } else {
+        // ... (mevcut bugün kontrolü mantığınız kalabilir)
+
                 // Bugün henüz %100 olmamış olabilir, o yüzden bugünü es geçip dünden devam etmesi için:
                 if (tarihStr === new Date().toISOString().split('T')[0]) {
                     // Bugün %100 değilse seriyi bozma, dünden itibaren geriye doğru bakmaya devam et
