@@ -1187,26 +1187,48 @@ function hesaplaPuan(gunlukVeri, tarihKey) {
     window.raporuKapat = (key) => { localStorage.setItem(key, "evet"); const panel = document.getElementById('dunOzetPaneli'); if (panel) panel.style.display = 'none'; };
     
     function seriHesaplaVeGoster() {
-        try {
-            let seriSayaci = 0; let bugun = new Date();
-            for (let i = 0; i < 30; i++) {
-                let kontrolTarihi = new Date(); kontrolTarihi.setDate(bugun.getDate() - i);
-                let tarihStr = `${kontrolTarihi.getFullYear()}-${String(kontrolTarihi.getMonth() + 1).padStart(2, '0')}-${String(kontrolTarihi.getDate()).padStart(2, '0')}`;
-                let oGununVerisi = localStorage.getItem(`amel_${tarihStr}`); 
-                if (oGununVerisi) {
-                    let gununYuzdesi = hesaplaPuan(JSON.parse(oGununVerisi), `amel_${tarihStr}`);
-                    if (gununYuzdesi ===100) { seriSayaci++; } else { if (i !== 0) break; }
-                } else { if (i !== 0) break; }
+    try {
+        let seriSayaci = 0; 
+        let bugun = new Date();
+        
+        for (let i = 0; i < 30; i++) {
+            let kontrolTarihi = new Date(); 
+            kontrolTarihi.setDate(bugun.getDate() - i);
+            
+            let tarihStr = `${kontrolTarihi.getFullYear()}-${String(kontrolTarihi.getMonth() + 1).padStart(2, '0')}-${String(kontrolTarihi.getDate()).padStart(2, '0')}`;
+            let oGununVerisi = localStorage.getItem(`amel_${tarihStr}`); 
+            
+            if (oGununVerisi) {
+                let gununYuzdesi = hesaplaPuan(JSON.parse(oGununVerisi), `amel_${tarihStr}`);
+                
+                if (gununYuzdesi === 100) { 
+                    seriSayaci++; 
+                } else { 
+                    // i === 0 BUGÜNDÜR. Bugün henüz 100 puan olmaması seriyi bozmamalı.
+                    // Ancak bugün dışında (i > 0) 100 puandan az olan bir gün varsa seri kırılır.
+                    if (i !== 0) break; 
+                }
+            } else { 
+                // Eğer o güne ait localStorage kaydı hiç yoksa (veri girilmemişse)
+                // Bugünün verisi henüz girilmediyse seriyi bozma, ama geçmiş günler boşsa seriyi kır.
+                if (i !== 0) break; 
             }
-            let seriDiv = document.getElementById("seriAlani");
-            if (seriDiv) {
-                if (seriSayaci >= 3) {
-                    seriDiv.innerHTML = `🔥 <strong>${seriSayaci} Günlük</strong> Muazzam Seri!`;
-                    seriDiv.style.display = "block";
-                } else { seriDiv.style.display = "none"; }
+        }
+        
+        let seriDiv = document.getElementById("seriAlani");
+        if (seriDiv) {
+            if (seriSayaci >= 3) {
+                seriDiv.innerHTML = `🔥 <strong>${seriSayaci} Günlük</strong> Muazzam Seri!`;
+                seriDiv.style.display = "block";
+            } else { 
+                seriDiv.style.display = "none"; 
             }
-        } catch (error) { console.error("Seri hesaplama hatası:", error); }
+        }
+    } catch (error) { 
+        console.error("Seri hesaplama hatası:", error); 
     }
+}
+
 
     veriYukle();
     window.dunRaporuGoster();
