@@ -34,14 +34,13 @@
         <span class="main-title">Amel Defteri Pro</span><span style="font-size:9px; opacity:0.4; vertical-align:super; margin-left:4px;">V.1.0</span>
     </div>
 	
-    <div class="nav-header">
-        <!-- Seri takip alanı (ID senkronizasyonu sağlandı) -->
-        <div id="seriAlani" class="seri-paneli" style="display:none; text-align:center; margin-bottom:5px; font-size:12px; color:#f1c40f;"></div>
-
+        <div class="nav-header">
         <button class="nav-btn" onclick="degistirTarih(-1)">❮</button>
         <div class="date-display-box">
             <div id="dispDate" style="font-weight: bold; font-size: 14px;"></div>
             <div id="isToday" style="font-size: 9px; color: var(--light-green); font-weight:bold;"></div>
+            <!-- Seri takip alanı şimdi tam olarak "Bugün" yazısının altında belirecek -->
+            <div id="seriAlani" class="seri-paneli" style="display:none; text-align:center; margin-top:3px; font-size:11px; color:#f1c40f; font-weight:bold;"></div>
             <input type="date" id="hiddenDate" onchange="window.tarihSec(this.value)">
         </div>
         <button class="nav-btn" onclick="degistirTarih(1)">❯</button>
@@ -51,6 +50,7 @@
             <button class="info-btn" onclick="window.showHelp()">i</button>
         </div>
     </div>
+
 
     <div id="dunOzetKonteyner"></div>
 
