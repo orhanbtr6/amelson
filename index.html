@@ -952,26 +952,37 @@
         document.getElementById('statModal').style.display = 'flex';
     };
 
-  function hesaplaPuan(gunlukVeri, tarihKey) {
+function hesaplaPuan(gunlukVeri, tarihKey) {
     if (!gunlukVeri) return 0;
 
-    // 1. Temel Namaz Puanı Hesaplama (Maksimum 90 puan)
-    let namazPuani = 0;
-    const namazlar = ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi'];
-    namazlar.forEach(vakit => {
-        if (gunlukVeri[vakit] === 'cemaat') namazPuani += 18; // 18 * 5 = 90
-        else if (gunlukVeri[vakit] === 'ilk') namazPuani += 15;
-        else if (gunlukVeri[vakit] === 'kaza') namazPuani += 5;
-    });
+    // 1. Dinamik Namaz Puanı Hesaplama
+    let toplamNamazGiris = 0;
+    let maksimumNamazGiris = 15; // 5 vakit * 3 durum (Farz, Sünnet, Tesbihat)
 
-    // 2. Özel Amel Listesini Çek ve Filtrele (Gerçekten isim/id var mı kontrol et)
+    if (gunlukVeri.vakitler && Array.isArray(gunlukVeri.vakitler)) {
+        gunlukVeri.vakitler.forEach(vakit => {
+            if (vakit.durumlar && Array.isArray(vakit.durumlar)) {
+                vakit.durumlar.forEach(durum => {
+                    // İşaretlenmiş olan (1 olan) durumları topluyoruz
+                    if (Number(durum) === 1) {
+                        toplamNamazGiris++;
+                    }
+                });
+            }
+        });
+    }
+
+    // Namazların kendi içindeki yüzdelik başarı puanı (0 - 90 arası)
+    let namazPuani = (toplamNamazGiris / maksimumNamazGiris) * 90;
+
+    // 2. Özel Amel Kontrolü
     let ozelAmellerListesi = [];
     try {
         let localAmeller = localStorage.getItem('ozelAmeller');
         if (localAmeller) {
             let taslakListe = JSON.parse(localAmeller);
             if (Array.isArray(taslakListe)) {
-                // Sadece içi gerçekten dolu olan, silinmemiş amelleri filtrele
+                // Sadece içi dolu ve aktif olan özel amelleri filtrele
                 ozelAmellerListesi = taslakListe.filter(amel => amel && (amel.isim || amel.id));
             }
         }
@@ -979,20 +990,20 @@
         console.error("Özel ameller okunurken hata oluştu:", e);
     }
 
-    // KESİN ÇÖZÜM: Eğer filtrelenmiş listede GERÇEKTEN hiçbir özel amel yoksa
+    // KRİTİK NOKTA: Eğer sistemde tanımlı hiçbir ÖZEL AMEL YOKSA
     if (!ozelAmellerListesi || ozelAmellerListesi.length === 0) {
-        // Namaz puanını doğrudan 100'lük sisteme yuvarla
-        return Math.round((namazPuani / 90) * 100);
+        // Namaz puanını 90 üzerinden değil, direkt 100 üzerinden oranla.
+        // Yani tüm namazlar tam ise (15/15), (15/15) * 100 = 100 puan verecek.
+        return Math.round((toplamNamazGiris / maksimumNamazGiris) * 100);
     }
 
-    // 3. Eğer Gerçekten Özel Amel VARSA (%90 Namaz + %10 Özel Amel)
+    // 3. Eğer Özel Amel VARSA (%90 Namaz + %10 Özel Amel)
     let ozelAmelPuani = 0;
     let yapilanOzelAmelSayisi = 0;
-    
-    if (gunlukVeri.ozelAmeller && Array.isArray(gunlukVeri.ozelAmeller)) {
-        ozelAmellerListesi.forEach(amel => {
-            let amelId = amel.id || amel.isim;
-            if (gunlukVeri.ozelAmeller.includes(amelId)) {
+
+    if (gunlukVeri.ozeller && Array.isArray(gunlukVeri.ozeller)) {
+        gunlukVeri.ozeller.forEach(o => {
+            if (Number(o.durum) === 1) {
                 yapilanOzelAmelSayisi++;
             }
         });
@@ -1004,6 +1015,7 @@
 
     return Math.round(namazPuani + ozelAmelPuani);
 }
+
 
 
 
