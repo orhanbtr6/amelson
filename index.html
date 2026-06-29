@@ -927,66 +927,7 @@
         else if (bPuan >= 50) { mRenk = "#9b59b6"; mesaj = "Toparlanma vakti! Enerjini yeniden yükseltmelisin. ⚡"; }
         else { mRenk = "#e74c3c"; mesaj = "Namaz vakitlerine dikkat et.. 🚨"; }
 
-function hesaplaPuan(gunlukVeri, tarihKey) {
-    if (!gunlukVeri) return 0;
 
-    // 1. Namaz Girişlerini Say (Maksimum 15 giriş: 5 vakit * 3)
-    let toplamNamazGiris = 0;
-    let maksimumNamazGiris = 15;
-
-    if (gunlukVeri.vakitler && Array.isArray(gunlukVeri.vakitler)) {
-        gunlukVeri.vakitler.forEach(vakit => {
-            if (vakit.durumlar && Array.isArray(vakit.durumlar)) {
-                vakit.durumlar.forEach(durum => {
-                    // 1: Vaktinde, 2: Cemaatle kılınan namazları geçerli sayıyoruz
-                    if (Number(durum) === 1 || Number(durum) === 2) {
-                        toplamNamazGiris++;
-                    }
-                });
-            }
-        });
-    }
-
-    // 2. Özel Amel Kontrolü
-    if (!gunlukVeri.ozeller || !Array.isArray(gunlukVeri.ozeller) || gunlukVeri.ozeller.length === 0) {
-        // ÖZEL AMEL YOK: Namaz puanını direkt %100 üzerinden hesapla
-        return Math.round((toplamNamazGiris / maksimumNamazGiris) * 100);
-    }
-
-    // 3. Eğer Özel Amel VARSA (%90 Namaz + %10 Özel Amel)
-    let namazPuani = (toplamNamazGiris / maksimumNamazGiris) * 90;
-    
-    let yapilanOzelAmelSayisi = 0;
-    let aktifOzelAmelSayisi = 0;
-
-    gunlukVeri.ozeller.forEach(o => {
-        if (o.arsiv) return; // Arşivlenmiş amelleri hesaba katma
-        aktifOzelAmelSayisi++;
-
-        if (o.tip === 'sayi') {
-            // Sayısal veri girilmişse ve 0'dan büyükse yapıldı say
-            if (o.durum !== "" && !isNaN(o.durum) && Number(o.durum) > 0) {
-                yapilanOzelAmelSayisi++;
-            }
-        } else if (o.tip === 'renk') {
-            // Renk bazlı (daire) ise durumun 1 olması yeterli
-            if (Number(o.durum) === 1) {
-                yapilanOzelAmelSayisi++;
-            }
-        }
-    });
-
-    // Eğer tüm özel ameller arşivlenmişse bölme hatası (NaN) olmasın diye kontrol
-    let ozelAmelPuani = 0;
-    if (aktifOzelAmelSayisi > 0) {
-        ozelAmelPuani = (yapilanOzelAmelSayisi / aktifOzelAmelSayisi) * 10;
-    } else {
-        // Aktif özel amel kalmadıysa namazı tekrar %100'e tamamla
-        namazPuani = (toplamNamazGiris / maksimumNamazGiris) * 100;
-    }
-
-    return Math.round(namazPuani + ozelAmelPuani);
-}
         let h = `
         <div style="text-align:center; padding:15px; background: rgba(0,0,0,0.3); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
             <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:5px; color:#fff;">GÜNLÜK MANEVİ ENERJİ</div>
@@ -1248,7 +1189,119 @@ function hesaplaPuan(gunlukVeri, tarihKey) {
     }
 }
 
+// 1. ÖNCE HESAPLA PUAN FONKSİYONUNU GLOBAL ALANA TAŞIDIK (Hepsinden bağımsız çalışabilmesi için)
+function hesaplaPuan(gunlukVeri, tarihKey) {
+    if (!gunlukVeri) return 0;
 
+    let toplamNamazGiris = 0;
+    let maksimumNamazGiris = 15;
+
+    if (gunlukVeri.vakitler && Array.isArray(gunlukVeri.vakitler)) {
+        gunlukVeri.vakitler.forEach(vakit => {
+            if (vakit.durumlar && Array.isArray(vakit.durumlar)) {
+                vakit.durumlar.forEach(durum => {
+                    if (Number(durum) === 1 || Number(durum) === 2) {
+                        toplamNamazGiris++;
+                    }
+                });
+            }
+        });
+    }
+
+    if (!gunlukVeri.ozeller || !Array.isArray(gunlukVeri.ozeller) || gunlukVeri.ozeller.length === 0) {
+        return Math.round((toplamNamazGiris / maksimumNamazGiris) * 100);
+    }
+
+    let namazPuani = (toplamNamazGiris / maksimumNamazGiris) * 90;
+    let yapilanOzelAmelSayisi = 0;
+    let aktifOzelAmelSayisi = 0;
+
+    gunlukVeri.ozeller.forEach(o => {
+        if (o.arsiv) return; 
+        aktifOzelAmelSayisi++;
+
+        if (o.tip === 'sayi') {
+            if (o.durum !== "" && !isNaN(o.durum) && Number(o.durum) > 0) {
+                yapilanOzelAmelSayisi++;
+            }
+        } else if (o.tip === 'renk') {
+            if (Number(o.durum) === 1) {
+                yapilanOzelAmelSayisi++;
+            }
+        }
+    });
+
+    let ozelAmelPuani = 0;
+    if (aktifOzelAmelSayisi > 0) {
+        ozelAmelPuani = (yapilanOzelAmelSayisi / aktifOzelAmelSayisi) * 10;
+    } else {
+        namazPuani = (toplamNamazGiris / maksimumNamazGiris) * 100;
+    }
+
+    return Math.round(namazPuani + ozelAmelPuani);
+}
+
+// 2. GÜNCELLENMİŞ VE GÜVENLİ SERİ HESAPLAMA FONKSİYONU
+function seriHesaplaVeGoster() {
+    try {
+        let seriSayaci = 0; 
+        let bugun = new Date();
+        
+        console.log("--- Seri Hesaplama Başladı ---");
+
+        for (let i = 0; i < 30; i++) {
+            let kontrolTarihi = new Date(); 
+            kontrolTarihi.setDate(bugun.getDate() - i);
+            
+            let tarihStr = `${kontrolTarihi.getFullYear()}-${String(kontrolTarihi.getMonth() + 1).padStart(2, '0')}-${String(kontrolTarihi.getDate()).padStart(2, '0')}`;
+            let oGununVerisi = localStorage.getItem(`amel_${tarihStr}`); 
+            
+            // Bugünün verisi henüz girilmediyse seriyi bozma, dünden itibaren saymaya devam et
+            if (i === 0 && !oGununVerisi) {
+                console.log("Bugün henüz veri girilmemiş, seri bozulmadı, devam ediliyor...");
+                continue; 
+            }
+
+            // Geçmiş bir günde veri yoksa seri burada kırılır
+            if (!oGununVerisi) {
+                console.log(`${tarihStr} tarihinde veri bulunamadı. Seri kırıldı.`);
+                break;
+            }
+
+            let gunlukObje = JSON.parse(oGununVerisi);
+            let gununYuzdesi = hesaplaPuan(gunlukObje, `amel_${tarihStr}`);
+            
+            console.log(`${tarihStr} günü puanı: ${gununYuzdesi}`);
+
+            if (gununYuzdesi === 100) { 
+                seriSayaci++; 
+            } else { 
+                if (i === 0) {
+                    console.log("Bugün henüz 100 puan değil ama gün bitmediği için seri devam ediyor.");
+                } else {
+                    console.log(`${tarihStr} günü puanı 100 olmadığı için seri kırıldı.`);
+                    break; 
+                }
+            }
+        }
+        
+        console.log("Toplam Hesaplanan Seri:", seriSayaci);
+
+        let seriDiv = document.getElementById("seriAlani");
+        if (seriDiv) {
+            if (seriSayaci >= 3) {
+                seriDiv.innerHTML = `🔥 <strong>${seriSayaci} Günlük</strong> Muazzam Seri!`;
+                seriDiv.style.display = "block";
+            } else { 
+                console.log("Seri 3 günden az olduğu için alan gizlendi.");
+                seriDiv.style.display = "none"; 
+            }
+        }
+    } catch (error) { 
+        console.error("Seri hesaplama hatası:", error); 
+    }
+}
+	
     veriYukle();
     window.dunRaporuGoster();
 </script>
