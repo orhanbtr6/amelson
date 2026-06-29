@@ -955,15 +955,14 @@
 function hesaplaPuan(gunlukVeri, tarihKey) {
     if (!gunlukVeri) return 0;
 
-    // 1. Dinamik Namaz Puanı Hesaplama
+    // 1. Namaz Girişlerini Say (Maksimum 15 giriş: 5 vakit * 3)
     let toplamNamazGiris = 0;
-    let maksimumNamazGiris = 15; // 5 vakit * 3 durum (Farz, Sünnet, Tesbihat)
+    let maksimumNamazGiris = 15;
 
     if (gunlukVeri.vakitler && Array.isArray(gunlukVeri.vakitler)) {
         gunlukVeri.vakitler.forEach(vakit => {
             if (vakit.durumlar && Array.isArray(vakit.durumlar)) {
                 vakit.durumlar.forEach(durum => {
-                    // İşaretlenmiş olan (1 olan) durumları topluyoruz
                     if (Number(durum) === 1) {
                         toplamNamazGiris++;
                     }
@@ -972,49 +971,30 @@ function hesaplaPuan(gunlukVeri, tarihKey) {
         });
     }
 
-    // Namazların kendi içindeki yüzdelik başarı puanı (0 - 90 arası)
-    let namazPuani = (toplamNamazGiris / maksimumNamazGiris) * 90;
-
-    // 2. Özel Amel Kontrolü
-    let ozelAmellerListesi = [];
-    try {
-        let localAmeller = localStorage.getItem('ozelAmeller');
-        if (localAmeller) {
-            let taslakListe = JSON.parse(localAmeller);
-            if (Array.isArray(taslakListe)) {
-                // Sadece içi dolu ve aktif olan özel amelleri filtrele
-                ozelAmellerListesi = taslakListe.filter(amel => amel && (amel.isim || amel.id));
-            }
-        }
-    } catch (e) {
-        console.error("Özel ameller okunurken hata oluştu:", e);
-    }
-
-    // KRİTİK NOKTA: Eğer sistemde tanımlı hiçbir ÖZEL AMEL YOKSA
-    if (!ozelAmellerListesi || ozelAmellerListesi.length === 0) {
-        // Namaz puanını 90 üzerinden değil, direkt 100 üzerinden oranla.
-        // Yani tüm namazlar tam ise (15/15), (15/15) * 100 = 100 puan verecek.
+    // 2. Özel Amel Kontrolü (Doğrudan gelen verinin içindeki 'ozeller' dizisine bakıyoruz)
+    // Eğer 'ozeller' dizisi hiç yoksa veya içi tamamen boşsa (0 elemanlıysa)
+    if (!gunlukVeri.ozeller || !Array.isArray(gunlukVeri.ozeller) || gunlukVeri.ozeller.length === 0) {
+        // ÖZEL AMEL YOK: Namaz puanını direkt %100 üzerinden hesapla
         return Math.round((toplamNamazGiris / maksimumNamazGiris) * 100);
     }
 
     // 3. Eğer Özel Amel VARSA (%90 Namaz + %10 Özel Amel)
-    let ozelAmelPuani = 0;
+    let namazPuani = (toplamNamazGiris / maksimumNamazGiris) * 90;
+    
     let yapilanOzelAmelSayisi = 0;
+    let toplamOzelAmelTanimli = gunlukVeri.ozeller.length;
 
-    if (gunlukVeri.ozeller && Array.isArray(gunlukVeri.ozeller)) {
-        gunlukVeri.ozeller.forEach(o => {
-            if (Number(o.durum) === 1) {
-                yapilanOzelAmelSayisi++;
-            }
-        });
-    }
+    gunlukVeri.ozeller.forEach(o => {
+        if (Number(o.durum) === 1) {
+            yapilanOzelAmelSayisi++;
+        }
+    });
 
-    if (ozelAmellerListesi.length > 0) {
-        ozelAmelPuani = (yapilanOzelAmelSayisi / ozelAmellerListesi.length) * 10;
-    }
+    let ozelAmelPuani = (yapilanOzelAmelSayisi / toplamOzelAmelTanimli) * 10;
 
     return Math.round(namazPuani + ozelAmelPuani);
 }
+
 
 
 
