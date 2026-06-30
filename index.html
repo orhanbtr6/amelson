@@ -40,7 +40,7 @@
             <div id="dispDate" style="font-weight: bold; font-size: 14px;"></div>
             <div id="isToday" style="font-size: 9px; color: var(--light-green); font-weight:bold;"></div>
             <!-- Seri takip alanı şimdi tam olarak "Bugün" yazısının altında belirecek -->
-             <input type="date" id="hiddenDate" onchange="window.tarihSec(this.value)">
+              <input type="date" id="hiddenDate" onchange="window.tarihSec(this.value)">
         </div>
         <button class="nav-btn" onclick="degistirTarih(1)">❯</button>
         <div style="display:flex; gap:4px; margin-left:5px;">
@@ -48,34 +48,9 @@
             <button class="nav-btn" style="background:var(--orange); font-size: 9px; padding: 8px;" onclick="showYearlyReport()">📅 YILLIK</button>
             <button class="info-btn" onclick="window.showHelp()">i</button>
         </div>
-    
-    <div id="seriAlani" style="
-    display: none; 
-    visibility: hidden; /* Gizliyken kesinlikle yer kaplamasın */
-    align-items: center; 
-    justify-content: center; 
-    gap: 8px; 
-    margin: 0 auto; /* Başlangıçta dikey boşluğu sıfırladık */
-    padding: 0; /* Gizliyken padding sıfır */
-    background: rgba(241, 196, 15, 0.1); 
-    border: none; 
-    border-radius: 12px; 
-    font-size: 13px; 
-    color: #f1c40f; 
-    width: 90%; 
-    max-width: 400px; 
-    box-sizing: border-box;
-    font-weight: bold;
-    transition: all 0.2s ease; /* Yumuşak bir açılış olsun */
-">
-	</div>
-    </div> 
-</div>
-    <!-- Tam işaretlediğin yer: Üst panel ile namaz kartları arası -->
-
-
-
-    <!-- Buradan itibaren de alttaki namaz kartlarının container'ı veya listesi başlıyor -->
+			<div id="seriAlani" class="seri-paneli" style="display:none; text-align:center; margin-top:3px; font-size:11px; color:#f1c40f; font-weight:bold;"></div>
+          
+    </div>
 
 
     <div id="dunOzetKonteyner"></div>
@@ -1313,21 +1288,16 @@ function seriHesaplaVeGoster() {
         
         console.log("Toplam Hesaplanan Seri:", seriSayaci);
 
-                let seriDiv = document.getElementById("seriAlani");
+        let seriDiv = document.getElementById("seriAlani");
         if (seriDiv) {
             if (seriSayaci >= 3) {
-                // Görseldeki gibi tam yatay hizada açılması için flex yapıyoruz
-                seriDiv.style.display = "flex";
-                seriDiv.innerHTML = `
-                    <span>🔥</span>
-                    <span>${seriSayaci} Günlük Muazzam Seri!</span>
-                `;
+                seriDiv.innerHTML = `🔥 <strong>${seriSayaci} Günlük</strong> Muazzam Seri!`;
+                seriDiv.style.display = "block";
             } else { 
                 console.log("Seri 3 günden az olduğu için alan gizlendi.");
                 seriDiv.style.display = "none"; 
             }
         }
-
     } catch (error) { 
         console.error("Seri hesaplama hatası:", error); 
     }
