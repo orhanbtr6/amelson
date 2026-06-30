@@ -40,6 +40,8 @@
             <div id="dispDate" style="font-weight: bold; font-size: 14px;"></div>
             <div id="isToday" style="font-size: 9px; color: var(--light-green); font-weight:bold;"></div>
             <!-- Seri takip alanı şimdi tam olarak "Bugün" yazısının altında belirecek -->
+			<div id="seriAlani" class="seri-paneli" style="display:none; text-align:center; margin-top:3px; font-size:11px; color:#f1c40f; font-weight:bold;"></div>
+          
               <input type="date" id="hiddenDate" onchange="window.tarihSec(this.value)">
         </div>
         <button class="nav-btn" onclick="degistirTarih(1)">❯</button>
@@ -48,8 +50,7 @@
             <button class="nav-btn" style="background:var(--orange); font-size: 9px; padding: 8px;" onclick="showYearlyReport()">📅 YILLIK</button>
             <button class="info-btn" onclick="window.showHelp()">i</button>
         </div>
-		<br>	<div id="seriAlani" class="seri-paneli" style="display:none; text-align:center; margin-top:3px; font-size:11px; color:#f1c40f; font-weight:bold;"></div>
-          
+		
     </div>
 
 
