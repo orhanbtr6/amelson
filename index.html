@@ -66,99 +66,42 @@
             </div>
         </div>
         
-        <!-- 1. ANA EKRAN: EN ÜSTTEKİ TEK SATIRLIK YENİ KALKAN BUTONU -->
-<div class="w-full max-w-md mx-auto mb-4 px-4">
-  <button onclick="toggleShieldModal(true)" class="w-full flex items-center justify-between p-4 rounded-2xl bg-[#0f2540] border border-[#00d2ff]/30 hover:border-[#00d2ff]/80 transition-all duration-300 shadow-[0_0_15px_rgba(0,210,255,0.1)]">
-    <div class="flex items-center gap-3">
-      <!-- Kalkan İkonu (Temaya uygun neon mavi) -->
-      <svg class="w-6 h-6 text-[#00d2ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-      </svg>
-      <span class="text-white font-medium text-sm">Aktif Koruma Kalkanları</span>
+       <!-- Ana Ekrandaki Tek Satırlık Kalkan Özet Barı -->
+<div id="kalkan-ozet-bar" onclick="kalkanModalAc()" style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8)); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px 16px; margin: 15px 0; cursor: pointer; transition: all 0.2s ease;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 20px;">🛡️</span>
+        <span style="font-weight: 600; font-size: 14px; color: #fff;">Nefis Kalkanları Durumu</span>
     </div>
-    <div class="flex items-center gap-2">
-      <span class="text-xs bg-[#00d2ff]/20 text-[#00d2ff] px-2.5 py-0.5 rounded-full font-semibold border border-[#00d2ff]/30">3 Aktif</span>
-      <!-- Küçük Sağ Ok -->
-      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
+    <div id="kalkan-bar-ozet-ikonlar" style="display: flex; align-items: center; gap: 6px;">
+        <!-- Dinamik olarak kalkanların durum ikonları buraya dolacak (Örn: 🛡️ 🛡️ 💥 ✨ 🛡️) -->
     </div>
-  </button>
 </div>
 
-<!-- 2. POPUP / MODAL (AÇILIR PENCERE) YAPISI -->
-<!-- Başlangıçta gizli (hidden) olacak, butona basınca açılacak -->
-<div id="shieldModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-  <div class="w-full max-w-sm bg-[#0a182c] border border-[#00d2ff]/40 rounded-3xl shadow-[0_0_30px_rgba(0,210,255,0.25)] flex flex-col max-h-[80vh]">
-    
-    <!-- Modal Başlığı -->
-    <div class="p-5 border-b border-gray-800 flex items-center justify-between">
-      <h3 class="text-lg font-semibold text-white flex items-center gap-2">
-        <span class="text-[#00d2ff]">🛡️</span> Koruma Kalkanları
-      </h3>
-      <button onclick="toggleShieldModal(false)" class="text-gray-400 hover:text-white transition-colors">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-
-    <!-- Scroll Edilebilir Kalkan Listesi -->
-    <div class="p-5 overflow-y-auto space-y-4 custom-scrollbar">
-      
-      <!-- Öfke Kalkanı -->
-      <div class="p-4 rounded-xl bg-[#0f2540] border border-gray-800 flex items-start justify-between gap-3">
-        <div class="space-y-1">
-          <div class="flex items-center gap-2">
-            <span class="text-white font-medium text-sm">Öfke Kalkanı</span>
-            <span class="text-[10px] text-[#00ffcc] bg-[#00ffcc]/10 px-1.5 py-0.5 rounded border border-[#00ffcc]/20">Aktif</span>
-          </div>
-          <p class="text-xs text-gray-400 leading-relaxed">Öfkeyle kırıcı davranmamak, sabrı tercih etmek.</p>
-        </div>
-        <button class="shrink-0 text-xs text-red-400 border border-red-500/30 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-all">Kalkanı Kır</button>
-      </div>
-
-      <!-- Emanet Kalkanı -->
-      <div class="p-4 rounded-xl bg-[#0f2540] border border-gray-800 flex items-start justify-between gap-3">
-        <div class="space-y-1">
-          <div class="flex items-center gap-2">
-            <span class="text-white font-medium text-sm">Emanet Kalkanı</span>
-            <span class="text-[10px] text-[#00ffcc] bg-[#00ffcc]/10 px-1.5 py-0.5 rounded border border-[#00ffcc]/20">Aktif</span>
-          </div>
-          <p class="text-xs text-gray-400 leading-relaxed">Verilen sözleri tutmak, güveni boşa çıkarmamak.</p>
-        </div>
-        <button class="shrink-0 text-xs text-red-400 border border-red-500/30 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-all">Kalkanı Kır</button>
-      </div>
-
-      <!-- Zaman Kalkanı -->
-      <div class="p-4 rounded-xl bg-[#0f2540] border border-gray-800 flex items-start justify-between gap-3">
-        <div class="space-y-1">
-          <div class="flex items-center gap-2">
-            <span class="text-white font-medium text-sm">Zaman Kalkanı</span>
-            <span class="text-[10px] text-[#00ffcc] bg-[#00ffcc]/10 px-1.5 py-0.5 rounded border border-[#00ffcc]/20">Aktif</span>
-          </div>
-          <p class="text-xs text-gray-400 leading-relaxed">Vakti ve ömrü faydasız işlerle israf etmemek.</p>
-        </div>
-        <button class="shrink-0 text-xs text-red-400 border border-red-500/30 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-all">Kalkanı Kır</button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- Modal Açma/Kapama Scripti -->
-<script>
-  function toggleShieldModal(show) {
-    const modal = document.getElementById('shieldModal');
-    if (show) {
-      modal.classList.remove('hidden');
-    } else {
-      modal.classList.add('hidden');
-    }
-  }
-</script>
-
+<!-- Kalkan Detayları İçin Tam Ortada Açılan Modal Pencere -->
+<div id="kalkanModal" class="modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); align-items: center; justify-content: center;">
+    <div class="modal-icerik" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; width: 90%; max-width: 500px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
         
+        <!-- Modal Başlık -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 22px;">🛡️</span>
+                <h3 style="margin: 0; font-size: 18px; color: #fff; font-weight: 700;">Nefis Kalkanları Detayları</h3>
+            </div>
+            <button onclick="kalkanModalKapat()" style="background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; line-height: 1; padding: 0 5px;">&times;</button>
+        </div>
+        
+        <!-- Modal İçerik (Kalkan Listesi) -->
+        <div id="kalkanlar-modal-liste" style="padding: 20px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 12px;">
+            <!-- Detaylı kalkan kartları dinamik olarak buraya gelecek -->
+        </div>
+        
+        <!-- Modal Kapatma Butonu -->
+        <div style="padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; background: rgba(0,0,0,0.15);">
+            <button onclick="kalkanModalKapat()" style="background: #334155; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">Kapat</button>
+        </div>
+    </div>
+</div>
+ 
         <div id="vakitList"></div>
         <div id="ozelList" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px; margin-top:5px;"></div>
     </div>
@@ -543,77 +486,129 @@
             document.getElementById('statModal').style.display = 'flex';
         };
 
-        // --- 7. Nefis Kalkanı Arayüz ve Kontrolleri ---
-        function kalkanlariCiz() {
-            const listeEl = document.getElementById("kalkanlar-liste");
-            if (!listeEl) return;
-            listeEl.innerHTML = "";
-            
-            kalkanlar.forEach(k => {
-                let durumClass = "aktif";
-                let butonMetni = "Kalkanı Kır";
-                if (!k.aktif) {
-                    durumClass = k.onarildi ? "onarildi" : "kirik";
-                    butonMetni = k.onarildi ? "Onarıldı" : "Kırıldı";
-                }
-                
-                let html = `
-                    <div class="kalkan-item ${durumClass}" style="display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.05); border-radius: 14px; padding: 12px 16px; margin-bottom: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                        <div class="kalkan-satir" style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="kalkan-sol" style="display: flex; align-items: center; gap: 12px;">
-                                <span class="kalkan-ikon" style="font-size: 24px;">${k.aktif ? '🛡️' : (k.onarildi ? '✨' : '💥')}</span>
-                                <div class="kalkan-detay">
-                                    <h4 style="margin: 0; font-size: 15px; color: #fff;">${k.ad} ${k.aktif ? '<span style="color:#10b981; font-size:10px;">(Aktif)</span>' : ''}</h4>
-                                    <p style="margin: 2px 0 0 0; font-size: 11px; color: #ccc;">${k.gorev}</p>
-                                </div>
-                            </div>
-                            <button class="kalkan-durum-btn ${k.aktif ? 'btn-koru' : 'btn-kirildi'}" style="padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; border: none;" onclick="kalkanDurumDegistir('${k.id}')" ${k.onarildi ? 'disabled style="cursor:default; opacity:0.7;"' : ''}>
-                                ${butonMetni}
-                            </button>
-                        </div>
-                `;
-                
-                if (!k.aktif && !k.onarildi) {
-                    html += `
-                        <div class="telafi-paneli" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
-                            <span class="telafi-yazi" style="color: #f1c40f;">💡 Telafi: Tövbe edip hemen bir iyilik yaparak kalkanı yamayabilirsin.</span>
-                            <button class="btn-onar" style="background: #eab308; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: bold;" onclick="kalkanOnar('${k.id}')">Telafi Et ve Onar</button>
-                        </div>
-                    `;
-                } else if (k.onarildi) {
-                    html += `
-                        <div class="telafi-paneli" style="color: #10b981; font-weight: 500; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; font-size: 12px;">
-                            ✅ Telafi edildi! Kalkan başarıyla yamandı ve puanınız kurtarıldı.
-                        </div>
-                    `;
-                }
-                html += `</div>`;
-                listeEl.innerHTML += html;
-            });
-        }
+        // --- 7. Nefis Kalkanı Arayüz, Modal ve Kontrolleri ---
 
-        function kalkanDurumDegistir(id) {
-            let kalkan = kalkanlar.find(k => k.id === id);
-            if (!kalkan) return;
-            if (kalkan.aktif) {
-                kalkan.aktif = false;
-                kalkan.onarildi = false;
-                if (navigator.vibrate) navigator.vibrate(150);
-            } else if (!kalkan.onarildi) {
-                kalkan.aktif = true;
+// Modal açma fonksiyonu
+function kalkanModalAc() {
+    const modal = document.getElementById("kalkanModal");
+    if (modal) {
+        modal.style.display = "flex";
+        kalkanlariCiz(); // Modalı açarken listeyi güncel verilerle doldur
+    }
+}
+
+// Modal kapatma fonksiyonu
+function kalkanModalKapat() {
+    const modal = document.getElementById("kalkanModal");
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
+
+// Dışarı tıklayınca modalın kapanması için ek önlem
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById("kalkanModal");
+    if (event.target === modal) {
+        kalkanModalKapat();
+    }
+});
+
+function kalkanlariCiz() {
+    const barOzetIkonlar = document.getElementById("kalkan-bar-ozet-ikonlar");
+    const modalListeEl = document.getElementById("kalkanlar-modal-liste");
+    
+    // Kalkanları o güne ait verilerden veya varsayılandan oku
+    const aktifKalkanlar = gunlukVeriler.kalkanlar || varsayilanKalkanlar;
+    
+    // 1. ANA EKRANDAKİ TEK SATIRLIK ÖZET BARININ GÜNCELLENMESİ
+    if (barOzetIkonlar) {
+        barOzetIkonlar.innerHTML = "";
+        aktifKalkanlar.forEach(k => {
+            let ikon = "🛡️"; // Varsayılan: Aktif kalkan
+            if (!k.aktif) {
+                ikon = k.onarildi ? "✨" : "💥"; // Kırık ama onarılmışsa parıltı, değilse patlama
             }
-            kalkanlariCiz();
-            render();
+            barOzetIkonlar.innerHTML += `<span style="font-size: 16px; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));">${ikon}</span>`;
+        });
+        // Küçük bir "Detay" ibaresi ekleyelim
+        barOzetIkonlar.innerHTML += `<span style="color: #64748b; font-size: 11px; margin-left: 4px; font-weight: 500;">İncele &rsaquo;</span>`;
+    }
+    
+    // 2. MODAL İÇİNDEKİ DETAYLI LİSTEYSİNİN GÜNCELLENMESİ
+    if (!modalListeEl) return;
+    modalListeEl.innerHTML = "";
+    
+    aktifKalkanlar.forEach(k => {
+        let durumClass = "aktif";
+        let butonMetni = "Kalkanı Kır";
+        if (!k.aktif) {
+            durumClass = k.onarildi ? "onarildi" : "kirik";
+            butonMetni = k.onarildi ? "Onarıldı" : "Kırıldı";
         }
+        
+        let html = `
+            <div class="kalkan-item ${durumClass}" style="display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                <div class="kalkan-satir" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <div class="kalkan-sol" style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                        <span class="kalkan-ikon" style="font-size: 22px;">${k.aktif ? '🛡️' : (k.onarildi ? '✨' : '💥')}</span>
+                        <div class="kalkan-detay">
+                            <h4 style="margin: 0; font-size: 14px; color: #fff; font-weight: 600;">${k.ad} ${k.aktif ? '<span style="color:#10b981; font-size:10px; font-weight: normal; margin-left: 5px;">(Aktif)</span>' : ''}</h4>
+                            <p style="margin: 2px 0 0 0; font-size: 11px; color: #94a3b8; line-height: 1.3;">${k.gorev}</p>
+                        </div>
+                    </div>
+                    <button class="kalkan-durum-btn ${k.aktif ? 'btn-koru' : 'btn-kirildi'}" style="padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: 600; cursor: pointer; border: none; white-space: nowrap;" onclick="kalkanDurumDegistir('${k.id}')" ${k.onarildi ? 'disabled style="cursor:default; opacity:0.5;"' : ''}>
+                        ${butonMetni}
+                    </button>
+                </div>
+        `;
+        
+        if (!k.aktif && !k.onarildi) {
+            html += `
+                <div class="telafi-paneli" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
+                    <span class="telafi-yazi" style="color: #f1c40f;">💡 Telafi: Tövbe edip hemen bir iyilik yaparak kalkanı yamayabilirsin.</span>
+                    <button class="btn-onar" style="background: #eab308; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; align-self: flex-end; font-size: 10px;" onclick="kalkanOnar('${k.id}')">Telafi Et ve Onar</button>
+                </div>
+            `;
+        } else if (k.onarildi) {
+            html += `
+                <div class="telafi-paneli" style="color: #10b981; font-weight: 500; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 8px; margin-top: 8px; font-size: 11px;">
+                    ✅ Telafi edildi! Kalkan başarıyla yamandı ve puanınız kurtarıldı.
+                </div>
+            `;
+        }
+        html += `</div>`;
+        modalListeEl.innerHTML += html;
+    });
+}
 
-        function kalkanOnar(id) {
-            let kalkan = kalkanlar.find(k => k.id === id);
-            if (!kalkan) return;
-            kalkan.onarildi = true;
-            if (navigator.vibrate) navigator.vibrate([40, 40]);
-            kalkanlariCiz();
-            render();
-        }
+function kalkanDurumDegistir(id) {
+    if (isFuture()) {
+        document.getElementById('ozelAlertModal').style.display = 'flex';
+        return;
+    }
+    let kalkan = (gunlukVeriler.kalkanlar || []).find(k => k.id === id);
+    if (!kalkan) return;
+    if (kalkan.aktif) {
+        kalkan.aktif = false;
+        kalkan.onarildi = false;
+        if (navigator.vibrate) navigator.vibrate(150);
+    } else if (!kalkan.onarildi) {
+        kalkan.aktif = true;
+    }
+    render(); // Önce veriyi kaydeder ve render() aracılığıyla kalkanlariCiz() tetiklenir
+}
+
+function kalkanOnar(id) {
+    if (isFuture()) {
+        document.getElementById('ozelAlertModal').style.display = 'flex';
+        return;
+    }
+    let kalkan = (gunlukVeriler.kalkanlar || []).find(k => k.id === id);
+    if (!kalkan) return;
+    kalkan.onarildi = true;
+    if (navigator.vibrate) navigator.vibrate([40, 40]);
+    render(); // Önce veriyi kaydeder ve render() aracılığıyla kalkanlariCiz() tetiklenir
+}
 
         // --- 8. Veri Yükleme, Kaydetme ve Render Mantığı ---
         function veriYukle() {
