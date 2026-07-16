@@ -59,6 +59,11 @@
             background: #f59e0b;
             color: #fff;
             transition: all 0.2s ease;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
         }
         .btn-onar:hover {
             background: #d97706;
@@ -652,7 +657,7 @@
             if (kaydedilmis) {
                 gunlukVeriler = kaydedilmis;
                 
-                // HATA DÜZELTİLDİ: varsayilanKalkanlar referansıyla yeni kalkan yapısı oluşturuluyor
+                // HATA DÜZELTİLDİ: Derin kopyalama ile yeni kalkan yapısı oluşturuluyor, ortak referans koparılıyor.
                 if (!gunlukVeriler.kalkanlar || !Array.isArray(gunlukVeriler.kalkanlar) || gunlukVeriler.kalkanlar.length === 0) {
                     gunlukVeriler.kalkanlar = JSON.parse(JSON.stringify(varsayilanKalkanlar));
                 }
@@ -693,7 +698,7 @@
                     }
                 }
             } else {
-                // HATA DÜZELTİLDİ: varsayilanKalkanlar referansı kullanıldı
+                // HATA DÜZELTİLDİ: Referans hatasını önlemek için derin kopyalama (Deep Copy) yapıldı.
                 gunlukVeriler = {
                     vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })),
                     ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })),
@@ -1392,7 +1397,7 @@
             const suAnkiZaman = `${simdi.getHours().toString().padStart(2, '0')}:${simdi.getMinutes().toString().padStart(2, '0')}`;
             if (suAnkiZaman === (localStorage.getItem('amel_hatirlatma_saati') || "21:30")) {
                 if (Notification.permission === "granted" && !window.bildirimGonderildiMi) {
-                    new Notification("Amel Defteri", { body: "Bugünkü kayıtlarını girmeyi unutma!" });
+                    new Notification("Amel Defteri", { body: "Bugünkü kayıtlerini girmeyi unutma!" });
                     window.bildirimGonderildiMi = true;
                     setTimeout(() => { window.bildirimGonderildiMi = false; }, 61000);
                 }
@@ -1507,7 +1512,7 @@
                 });
             }
             
-            // HATA DÜZELTİLDİ: Puanlama dünün kalkan durumunu bozmasın diye global "kalkanlar" yerine "gunlukVeri.kalkanlar" kullanıldı
+            // HATA DÜZELTİLDİ: Puanlama dünün kalkan durumunu bozmasın diye gunlukVeri'nin kendi kalkan verileri kontrol ediliyor
             let oGununKalkanlari = gunlukVeri.kalkanlar || varsayilanKalkanlar;
             let kalkanToplamPuani = 0;
             oGununKalkanlari.forEach(k => {
