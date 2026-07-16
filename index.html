@@ -612,63 +612,73 @@ function kalkanOnar(id) {
 
         // --- 8. Veri Yükleme, Kaydetme ve Render Mantığı ---
         function veriYukle() {
-            const key = getLocalKey(seciliTarih);
-            const kaydedilmis = JSON.parse(localStorage.getItem(key));
-            const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
-            const simdi = new Date();
-            const dun = new Date(simdi);
-            dun.setDate(simdi.getDate() - 1);
-            const dunStr = dun.toISOString().split('T')[0];
-            const globalListe = getGlobalOzeller().filter(g => {
-                if(!g.eklenmeTarihi) return true;
-                return seciliTarihStr >= g.eklenmeTarihi;
+    const key = getLocalKey(seciliTarih);
+    const kaydedilmis = JSON.parse(localStorage.getItem(key));
+    const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
+    const simdi = new Date();
+    const dun = new Date(simdi);
+    dun.setDate(simdi.getDate() - 1);
+    const dunStr = dun.toISOString().split('T')[0];
+    const globalListe = getGlobalOzeller().filter(g => {
+        if(!g.eklenmeTarihi) return true;
+        return seciliTarihStr >= g.eklenmeTarihi;
+    });
+    
+    if (kaydedilmis) {
+        gunlukVeriler = kaydedilmis;
+        
+        // Kalkanlar dizisinin kesinlikle var olduğundan emin oluyoruz
+        if (!gunlukVeriler.kalkanlar || !Array.isArray(gunlukVeriler.kalkanlar) || gunlukVeriler.kalkanlar.length === 0) {
+            gunlukVeriler.kalkanlar = JSON.parse(JSON.stringify(varsayilanKalkanlar));
+        }
+
+        globalListe.forEach(g => {
+            const varMi = gunlukVeriler.ozeller.find(o => (o.id && g.id && o.id === g.id) || (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase()) );
+            if(!varMi) {
+                gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)});
+            } else {
+                varMi.arsiv = g.arsiv;
+                varMi.id = g.id;
+            }
+        });
+        
+        gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase()) );
+        
+        if (seciliTarihStr === dunStr) {
+            let enAzBirIsaretliVarMi = false;
+            gunlukVeriler.vakitler.forEach(v => {
+                if (v.durumlar && v.durumlar.some(d => d > 0)) enAzBirIsaretliVarMi = true;
+            });
+            gunlukVeriler.ozeller.forEach(o => {
+                if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
+                if (o.tip === 'renk' && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
             });
             
-            if (kaydedilmis) {
-                gunlukVeriler = kaydedilmis;
-                globalListe.forEach(g => {
-                    const varMi = gunlukVeriler.ozeller.find(o => (o.id && g.id && o.id === g.id) || (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase()) );
-                    if(!varMi) {
-                        gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)});
-                    } else {
-                        varMi.arsiv = g.arsiv;
-                        varMi.id = g.id;
+            if (enAzBirIsaretliVarMi) {
+                let degisiklikVarMi = false;
+                gunlukVeriler.vakitler.forEach(v => {
+                    if (v.durumlar && v.durumlar[0] === 0) {
+                        v.durumlar[0] = 3;
+                        degisiklikVarMi = true;
                     }
                 });
-                
-                gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase()) );
-                
-                if (seciliTarihStr === dunStr) {
-                    let enAzBirIsaretliVarMi = false;
-                    gunlukVeriler.vakitler.forEach(v => {
-                        if (v.durumlar && v.durumlar.some(d => d > 0)) enAzBirIsaretliVarMi = true;
-                    });
-                    gunlukVeriler.ozeller.forEach(o => {
-                        if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
-                        if (o.tip === 'renk' && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
-                    });
-                    
-                    if (enAzBirIsaretliVarMi) {
-                        let degisiklikVarMi = false;
-                        gunlukVeriler.vakitler.forEach(v => {
-                            if (v.durumlar && v.durumlar[0] === 0) {
-                                v.durumlar[0] = 3;
-                                degisiklikVarMi = true;
-                            }
-                        });
-                        if (degisiklikVarMi) {
-                            localStorage.setItem(key, JSON.stringify(gunlukVeriler));
-                        }
-                    }
+                if (degisiklikVarMi) {
+                    localStorage.setItem(key, JSON.stringify(gunlukVeriler));
                 }
-            } else {
-                gunlukVeriler = {
-                    vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })),
-                    ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) }))
-                };
             }
-            render();
         }
+    } else {
+        gunlukVeriler = {
+            vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })),
+            ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })),
+            kalkanlar: JSON.parse(JSON.stringify(varsayilanKalkanlar))
+        };
+    }
+    
+    // Veriyi yükledikten hemen sonra render fonksiyonunu çağırıyoruz
+    render();
+}
+
 
         function render() {
             localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
