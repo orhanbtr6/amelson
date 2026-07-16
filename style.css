@@ -224,4 +224,112 @@ body {
 .ozet-butonlar { display: flex; gap: 10px; margin-top: 15px; }
 .git-btn { background: #f1c40f; color: #000; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 .kapat-btn { background: transparent; color: #aaa; border: 1px solid #555; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+/* ==========================================
+   NEFİS KALKANI VE TELAFİ SİSTEMİ STİLLERİ
+   ========================================== */
+.kalkan-kart {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.kalkan-ust h3 {
+    margin: 0 0 5px 0;
+    color: #1e293b;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.kalkan-bilgi {
+    font-size: 12px;
+    color: #64748b;
+    display: block;
+    margin-bottom: 15px;
+}
+.kalkan-item {
+    display: flex;
+    flex-direction: column;
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+/* Aktif / Korunan Durum (Yeşil Işıltı) */
+.kalkan-item.aktif {
+    border-left: 5px solid #10b981;
+    background: #f0fdf4;
+}
+/* Kırılmış Durum (Kırmızı Yumuşak Ton) */
+.kalkan-item.kirik {
+    border-left: 5px solid #f43f5e;
+    background: #fff1f2;
+}
+/* Onarılmış / Telafi Edilmiş Durum (Altın Esintisi) */
+.kalkan-item.onarildi {
+    border-left: 5px solid #eab308;
+    background: #fefce8;
+}
+.kalkan-satir {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.kalkan-sol {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.kalkan-ikon {
+    font-size: 24px;
+}
+.kalkan-detay h4 {
+    margin: 0;
+    font-size: 15px;
+    color: #1e293b;
+}
+.kalkan-detay p {
+    margin: 2px 0 0 0;
+    font-size: 11px;
+    color: #64748b;
+}
+.kalkan-durum-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+}
+.btn-koru { background: #d1fae5; color: #065f46; }
+.btn-kirildi { background: #fee2e2; color: #991b1b; }
+.telafi-paneli {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+.telafi-yazi {
+    color: #b45309;
+    font-weight: 500;
+}
+.btn-onar {
+    background: #eab308;
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
 </style>
