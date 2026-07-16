@@ -25,6 +25,45 @@
             padding-bottom: 140px !important;
             overflow-y: auto;
         }
+
+        /* --- Yeni Eklenen Kalkan ve Telafi Sistemi CSS Stilleri --- */
+        .kalkan-item {
+            transition: all 0.3s ease;
+        }
+        .kalkan-item.aktif {
+            border-left: 4px solid #10b981 !important;
+        }
+        .kalkan-item.kirik {
+            border-left: 4px solid #ef4444 !important;
+            background: rgba(239, 68, 68, 0.05) !important;
+        }
+        .kalkan-item.onarildi {
+            border-left: 4px solid #f59e0b !important;
+            background: rgba(245, 158, 11, 0.05) !important;
+        }
+        .btn-koru {
+            background: #10b981;
+            color: #fff;
+        }
+        .btn-koru:hover {
+            background: #059669;
+        }
+        .btn-kirildi {
+            background: #ef4444;
+            color: #fff;
+        }
+        .btn-kirildi:hover {
+            background: #dc2626;
+        }
+        .btn-onar {
+            background: #f59e0b;
+            color: #fff;
+            transition: all 0.2s ease;
+        }
+        .btn-onar:hover {
+            background: #d97706;
+            transform: scale(1.03);
+        }
     </style>
 </head> 	 
 <body ontouchstart="hTS(event)" ontouchend="hTE(event)">
@@ -66,41 +105,32 @@
             </div>
         </div>
         
-       <!-- Ana Ekrandaki Tek Satırlık Kalkan Özet Barı -->
-<div id="kalkan-ozet-bar" onclick="kalkanModalAc()" style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8)); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px 16px; margin: 15px 0; cursor: pointer; transition: all 0.2s ease;">
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 20px;">🛡️</span>
-        <span style="font-weight: 600; font-size: 14px; color: #fff;">Nefis Kalkanları Durumu</span>
-    </div>
-    <div id="kalkan-bar-ozet-ikonlar" style="display: flex; align-items: center; gap: 6px;">
-        <!-- Dinamik olarak kalkanların durum ikonları buraya dolacak (Örn: 🛡️ 🛡️ 💥 ✨ 🛡️) -->
-    </div>
-</div>
-
-<!-- Kalkan Detayları İçin Tam Ortada Açılan Modal Pencere -->
-<div id="kalkanModal" class="modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); align-items: center; justify-content: center;">
-    <div class="modal-icerik" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; width: 90%; max-width: 500px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
-        
-        <!-- Modal Başlık -->
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15);">
+        <div id="kalkan-ozet-bar" onclick="kalkanModalAc()" style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8)); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px 16px; margin: 15px 0; cursor: pointer; transition: all 0.2s ease;">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 22px;">🛡️</span>
-                <h3 style="margin: 0; font-size: 18px; color: #fff; font-weight: 700;">Nefis Kalkanları Detayları</h3>
+                <span style="font-size: 20px;">🛡️</span>
+                <span style="font-weight: 600; font-size: 14px; color: #fff;">Nefis Kalkanları Durumu</span>
             </div>
-            <button onclick="kalkanModalKapat()" style="background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; line-height: 1; padding: 0 5px;">&times;</button>
+            <div id="kalkan-bar-ozet-ikonlar" style="display: flex; align-items: center; gap: 6px;"></div>
         </div>
-        
-        <!-- Modal İçerik (Kalkan Listesi) -->
-        <div id="kalkanlar-modal-liste" style="padding: 20px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 12px;">
-            <!-- Detaylı kalkan kartları dinamik olarak buraya gelecek -->
+
+        <div id="kalkanModal" class="modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); align-items: center; justify-content: center;">
+            <div class="modal-icerik" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; width: 90%; max-width: 500px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 22px;">🛡️</span>
+                        <h3 style="margin: 0; font-size: 18px; color: #fff; font-weight: 700;">Nefis Kalkanları Detayları</h3>
+                    </div>
+                    <button onclick="kalkanModalKapat()" style="background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; line-height: 1; padding: 0 5px;">&times;</button>
+                </div>
+                
+                <div id="kalkanlar-modal-liste" style="padding: 20px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 12px;"></div>
+                
+                <div style="padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; background: rgba(0,0,0,0.15);">
+                    <button onclick="kalkanModalKapat()" style="background: #334155; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">Kapat</button>
+                </div>
+            </div>
         </div>
-        
-        <!-- Modal Kapatma Butonu -->
-        <div style="padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; background: rgba(0,0,0,0.15);">
-            <button onclick="kalkanModalKapat()" style="background: #334155; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">Kapat</button>
-        </div>
-    </div>
-</div>
  
         <div id="vakitList"></div>
         <div id="ozelList" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px; margin-top:5px;"></div>
@@ -224,8 +254,8 @@
         let currentHeatmapType = null;
         let currentHeatmapSubIdx = null;
 
-        // Nefis Kalkanı ve Telafi Sistemi State Tanımı
-        let kalkanlar = [
+        // Nefis Kalkanı ve Telafi Sistemi Şablon Tanımı
+        const varsayilanKalkanlar = [
             { id: 'dil', ad: 'Dil Kalkanı', ikon: '🗣️', gorev: 'Gıybet, yalan ve kırıcı sözlerden uzak durmak.', aktif: true, onarildi: false, puan: 5 },
             { id: 'goz', ad: 'Göz Kalkanı', ikon: '👁️', gorev: 'Gözü haramdan, zihni faydasız ekranlardan korumak.', aktif: true, onarildi: false, puan: 5 },
             { id: 'kalp', ad: 'Kalp Kalkanı', ikon: '❤️', gorev: 'Kibir, haset, kin ve kötü niyetten uzak durmak.', aktif: true, onarildi: false, puan: 5 },
@@ -487,198 +517,192 @@
         };
 
         // --- 7. Nefis Kalkanı Arayüz, Modal ve Kontrolleri ---
-
-// Modal açma fonksiyonu
-function kalkanModalAc() {
-    const modal = document.getElementById("kalkanModal");
-    if (modal) {
-        modal.style.display = "flex";
-        kalkanlariCiz(); // Modalı açarken listeyi güncel verilerle doldur
-    }
-}
-
-// Modal kapatma fonksiyonu
-function kalkanModalKapat() {
-    const modal = document.getElementById("kalkanModal");
-    if (modal) {
-        modal.style.display = "none";
-    }
-}
-
-// Dışarı tıklayınca modalın kapanması için ek önlem
-window.addEventListener('click', function(event) {
-    const modal = document.getElementById("kalkanModal");
-    if (event.target === modal) {
-        kalkanModalKapat();
-    }
-});
-
-function kalkanlariCiz() {
-    const barOzetIkonlar = document.getElementById("kalkan-bar-ozet-ikonlar");
-    const modalListeEl = document.getElementById("kalkanlar-modal-liste");
-    
-    // Kalkanları o güne ait verilerden veya varsayılandan oku
-    const aktifKalkanlar = gunlukVeriler.kalkanlar || varsayilanKalkanlar;
-    
-    // 1. ANA EKRANDAKİ TEK SATIRLIK ÖZET BARININ GÜNCELLENMESİ
-    if (barOzetIkonlar) {
-        barOzetIkonlar.innerHTML = "";
-        aktifKalkanlar.forEach(k => {
-            let ikon = "🛡️"; // Varsayılan: Aktif kalkan
-            if (!k.aktif) {
-                ikon = k.onarildi ? "✨" : "💥"; // Kırık ama onarılmışsa parıltı, değilse patlama
+        function kalkanModalAc() {
+            const modal = document.getElementById("kalkanModal");
+            if (modal) {
+                modal.style.display = "flex";
+                kalkanlariCiz();
             }
-            barOzetIkonlar.innerHTML += `<span style="font-size: 16px; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));">${ikon}</span>`;
+        }
+
+        function kalkanModalKapat() {
+            const modal = document.getElementById("kalkanModal");
+            if (modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById("kalkanModal");
+            if (event.target === modal) {
+                kalkanModalKapat();
+            }
         });
-        // Küçük bir "Detay" ibaresi ekleyelim
-        barOzetIkonlar.innerHTML += `<span style="color: #64748b; font-size: 11px; margin-left: 4px; font-weight: 500;">İncele &rsaquo;</span>`;
-    }
-    
-    // 2. MODAL İÇİNDEKİ DETAYLI LİSTEYSİNİN GÜNCELLENMESİ
-    if (!modalListeEl) return;
-    modalListeEl.innerHTML = "";
-    
-    aktifKalkanlar.forEach(k => {
-        let durumClass = "aktif";
-        let butonMetni = "Kalkanı Kır";
-        if (!k.aktif) {
-            durumClass = k.onarildi ? "onarildi" : "kirik";
-            butonMetni = k.onarildi ? "Onarıldı" : "Kırıldı";
-        }
-        
-        let html = `
-            <div class="kalkan-item ${durumClass}" style="display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255, 255, 255, 0.08);">
-                <div class="kalkan-satir" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                    <div class="kalkan-sol" style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                        <span class="kalkan-ikon" style="font-size: 22px;">${k.aktif ? '🛡️' : (k.onarildi ? '✨' : '💥')}</span>
-                        <div class="kalkan-detay">
-                            <h4 style="margin: 0; font-size: 14px; color: #fff; font-weight: 600;">${k.ad} ${k.aktif ? '<span style="color:#10b981; font-size:10px; font-weight: normal; margin-left: 5px;">(Aktif)</span>' : ''}</h4>
-                            <p style="margin: 2px 0 0 0; font-size: 11px; color: #94a3b8; line-height: 1.3;">${k.gorev}</p>
+
+        function kalkanlariCiz() {
+            const barOzetIkonlar = document.getElementById("kalkan-bar-ozet-ikonlar");
+            const modalListeEl = document.getElementById("kalkanlar-modal-liste");
+            
+            // Kalkanları o güne ait verilerden oku
+            const aktifKalkanlar = gunlukVeriler.kalkanlar || varsayilanKalkanlar;
+            
+            // 1. ANA EKRANDAKİ TEK SATIRLIK ÖZET BARININ GÜNCELLENMESİ
+            if (barOzetIkonlar) {
+                barOzetIkonlar.innerHTML = "";
+                aktifKalkanlar.forEach(k => {
+                    let ikon = "🛡️"; // Varsayılan: Aktif kalkan
+                    if (!k.aktif) {
+                        ikon = k.onarildi ? "✨" : "💥"; // Kırık ama onarılmışsa parıltı, değilse patlama
+                    }
+                    barOzetIkonlar.innerHTML += `<span style="font-size: 16px; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));">${ikon}</span>`;
+                });
+                barOzetIkonlar.innerHTML += `<span style="color: #64748b; font-size: 11px; margin-left: 4px; font-weight: 500;">İncele &rsaquo;</span>`;
+            }
+            
+            // 2. MODAL İÇİNDEKİ DETAYLI LİSTEYSİNİN GÜNCELLENMESİ
+            if (!modalListeEl) return;
+            modalListeEl.innerHTML = "";
+            
+            aktifKalkanlar.forEach(k => {
+                let durumClass = "aktif";
+                let butonMetni = "Kalkanı Kır";
+                if (!k.aktif) {
+                    durumClass = k.onarildi ? "onarildi" : "kirik";
+                    butonMetni = k.onarildi ? "Onarıldı" : "Kırıldı";
+                }
+                
+                let html = `
+                    <div class="kalkan-item ${durumClass}" style="display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <div class="kalkan-satir" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                            <div class="kalkan-sol" style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                                <span class="kalkan-ikon" style="font-size: 22px;">${k.aktif ? '🛡️' : (k.onarildi ? '✨' : '💥')}</span>
+                                <div class="kalkan-detay">
+                                    <h4 style="margin: 0; font-size: 14px; color: #fff; font-weight: 600;">${k.ad} ${k.aktif ? '<span style="color:#10b981; font-size:10px; font-weight: normal; margin-left: 5px;">(Aktif)</span>' : ''}</h4>
+                                    <p style="margin: 2px 0 0 0; font-size: 11px; color: #94a3b8; line-height: 1.3;">${k.gorev}</p>
+                                </div>
+                            </div>
+                            <button class="kalkan-durum-btn ${k.aktif ? 'btn-koru' : 'btn-kirildi'}" style="padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: 600; cursor: pointer; border: none; white-space: nowrap;" onclick="kalkanDurumDegistir('${k.id}')" ${k.onarildi ? 'disabled style="cursor:default; opacity:0.5;"' : ''}>
+                                ${butonMetni}
+                            </button>
                         </div>
-                    </div>
-                    <button class="kalkan-durum-btn ${k.aktif ? 'btn-koru' : 'btn-kirildi'}" style="padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: 600; cursor: pointer; border: none; white-space: nowrap;" onclick="kalkanDurumDegistir('${k.id}')" ${k.onarildi ? 'disabled style="cursor:default; opacity:0.5;"' : ''}>
-                        ${butonMetni}
-                    </button>
-                </div>
-        `;
-        
-        if (!k.aktif && !k.onarildi) {
-            html += `
-                <div class="telafi-paneli" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
-                    <span class="telafi-yazi" style="color: #f1c40f;">💡 Telafi: Tövbe edip hemen bir iyilik yaparak kalkanı yamayabilirsin.</span>
-                    <button class="btn-onar" style="background: #eab308; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; align-self: flex-end; font-size: 10px;" onclick="kalkanOnar('${k.id}')">Telafi Et ve Onar</button>
-                </div>
-            `;
-        } else if (k.onarildi) {
-            html += `
-                <div class="telafi-paneli" style="color: #10b981; font-weight: 500; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 8px; margin-top: 8px; font-size: 11px;">
-                    ✅ Telafi edildi! Kalkan başarıyla yamandı ve puanınız kurtarıldı.
-                </div>
-            `;
+                `;
+                
+                if (!k.aktif && !k.onarildi) {
+                    html += `
+                        <div class="telafi-paneli" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
+                            <span class="telafi-yazi" style="color: #f1c40f;">💡 Telafi: Tövbe edip hemen bir iyilik yaparak kalkanı yamayabilirsin.</span>
+                            <button class="btn-onar" onclick="kalkanOnar('${k.id}')">Telafi Et ve Onar</button>
+                        </div>
+                    `;
+                } else if (k.onarildi) {
+                    html += `
+                        <div class="telafi-paneli" style="color: #10b981; font-weight: 500; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 8px; margin-top: 8px; font-size: 11px;">
+                            ✅ Telafi edildi! Kalkan başarıyla yamandı ve puanınız kurtarıldı.
+                        </div>
+                    `;
+                }
+                html += `</div>`;
+                modalListeEl.innerHTML += html;
+            });
         }
-        html += `</div>`;
-        modalListeEl.innerHTML += html;
-    });
-}
 
-function kalkanDurumDegistir(id) {
-    if (isFuture()) {
-        document.getElementById('ozelAlertModal').style.display = 'flex';
-        return;
-    }
-    let kalkan = (gunlukVeriler.kalkanlar || []).find(k => k.id === id);
-    if (!kalkan) return;
-    if (kalkan.aktif) {
-        kalkan.aktif = false;
-        kalkan.onarildi = false;
-        if (navigator.vibrate) navigator.vibrate(150);
-    } else if (!kalkan.onarildi) {
-        kalkan.aktif = true;
-    }
-    render(); // Önce veriyi kaydeder ve render() aracılığıyla kalkanlariCiz() tetiklenir
-}
+        function kalkanDurumDegistir(id) {
+            if (isFuture()) {
+                document.getElementById('ozelAlertModal').style.display = 'flex';
+                return;
+            }
+            let kalkan = (gunlukVeriler.kalkanlar || []).find(k => k.id === id);
+            if (!kalkan) return;
+            if (kalkan.aktif) {
+                kalkan.aktif = false;
+                kalkan.onarildi = false;
+                if (navigator.vibrate) navigator.vibrate(150);
+            } else if (!kalkan.onarildi) {
+                kalkan.aktif = true;
+            }
+            render(); 
+        }
 
-function kalkanOnar(id) {
-    if (isFuture()) {
-        document.getElementById('ozelAlertModal').style.display = 'flex';
-        return;
-    }
-    let kalkan = (gunlukVeriler.kalkanlar || []).find(k => k.id === id);
-    if (!kalkan) return;
-    kalkan.onarildi = true;
-    if (navigator.vibrate) navigator.vibrate([40, 40]);
-    render(); // Önce veriyi kaydeder ve render() aracılığıyla kalkanlariCiz() tetiklenir
-}
+        function kalkanOnar(id) {
+            if (isFuture()) {
+                document.getElementById('ozelAlertModal').style.display = 'flex';
+                return;
+            }
+            let kalkan = (gunlukVeriler.kalkanlar || []).find(k => k.id === id);
+            if (!kalkan) return;
+            kalkan.onarildi = true;
+            if (navigator.vibrate) navigator.vibrate([40, 40]);
+            render();
+        }
 
         // --- 8. Veri Yükleme, Kaydetme ve Render Mantığı ---
         function veriYukle() {
-    const key = getLocalKey(seciliTarih);
-    const kaydedilmis = JSON.parse(localStorage.getItem(key));
-    const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
-    const simdi = new Date();
-    const dun = new Date(simdi);
-    dun.setDate(simdi.getDate() - 1);
-    const dunStr = dun.toISOString().split('T')[0];
-    const globalListe = getGlobalOzeller().filter(g => {
-        if(!g.eklenmeTarihi) return true;
-        return seciliTarihStr >= g.eklenmeTarihi;
-    });
-    
-    if (kaydedilmis) {
-        gunlukVeriler = kaydedilmis;
-        
-        // Kalkanlar dizisinin kesinlikle var olduğundan emin oluyoruz
-        if (!gunlukVeriler.kalkanlar || !Array.isArray(gunlukVeriler.kalkanlar) || gunlukVeriler.kalkanlar.length === 0) {
-            gunlukVeriler.kalkanlar = JSON.parse(JSON.stringify(varsayilanKalkanlar));
-        }
-
-        globalListe.forEach(g => {
-            const varMi = gunlukVeriler.ozeller.find(o => (o.id && g.id && o.id === g.id) || (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase()) );
-            if(!varMi) {
-                gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)});
-            } else {
-                varMi.arsiv = g.arsiv;
-                varMi.id = g.id;
-            }
-        });
-        
-        gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase()) );
-        
-        if (seciliTarihStr === dunStr) {
-            let enAzBirIsaretliVarMi = false;
-            gunlukVeriler.vakitler.forEach(v => {
-                if (v.durumlar && v.durumlar.some(d => d > 0)) enAzBirIsaretliVarMi = true;
-            });
-            gunlukVeriler.ozeller.forEach(o => {
-                if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
-                if (o.tip === 'renk' && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
+            const key = getLocalKey(seciliTarih);
+            const kaydedilmis = JSON.parse(localStorage.getItem(key));
+            const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
+            const simdi = new Date();
+            const dun = new Date(simdi);
+            dun.setDate(simdi.getDate() - 1);
+            const dunStr = dun.toISOString().split('T')[0];
+            const globalListe = getGlobalOzeller().filter(g => {
+                if(!g.eklenmeTarihi) return true;
+                return seciliTarihStr >= g.eklenmeTarihi;
             });
             
-            if (enAzBirIsaretliVarMi) {
-                let degisiklikVarMi = false;
-                gunlukVeriler.vakitler.forEach(v => {
-                    if (v.durumlar && v.durumlar[0] === 0) {
-                        v.durumlar[0] = 3;
-                        degisiklikVarMi = true;
+            if (kaydedilmis) {
+                gunlukVeriler = kaydedilmis;
+                
+                // HATA DÜZELTİLDİ: varsayilanKalkanlar referansıyla yeni kalkan yapısı oluşturuluyor
+                if (!gunlukVeriler.kalkanlar || !Array.isArray(gunlukVeriler.kalkanlar) || gunlukVeriler.kalkanlar.length === 0) {
+                    gunlukVeriler.kalkanlar = JSON.parse(JSON.stringify(varsayilanKalkanlar));
+                }
+
+                globalListe.forEach(g => {
+                    const varMi = gunlukVeriler.ozeller.find(o => (o.id && g.id && o.id === g.id) || (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase()) );
+                    if(!varMi) {
+                        gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)});
+                    } else {
+                        varMi.arsiv = g.arsiv;
+                        varMi.id = g.id;
                     }
                 });
-                if (degisiklikVarMi) {
-                    localStorage.setItem(key, JSON.stringify(gunlukVeriler));
+                
+                gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase()) );
+                
+                if (seciliTarihStr === dunStr) {
+                    let enAzBirIsaretliVarMi = false;
+                    gunlukVeriler.vakitler.forEach(v => {
+                        if (v.durumlar && v.durumlar.some(d => d > 0)) enAzBirIsaretliVarMi = true;
+                    });
+                    gunlukVeriler.ozeller.forEach(o => {
+                        if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
+                        if (o.tip === 'renk' && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
+                    });
+                    
+                    if (enAzBirIsaretliVarMi) {
+                        let degisiklikVarMi = false;
+                        gunlukVeriler.vakitler.forEach(v => {
+                            if (v.durumlar && v.durumlar[0] === 0) {
+                                v.durumlar[0] = 3;
+                                degisiklikVarMi = true;
+                            }
+                        });
+                        if (degisiklikVarMi) {
+                            localStorage.setItem(key, JSON.stringify(gunlukVeriler));
+                        }
+                    }
                 }
+            } else {
+                // HATA DÜZELTİLDİ: varsayilanKalkanlar referansı kullanıldı
+                gunlukVeriler = {
+                    vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })),
+                    ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })),
+                    kalkanlar: JSON.parse(JSON.stringify(varsayilanKalkanlar))
+                };
             }
+            
+            render();
         }
-    } else {
-        gunlukVeriler = {
-            vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })),
-            ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })),
-            kalkanlar: JSON.parse(JSON.stringify(varsayilanKalkanlar))
-        };
-    }
-    
-    // Veriyi yükledikten hemen sonra render fonksiyonunu çağırıyoruz
-    render();
-}
-
 
         function render() {
             localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
@@ -740,6 +764,9 @@ function kalkanOnar(id) {
                 });
             }
             
+            // UI üzerinde kalkan barını her render işleminde yenile
+            kalkanlariCiz();
+
             setTimeout(() => {
                 if (typeof seriHesaplaVeGoster === "function") {
                     seriHesaplaVeGoster();
@@ -1480,9 +1507,10 @@ function kalkanOnar(id) {
                 });
             }
             
-            // Kalkan puan hesabı (Her biri 5 puan, toplamda maks 35 puan)
+            // HATA DÜZELTİLDİ: Puanlama dünün kalkan durumunu bozmasın diye global "kalkanlar" yerine "gunlukVeri.kalkanlar" kullanıldı
+            let oGununKalkanlari = gunlukVeri.kalkanlar || varsayilanKalkanlar;
             let kalkanToplamPuani = 0;
-            kalkanlar.forEach(k => {
+            oGununKalkanlari.forEach(k => {
                 if (k.aktif || k.onarildi) {
                     kalkanToplamPuani += k.puan;
                 }
@@ -1519,7 +1547,6 @@ function kalkanOnar(id) {
                 namazPuani = (toplamNamazGiris / maksimumNamazGiris) * 100;
             }
             
-            // Toplam ana puan %100 ölçeğine çekilip, kalkanlar için ayrılan %35'lik alanla birleştirilir
             let anaSistemPuani = namazPuani + ozelAmelPuani;
             return Math.min(100, Math.round((anaSistemPuani * 0.65) + kalkanToplamPuani));
         }
