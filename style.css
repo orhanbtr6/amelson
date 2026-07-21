@@ -294,7 +294,7 @@ body {
 
 /* Modal Ana Kutusu */
 .modal-content, .kalkan-modal-kutusu {
-    max-height: 100%; /* Ekran dışına çıkmasını engeller */
+    max-height: 80%; /* Ekran dışına çıkmasını engeller */
     display: flex;
     flex-direction: column;
     overflow: hidden; /* Dışarı taşmaları keser */
