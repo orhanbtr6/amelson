@@ -227,6 +227,91 @@ body {
 /* ==========================================
    NEFİS KALKANI VE TELAFİ SİSTEMİ STİLLERİ
    ========================================== */
+/* --- Mevcut Kalkan Kodların --- */
+.kalkan-item {
+    transition: all 0.3s ease;
+}
+.kalkan-item.aktif {
+    border-left: 4px solid #10b981 !important;
+}
+.kalkan-item.kirik {
+    border-left: 4px solid #ef4444 !important;
+    background: rgba(239, 68, 68, 0.05) !important;
+}
+.kalkan-item.onarildi {
+    border-left: 4px solid #f59e0b !important;
+    background: rgba(245, 158, 11, 0.05) !important;
+}
+.btn-koru {
+    background: #10b981;
+    color: #fff;
+}
+.btn-koru:hover {
+    background: #059669;
+}
+.btn-kirildi {
+    background: #ef4444;
+    color: #fff;
+}
+.btn-kirildi:hover {
+    background: #dc2626;
+}
+.btn-onar {
+    background: #f59e0b;
+    color: #fff;
+    transition: all 0.2s ease;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.btn-onar:hover {
+    background: #d97706;
+    transform: scale(1.03);
+}
+
+/* --- Kalkan Penceresi Konum ve Taşma Düzeltmesi (EKLEYECEĞİN KISIM) --- */
+
+/* Modal Arka Plan Dış Çerçevesi */
+.modal-overlay, #kalkanModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* En üstte durması için */
+    
+    /* Alt barın yüksekliği kadar alttan boşluk bırakır (barın arkasına kaçmaz) */
+    padding-bottom: 90px; 
+    padding-top: 20px;
+    box-sizing: border-box;
+}
+
+/* Modal Ana Kutusu */
+.modal-content, .kalkan-modal-kutusu {
+    max-height: 100%; /* Ekran dışına çıkmasını engeller */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Dışarı taşmaları keser */
+}
+
+/* Kalkan Kartlarının Listelendiği Kaydırılabilir İç Alan */
+.modal-body, .kalkan-liste-alani {
+    overflow-y: auto; /* Kartlar sığmadığında sadece bu alan kayar */
+    max-height: 60vh;  /* İçeriğe dinamik sınır koyar */
+    -webkit-overflow-scrolling: touch; /* Mobilde pürüzsüz kaydırma sağlar */
+}
+
+/* Kapat Butonunun Olduğu Alt Alan */
+.modal-footer {
+    flex-shrink: 0; /* Butonun olduğu alanın sıkışmasını engeller */
+}
+
 .kalkan-kart {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(10px);
