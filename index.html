@@ -659,91 +659,100 @@ function buTarihteGorsunMu(amel, seciliTarihObj) {
 }
 
 // --- Yenilenmiş Veri Yükleme Fonksiyonu ---
-function veriYukle() {
-    const key = getLocalKey(seciliTarih);
-    const kaydedilmis = JSON.parse(localStorage.getItem(key));
-    const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
-    const simdi = new Date();
-    const dun = new Date(simdi);
-    dun.setDate(simdi.getDate() - 1);
-    const dunStr = dun.toISOString().split('T')[0];
+function yedekVerisiniOnar(veri) {
+    if (!veri || typeof veri !== 'object') return null;
 
-    // Global tanımlı amelleri al
-    const globalListe = getGlobalOzeller();
-
-    if (kaydedilmis) {
-        gunlukVeriler = kaydedilmis;
-
-        if (!gunlukVeriler.kalkanlar || !Array.isArray(gunlukVeriler.kalkanlar) || gunlukVeriler.kalkanlar.length === 0) {
-            gunlukVeriler.kalkanlar = JSON.parse(JSON.stringify(varsayilanKalkanlar));
-        }
-
-        // 1. Seçili güne UYMAYAN amelleri günün listesinden temizle
-        gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => {
-            const globalKarsilik = globalListe.find(g => g.id === o.id || g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase());
-            if (!globalKarsilik) return false; // Globalde silindiyse çıkar
-            return buTarihteGorsunMu(globalKarsilik, seciliTarih);
-        });
-
-        // 2. Seçili güne UYAN ancak o günün kaydında henüz bulunmayan amelleri ekle
-        globalListe.forEach(g => {
-            if (buTarihteGorsunMu(g, seciliTarih)) {
-                if (!g.eklenmeTarihi || seciliTarihStr >= g.eklenmeTarihi) {
-                    const varMi = gunlukVeriler.ozeller.find(o => (o.id && g.id && o.id === g.id) || (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase()));
-                    if (!varMi) {
-                        gunlukVeriler.ozeller.push({
-                            ...g,
-                            durum: (g.tip === 'sayi' ? "" : 0)
-                        });
-                    } else {
-                        varMi.arsiv = g.arsiv;
-                        varMi.id = g.id;
-                        varMi.siklik = g.siklik;
-                        varMi.siklikDetay = g.siklikDetay;
-                    }
-                }
-            }
-        });
-
-        if (seciliTarihStr === dunStr) {
-            let enAzBirIsaretliVarMi = false;
-            gunlukVeriler.vakitler.forEach(v => {
-                if (v.durumlar && v.durumlar.some(d => d > 0)) enAzBirIsaretliVarMi = true;
-            });
-            gunlukVeriler.ozeller.forEach(o => {
-                if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
-                if (o.tip === 'renk' && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
-            });
-
-            if (enAzBirIsaretliVarMi) {
-                let degisiklikVarMi = false;
-                gunlukVeriler.vakitler.forEach(v => {
-                    if (v.durumlar && v.durumlar[0] === 0) {
-                        v.durumlar[0] = 3;
-                        degisiklikVarMi = true;
-                    }
-                });
-                if (degisiklikVarMi) {
-                    localStorage.setItem(key, JSON.stringify(gunlukVeriler));
-                }
-            }
-        }
+    // 1. Vakitler kontrolü
+    if (!veri.vakitler || !Array.isArray(veri.vakitler)) {
+        veri.vakitler = vakitler.map(v => ({ ad: v, durumlar: [0, 0, 0] }));
     } else {
-        // Yeni bir gün oluşturulurken sadece o güne uyan amelleri filtreleyip yükle
-        const oGuneUyanOzeller = globalListe.filter(g => {
-            if (g.eklenmeTarihi && seciliTarihStr < g.eklenmeTarihi) return false;
-            return buTarihteGorsunMu(g, seciliTarih);
+        veri.vakitler.forEach(v => {
+            if (!v.durumlar || !Array.isArray(v.durumlar)) {
+                v.durumlar = [0, 0, 0];
+            }
         });
-
-        gunlukVeriler = {
-            vakitler: vakitler.map(v => ({ ad: v, durumlar: [0, 0, 0] })),
-            ozeller: oGuneUyanOzeller.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })),
-            kalkanlar: JSON.parse(JSON.stringify(varsayilanKalkanlar))
-        };
     }
 
-    render();
+    // 2. Özel ameller (ozeller) kontrolü
+    if (!veri.ozeller || !Array.isArray(veri.ozeller)) {
+        veri.ozeller = [];
+    } else {
+        veri.ozeller.forEach(o => {
+            if (!o.siklik) o.siklik = 'gunluk';
+            if (o.durum === undefined || o.durum === null) {
+                o.durum = (o.tip === 'sayi' ? "" : 0);
+            }
+        });
+    }
+
+    // 3. Kalkanlar kontrolü
+    if (!veri.kalkanlar || !Array.isArray(veri.kalkanlar) || veri.kalkanlar.length === 0) {
+        veri.kalkanlar = typeof varsayilanKalkanlar !== 'undefined' 
+            ? JSON.parse(JSON.stringify(varsayilanKalkanlar)) 
+            : [];
+    }
+
+    return veri;
 }
+
+// Yenilenmiş Veri Yükleme
+function veriYukle() {
+    try {
+        const key = getLocalKey(seciliTarih);
+        const kaydedilmis = JSON.parse(localStorage.getItem(key));
+        const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
+        const globalListe = getGlobalOzeller();
+
+        if (kaydedilmis) {
+            // Eski yedeği yeni yapıya güvenli bir şekilde uyarla
+            gunlukVeriler = yedekVerisiniOnar(kaydedilmis);
+
+            // Filtreleme ve Senkronizasyon
+            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => {
+                const globalKarsilik = globalListe.find(g => g.id === o.id || g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase());
+                if (!globalKarsilik) return false;
+                return buTarihteGorsunMu(globalKarsilik, seciliTarih);
+            });
+
+            globalListe.forEach(g => {
+                if (buTarihteGorsunMu(g, seciliTarih)) {
+                    if (!g.eklenmeTarihi || seciliTarihStr >= g.eklenmeTarihi) {
+                        const varMi = gunlukVeriler.ozeller.find(o => (o.id && g.id && o.id === g.id) || (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase()));
+                        if (!varMi) {
+                            gunlukVeriler.ozeller.push({
+                                ...g,
+                                durum: (g.tip === 'sayi' ? "" : 0)
+                            });
+                        } else {
+                            varMi.arsiv = g.arsiv;
+                            varMi.id = g.id;
+                            varMi.siklik = g.siklik;
+                            varMi.siklikDetay = g.siklikDetay;
+                        }
+                    }
+                }
+            });
+
+        } else {
+            const oGuneUyanOzeller = globalListe.filter(g => {
+                if (g.eklenmeTarihi && seciliTarihStr < g.eklenmeTarihi) return false;
+                return buTarihteGorsunMu(g, seciliTarih);
+            });
+
+            gunlukVeriler = {
+                vakitler: vakitler.map(v => ({ ad: v, durumlar: [0, 0, 0] })),
+                ozeller: oGuneUyanOzeller.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })),
+                kalkanlar: JSON.parse(JSON.stringify(varsayilanKalkanlar))
+            };
+        }
+
+        render();
+    } catch (hata) {
+        console.error("Veri yüklenirken veya render edilirken hata oluştu:", hata);
+        // Sayfanın tamamen donmaması için geçici olarak boş render et
+        alert("Yüklenen veri yapısı eski bir sürüme ait. Veri otomatik olarak koruma moduna alındı.");
+    }
+} 
         function render() {
             localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
             const dispDateEl = document.getElementById('dispDate');
