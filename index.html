@@ -945,8 +945,47 @@
     if (haftalikBox) haftalikBox.style.display = (siklik === 'haftalik') ? 'block' : 'none';
     if (aylikBox) aylikBox.style.display = (siklik === 'aylik') ? 'block' : 'none';
 };
+// Bir amelin seçili tarihte görünüp görünmeyeceğini hesaplar
+function buTarihteGorsunMu(amel, seciliTarihObj) {
+    const siklik = amel.siklik || 'gunluk';
+    const detay = amel.siklikDetay;
 
-        
+    // 1. Her Gün: Her zaman görünür
+    if (siklik === 'gunluk') return true;
+
+    // 2. Tek Seferlik: Zaten global listeye eklenmiyor, sadece oluşturulduğu gün var.
+    if (siklik === 'tek') return false; 
+
+    // 3. Haftalık: Seçili günün haftanın hangi günü olduğuna bak (0: Pazar, 1: Pazartesi, ..., 5: Cuma, 6: Cumartesi)
+    if (siklik === 'haftalik') {
+        const haftaninGunu = seciliTarihObj.getDay(); // 0-6 arası döner
+        return Array.isArray(detay) && detay.includes(haftaninGunu);
+    }
+
+    // 4. Aylık: Seçili günün ayın kaçıncı günü olduğuna bak (1-31 arası)
+    if (siklik === 'aylik') {
+        const ayinGunu = seciliTarihObj.getDate(); // 1-31 arası döner
+        return parseInt(detay) === ayinGunu;
+    }
+
+    return true;
+}
+// ✅ DÜZELTİLMİŞ KULLANIM:
+let globalOzeller = getGlobalOzeller();
+
+globalOzeller.forEach(gAmel => {
+    // Sadece seçili tarihe UYUYORSA günün listesine dahil et
+    if (buTarihteGorsunMu(gAmel, seciliTarih)) {
+        // Eğer o amelin günün listesinde henüz kaydı yoksa ekle
+        let zatenVarMi = gunlukVeriler.ozeller.some(o => o.id === gAmel.id);
+        if (!zatenVarMi) {
+            gunlukVeriler.ozeller.push({
+                ...gAmel,
+                durum: (gAmel.tip === 'sayi' ? "" : 0)
+            });
+        }
+    }
+});        
 window.degis = (i, s, t) => {
             if (isFuture()) {
                 document.getElementById('ozelAlertModal').style.display = 'flex';
