@@ -632,74 +632,118 @@
         }
 
         // --- 8. Veri Yükleme, Kaydetme ve Render Mantığı ---
-        function veriYukle() {
-            const key = getLocalKey(seciliTarih);
-            const kaydedilmis = JSON.parse(localStorage.getItem(key));
-            const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
-            const simdi = new Date();
-            const dun = new Date(simdi);
-            dun.setDate(simdi.getDate() - 1);
-            const dunStr = dun.toISOString().split('T')[0];
-            const globalListe = getGlobalOzeller().filter(g => {
-                if(!g.eklenmeTarihi) return true;
-                return seciliTarihStr >= g.eklenmeTarihi;
-            });
-            
-            if (kaydedilmis) {
-                gunlukVeriler = kaydedilmis;
-                
-                // HATA DÜZELTİLDİ: Derin kopyalama ile yeni kalkan yapısı oluşturuluyor, ortak referans koparılıyor.
-                if (!gunlukVeriler.kalkanlar || !Array.isArray(gunlukVeriler.kalkanlar) || gunlukVeriler.kalkanlar.length === 0) {
-                    gunlukVeriler.kalkanlar = JSON.parse(JSON.stringify(varsayilanKalkanlar));
-                }
+        // --- Amelin seçili tarihte görünüp görünmeyeceğini hesaplayan yardımcı fonksiyon ---
+function buTarihteGorsunMu(amel, seciliTarihObj) {
+    const siklik = amel.siklik || 'gunluk';
+    const detay = amel.siklikDetay;
 
-                globalListe.forEach(g => {
-                    const varMi = gunlukVeriler.ozeller.find(o => (o.id && g.id && o.id === g.id) || (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase()) );
-                    if(!varMi) {
-                        gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)});
+    // 1. Her Gün: Her zaman görünür
+    if (siklik === 'gunluk') return true;
+
+    // 2. Tek Seferlik
+    if (siklik === 'tek') return false; 
+
+    // 3. Haftalık: 0: Pazar, 1: Pazartesi, ..., 6: Cumartesi
+    if (siklik === 'haftalik') {
+        const haftaninGunu = seciliTarihObj.getDay();
+        return Array.isArray(detay) && detay.includes(haftaninGunu);
+    }
+
+    // 4. Aylık: Ayın günü kontrolü (1-31)
+    if (siklik === 'aylik') {
+        const ayinGunu = seciliTarihObj.getDate();
+        return parseInt(detay) === ayinGunu;
+    }
+
+    return true;
+}
+
+// --- Yenilenmiş Veri Yükleme Fonksiyonu ---
+function veriYukle() {
+    const key = getLocalKey(seciliTarih);
+    const kaydedilmis = JSON.parse(localStorage.getItem(key));
+    const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
+    const simdi = new Date();
+    const dun = new Date(simdi);
+    dun.setDate(simdi.getDate() - 1);
+    const dunStr = dun.toISOString().split('T')[0];
+
+    // Global tanımlı amelleri al
+    const globalListe = getGlobalOzeller();
+
+    if (kaydedilmis) {
+        gunlukVeriler = kaydedilmis;
+
+        if (!gunlukVeriler.kalkanlar || !Array.isArray(gunlukVeriler.kalkanlar) || gunlukVeriler.kalkanlar.length === 0) {
+            gunlukVeriler.kalkanlar = JSON.parse(JSON.stringify(varsayilanKalkanlar));
+        }
+
+        // 1. Seçili güne UYMAYAN amelleri günün listesinden temizle
+        gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => {
+            const globalKarsilik = globalListe.find(g => g.id === o.id || g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase());
+            if (!globalKarsilik) return false; // Globalde silindiyse çıkar
+            return buTarihteGorsunMu(globalKarsilik, seciliTarih);
+        });
+
+        // 2. Seçili güne UYAN ancak o günün kaydında henüz bulunmayan amelleri ekle
+        globalListe.forEach(g => {
+            if (buTarihteGorsunMu(g, seciliTarih)) {
+                if (!g.eklenmeTarihi || seciliTarihStr >= g.eklenmeTarihi) {
+                    const varMi = gunlukVeriler.ozeller.find(o => (o.id && g.id && o.id === g.id) || (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase()));
+                    if (!varMi) {
+                        gunlukVeriler.ozeller.push({
+                            ...g,
+                            durum: (g.tip === 'sayi' ? "" : 0)
+                        });
                     } else {
                         varMi.arsiv = g.arsiv;
                         varMi.id = g.id;
-                    }
-                });
-                
-                gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase()) );
-                
-                if (seciliTarihStr === dunStr) {
-                    let enAzBirIsaretliVarMi = false;
-                    gunlukVeriler.vakitler.forEach(v => {
-                        if (v.durumlar && v.durumlar.some(d => d > 0)) enAzBirIsaretliVarMi = true;
-                    });
-                    gunlukVeriler.ozeller.forEach(o => {
-                        if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
-                        if (o.tip === 'renk' && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
-                    });
-                    
-                    if (enAzBirIsaretliVarMi) {
-                        let degisiklikVarMi = false;
-                        gunlukVeriler.vakitler.forEach(v => {
-                            if (v.durumlar && v.durumlar[0] === 0) {
-                                v.durumlar[0] = 3;
-                                degisiklikVarMi = true;
-                            }
-                        });
-                        if (degisiklikVarMi) {
-                            localStorage.setItem(key, JSON.stringify(gunlukVeriler));
-                        }
+                        varMi.siklik = g.siklik;
+                        varMi.siklikDetay = g.siklikDetay;
                     }
                 }
-            } else {
-                // HATA DÜZELTİLDİ: Referans hatasını önlemek için derin kopyalama (Deep Copy) yapıldı.
-                gunlukVeriler = {
-                    vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })),
-                    ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })),
-                    kalkanlar: JSON.parse(JSON.stringify(varsayilanKalkanlar))
-                };
             }
-            
-            render();
-        }
+        });
 
+        if (seciliTarihStr === dunStr) {
+            let enAzBirIsaretliVarMi = false;
+            gunlukVeriler.vakitler.forEach(v => {
+                if (v.durumlar && v.durumlar.some(d => d > 0)) enAzBirIsaretliVarMi = true;
+            });
+            gunlukVeriler.ozeller.forEach(o => {
+                if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
+                if (o.tip === 'renk' && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
+            });
+
+            if (enAzBirIsaretliVarMi) {
+                let degisiklikVarMi = false;
+                gunlukVeriler.vakitler.forEach(v => {
+                    if (v.durumlar && v.durumlar[0] === 0) {
+                        v.durumlar[0] = 3;
+                        degisiklikVarMi = true;
+                    }
+                });
+                if (degisiklikVarMi) {
+                    localStorage.setItem(key, JSON.stringify(gunlukVeriler));
+                }
+            }
+        }
+    } else {
+        // Yeni bir gün oluşturulurken sadece o güne uyan amelleri filtreleyip yükle
+        const oGuneUyanOzeller = globalListe.filter(g => {
+            if (g.eklenmeTarihi && seciliTarihStr < g.eklenmeTarihi) return false;
+            return buTarihteGorsunMu(g, seciliTarih);
+        });
+
+        gunlukVeriler = {
+            vakitler: vakitler.map(v => ({ ad: v, durumlar: [0, 0, 0] })),
+            ozeller: oGuneUyanOzeller.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })),
+            kalkanlar: JSON.parse(JSON.stringify(varsayilanKalkanlar))
+        };
+    }
+
+    render();
+}
         function render() {
             localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
             const dispDateEl = document.getElementById('dispDate');
