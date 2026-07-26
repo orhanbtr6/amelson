@@ -1027,6 +1027,13 @@ function buTarihteGorsunMu(amel, seciliTarihObj) {
 let globalOzeller = getGlobalOzeller();
 
 globalOzeller.forEach(gAmel => {
+    
+    // --- ESKİ YEDEKLER İÇİN UYUMLULUK KONTROLÜ ---
+    if (gAmel.siklik === undefined) {
+        gAmel.siklik = "her_gun"; // Programınızda "her gün" için hangi değeri kullanıyorsanız onu yazın (örneğin "1" veya "hergun" olabilir)
+    }
+    // ---------------------------------------------
+
     // Sadece seçili tarihe UYUYORSA günün listesine dahil et
     if (buTarihteGorsunMu(gAmel, seciliTarih)) {
         // Eğer o amelin günün listesinde henüz kaydı yoksa ekle
@@ -1038,8 +1045,7 @@ globalOzeller.forEach(gAmel => {
             });
         }
     }
-});        
-window.degis = (i, s, t) => {
+});window.degis = (i, s, t) => {
             if (isFuture()) {
                 document.getElementById('ozelAlertModal').style.display = 'flex';
                 return;
