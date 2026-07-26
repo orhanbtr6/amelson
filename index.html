@@ -121,18 +121,32 @@
     </div>
     
     <div id="typeModal" class="modal">
-        <div class="modal-content">
-            <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Tipi Seçin</h3>
-            <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
-            <div class="type-select-btns">
-                <div class="type-btn" onclick="finalEkle('renk')">🔵 Renk Bazlı (Daire)</div>
-                <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
-            </div>
-            <div style="margin-top: 25px;">
-                <button class="btn-close-new" onclick="document.getElementById('typeModal').style.display='none'">VAZGEÇ</button>
-            </div>
+    <div class="modal-content">
+        <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Detayları</h3>
+        <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
+        
+        <!-- YENİ: Tekrarlanma Sıklığı Seçimi -->
+        <div style="margin: 15px 0; text-align: left;">
+            <label style="font-size: 11px; color: var(--blue); display: block; margin-bottom: 5px; font-weight: bold;">Tekrarlanma Sıklığı:</label>
+            <select id="pendingAmelSiklik" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 8px; outline: none;">
+                <option value="tek" style="background: #1e293b;">Tek Seferlik (Sadece Bugün)</option>
+                <option value="gunluk" style="background: #1e293b;">Her Gün</option>
+                <option value="haftalik" style="background: #1e293b;">Haftalık (Cuma Günleri)</option>
+                <option value="aylik" style="background: #1e293b;">Aylık (Her Ayın 1'i)</option>
+            </select>
+        </div>
+
+        <label style="font-size: 11px; color: var(--blue); display: block; margin-bottom: 8px; text-align: left; font-weight: bold;">Amel Tipini Seçin:</label>
+        <div class="type-select-btns">
+            <div class="type-btn" onclick="finalEkle('renk')">🔵 Renk Bazlı (Daire)</div>
+            <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button class="btn-close-new" onclick="document.getElementById('typeModal').style.display='none'">VAZGEÇ</button>
         </div>
     </div>
+</div>
     
     <div id="settingsModal" class="modal">
         <div class="modal-content">
@@ -849,17 +863,44 @@
         };
 
         window.finalEkle = (tip) => {
-            let g = getGlobalOzeller();
-            const bugunStr = seciliTarih.toISOString().split('T')[0];
-            const sabitId = pendingName.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || 'id_' + Date.now();
-            const yeni = { id: sabitId, ad: pendingName, tip: tip, eklenmeTarihi: bugunStr };
-            g.push(yeni);
-            localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
-            document.getElementById('habInp').value="";
-            gunlukVeriler.ozeller.push({...yeni, durum: (tip === 'sayi' ? "" : 0)});
-            document.getElementById('typeModal').style.display = 'none';
-            render();
-        };
+    let g = getGlobalOzeller();
+    const bugunStr = seciliTarih.toISOString().split('T')[0];
+    
+    // YENİ: Modal içindeki select elemanından seçilen sıklığı al
+    const siklikEl = document.getElementById('pendingAmelSiklik');
+    const siklik = siklikEl ? siklikEl.value : 'gunluk'; // Varsayılan 'gunluk'
+
+    const sabitId = pendingName.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || 'id_' + Date.now();
+    
+    // Objemize 'siklik' alanını ekliyoruz
+    const yeni = { 
+        id: sabitId, 
+        ad: pendingName, 
+        tip: tip, 
+        siklik: siklik,          // 'tek', 'gunluk', 'haftalik', 'aylik'
+        eklenmeTarihi: bugunStr 
+    };
+
+    // Eğer 'tek' seçildiyse sadece o güne özel kalır, global_ozeller (şablon) listesine girmez
+    if (siklik !== 'tek') {
+        g.push(yeni);
+        localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
+    }
+
+    // Seçili günün verisine ameli ekle
+    gunlukVeriler.ozeller.push({
+        ...yeni, 
+        durum: (tip === 'sayi' ? "" : 0)
+    });
+
+    // Form Elemanlarını Sıfırla ve Modalı Kapat
+    document.getElementById('habInp').value = "";
+    if (siklikEl) siklikEl.value = 'gunluk'; // Varsayılana çek
+    document.getElementById('typeModal').style.display = 'none';
+
+    // Arayüzü Güncelle ve Kaydet
+    render();
+};
 
         window.degis = (i, s, t) => {
             if (isFuture()) {
