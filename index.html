@@ -119,53 +119,20 @@
             </button>
         </div>
     </div>
+    
     <div id="typeModal" class="modal">
-    <div class="modal-content">
-        <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Detayları</h3>
-        <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
-        
-        <!-- Tekrarlanma Sıklığı Seçimi -->
-        <div style="margin: 15px 0; text-align: left;">
-            <label style="font-size: 11px; color: var(--blue); display: block; margin-bottom: 5px; font-weight: bold;">Tekrarlanma Sıklığı:</label>
-            <select id="pendingAmelSiklik" onchange="siklikDegisti()" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 8px; outline: none;">
-                <option value="tek" style="background: #1e293b;">Tek Seferlik (Sadece Bugün)</option>
-                <option value="gunluk" selected style="background: #1e293b;">Her Gün</option>
-                <option value="haftalik" style="background: #1e293b;">Haftalık (Belirli Günler)</option>
-                <option value="aylik" style="background: #1e293b;">Aylık (Ayın Belirli Günü)</option>
-            </select>
-
-            <!-- Haftalık Seçilince Açılacak Günler (Varsayılan Gizli) -->
-            <div id="haftalikGunlerBox" style="display: none; margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                <label style="font-size: 10px; color: #aaa; display: block; margin-bottom: 5px;">Hangi Günler?:</label>
-                <div style="display: flex; justify-content: space-between; font-size: 11px; color: #fff;">
-                    <label><input type="checkbox" class="gun-cb" value="1"> Pt</label>
-                    <label><input type="checkbox" class="gun-cb" value="2"> Sa</label>
-                    <label><input type="checkbox" class="gun-cb" value="3"> Ça</label>
-                    <label><input type="checkbox" class="gun-cb" value="4"> Pe</label>
-                    <label><input type="checkbox" class="gun-cb" value="5" checked> Cu</label>
-                    <label><input type="checkbox" class="gun-cb" value="6"> Ct</label>
-                    <label><input type="checkbox" class="gun-cb" value="0"> Pa</label>
-                </div>
+        <div class="modal-content">
+            <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Tipi Seçin</h3>
+            <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
+            <div class="type-select-btns">
+                <div class="type-btn" onclick="finalEkle('renk')">🔵 Renk Bazlı (Daire)</div>
+                <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
             </div>
-
-            <!-- Aylık Seçilince Açılacak Ayın Günü (Varsayılan Gizli) -->
-            <div id="aylikGunBox" style="display: none; margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                <label style="font-size: 10px; color: #aaa; display: block; margin-bottom: 5px;">Her ayın kaçıncı günü?:</label>
-                <input type="number" id="pendingAyinGunu" min="1" max="31" value="1" style="width: 60px; padding: 4px; background: #1e293b; border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; text-align: center;">
+            <div style="margin-top: 25px;">
+                <button class="btn-close-new" onclick="document.getElementById('typeModal').style.display='none'">VAZGEÇ</button>
             </div>
-        </div>
-
-        <label style="font-size: 11px; color: var(--blue); display: block; margin-bottom: 8px; text-align: left; font-weight: bold;">Amel Tipini Seçin:</label>
-        <div class="type-select-btns">
-            <div class="type-btn" onclick="finalEkle('renk')">🔵 Renk Bazlı (Daire)</div>
-            <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
-        </div>
-
-        <div style="margin-top: 20px;">
-            <button class="btn-close-new" onclick="document.getElementById('typeModal').style.display='none'">VAZGEÇ</button>
         </div>
     </div>
-</div>
     
     <div id="settingsModal" class="modal">
         <div class="modal-content">
@@ -632,127 +599,74 @@
         }
 
         // --- 8. Veri Yükleme, Kaydetme ve Render Mantığı ---
-        // --- Amelin seçili tarihte görünüp görünmeyeceğini hesaplayan yardımcı fonksiyon ---
-function buTarihteGorsunMu(amel, seciliTarihObj) {
-    const siklik = amel.siklik || 'gunluk';
-    const detay = amel.siklikDetay;
-
-    // 1. Her Gün: Her zaman görünür
-    if (siklik === 'gunluk') return true;
-
-    // 2. Tek Seferlik
-    if (siklik === 'tek') return false; 
-
-    // 3. Haftalık: 0: Pazar, 1: Pazartesi, ..., 6: Cumartesi
-    if (siklik === 'haftalik') {
-        const haftaninGunu = seciliTarihObj.getDay();
-        return Array.isArray(detay) && detay.includes(haftaninGunu);
-    }
-
-    // 4. Aylık: Ayın günü kontrolü (1-31)
-    if (siklik === 'aylik') {
-        const ayinGunu = seciliTarihObj.getDate();
-        return parseInt(detay) === ayinGunu;
-    }
-
-    return true;
-}
-
-// --- Yenilenmiş Veri Yükleme Fonksiyonu ---
-function yedekVerisiniOnar(veri) {
-    if (!veri || typeof veri !== 'object') return null;
-
-    // 1. Vakitler kontrolü
-    if (!veri.vakitler || !Array.isArray(veri.vakitler)) {
-        veri.vakitler = vakitler.map(v => ({ ad: v, durumlar: [0, 0, 0] }));
-    } else {
-        veri.vakitler.forEach(v => {
-            if (!v.durumlar || !Array.isArray(v.durumlar)) {
-                v.durumlar = [0, 0, 0];
-            }
-        });
-    }
-
-    // 2. Özel ameller (ozeller) kontrolü
-    if (!veri.ozeller || !Array.isArray(veri.ozeller)) {
-        veri.ozeller = [];
-    } else {
-        veri.ozeller.forEach(o => {
-            if (!o.siklik) o.siklik = 'gunluk';
-            if (o.durum === undefined || o.durum === null) {
-                o.durum = (o.tip === 'sayi' ? "" : 0);
-            }
-        });
-    }
-
-    // 3. Kalkanlar kontrolü
-    if (!veri.kalkanlar || !Array.isArray(veri.kalkanlar) || veri.kalkanlar.length === 0) {
-        veri.kalkanlar = typeof varsayilanKalkanlar !== 'undefined' 
-            ? JSON.parse(JSON.stringify(varsayilanKalkanlar)) 
-            : [];
-    }
-
-    return veri;
-}
-
-// Yenilenmiş Veri Yükleme
-function veriYukle() {
-    try {
-        const key = getLocalKey(seciliTarih);
-        const kaydedilmis = JSON.parse(localStorage.getItem(key));
-        const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
-        const globalListe = getGlobalOzeller();
-
-        if (kaydedilmis) {
-            // Eski yedeği yeni yapıya güvenli bir şekilde uyarla
-            gunlukVeriler = yedekVerisiniOnar(kaydedilmis);
-
-            // Filtreleme ve Senkronizasyon
-            gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => {
-                const globalKarsilik = globalListe.find(g => g.id === o.id || g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase());
-                if (!globalKarsilik) return false;
-                return buTarihteGorsunMu(globalKarsilik, seciliTarih);
+        function veriYukle() {
+            const key = getLocalKey(seciliTarih);
+            const kaydedilmis = JSON.parse(localStorage.getItem(key));
+            const seciliTarihStr = seciliTarih.toISOString().split('T')[0];
+            const simdi = new Date();
+            const dun = new Date(simdi);
+            dun.setDate(simdi.getDate() - 1);
+            const dunStr = dun.toISOString().split('T')[0];
+            const globalListe = getGlobalOzeller().filter(g => {
+                if(!g.eklenmeTarihi) return true;
+                return seciliTarihStr >= g.eklenmeTarihi;
             });
+            
+            if (kaydedilmis) {
+                gunlukVeriler = kaydedilmis;
+                
+                // HATA DÜZELTİLDİ: Derin kopyalama ile yeni kalkan yapısı oluşturuluyor, ortak referans koparılıyor.
+                if (!gunlukVeriler.kalkanlar || !Array.isArray(gunlukVeriler.kalkanlar) || gunlukVeriler.kalkanlar.length === 0) {
+                    gunlukVeriler.kalkanlar = JSON.parse(JSON.stringify(varsayilanKalkanlar));
+                }
 
-            globalListe.forEach(g => {
-                if (buTarihteGorsunMu(g, seciliTarih)) {
-                    if (!g.eklenmeTarihi || seciliTarihStr >= g.eklenmeTarihi) {
-                        const varMi = gunlukVeriler.ozeller.find(o => (o.id && g.id && o.id === g.id) || (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase()));
-                        if (!varMi) {
-                            gunlukVeriler.ozeller.push({
-                                ...g,
-                                durum: (g.tip === 'sayi' ? "" : 0)
-                            });
-                        } else {
-                            varMi.arsiv = g.arsiv;
-                            varMi.id = g.id;
-                            varMi.siklik = g.siklik;
-                            varMi.siklikDetay = g.siklikDetay;
+                globalListe.forEach(g => {
+                    const varMi = gunlukVeriler.ozeller.find(o => (o.id && g.id && o.id === g.id) || (o.ad.trim().toLowerCase() === g.ad.trim().toLowerCase()) );
+                    if(!varMi) {
+                        gunlukVeriler.ozeller.push({...g, durum: (g.tip === 'sayi' ? "" : 0)});
+                    } else {
+                        varMi.arsiv = g.arsiv;
+                        varMi.id = g.id;
+                    }
+                });
+                
+                gunlukVeriler.ozeller = gunlukVeriler.ozeller.filter(o => globalListe.some(g => g.ad.trim().toLowerCase() === o.ad.trim().toLowerCase()) );
+                
+                if (seciliTarihStr === dunStr) {
+                    let enAzBirIsaretliVarMi = false;
+                    gunlukVeriler.vakitler.forEach(v => {
+                        if (v.durumlar && v.durumlar.some(d => d > 0)) enAzBirIsaretliVarMi = true;
+                    });
+                    gunlukVeriler.ozeller.forEach(o => {
+                        if (o.tip === 'sayi' && o.durum !== "" && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
+                        if (o.tip === 'renk' && Number(o.durum) > 0) enAzBirIsaretliVarMi = true;
+                    });
+                    
+                    if (enAzBirIsaretliVarMi) {
+                        let degisiklikVarMi = false;
+                        gunlukVeriler.vakitler.forEach(v => {
+                            if (v.durumlar && v.durumlar[0] === 0) {
+                                v.durumlar[0] = 3;
+                                degisiklikVarMi = true;
+                            }
+                        });
+                        if (degisiklikVarMi) {
+                            localStorage.setItem(key, JSON.stringify(gunlukVeriler));
                         }
                     }
                 }
-            });
-
-        } else {
-            const oGuneUyanOzeller = globalListe.filter(g => {
-                if (g.eklenmeTarihi && seciliTarihStr < g.eklenmeTarihi) return false;
-                return buTarihteGorsunMu(g, seciliTarih);
-            });
-
-            gunlukVeriler = {
-                vakitler: vakitler.map(v => ({ ad: v, durumlar: [0, 0, 0] })),
-                ozeller: oGuneUyanOzeller.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })),
-                kalkanlar: JSON.parse(JSON.stringify(varsayilanKalkanlar))
-            };
+            } else {
+                // HATA DÜZELTİLDİ: Referans hatasını önlemek için derin kopyalama (Deep Copy) yapıldı.
+                gunlukVeriler = {
+                    vakitler: vakitler.map(v => ({ ad: v, durumlar: [0,0,0] })),
+                    ozeller: globalListe.map(g => ({ ...g, durum: (g.tip === 'sayi' ? "" : 0) })),
+                    kalkanlar: JSON.parse(JSON.stringify(varsayilanKalkanlar))
+                };
+            }
+            
+            render();
         }
 
-        render();
-    } catch (hata) {
-        console.error("Veri yüklenirken veya render edilirken hata oluştu:", hata);
-        // Sayfanın tamamen donmaması için geçici olarak boş render et
-        alert("Yüklenen veri yapısı eski bir sürüme ait. Veri otomatik olarak koruma moduna alındı.");
-    }
-} 
         function render() {
             localStorage.setItem(getLocalKey(seciliTarih), JSON.stringify(gunlukVeriler));
             const dispDateEl = document.getElementById('dispDate');
@@ -935,117 +849,19 @@ function veriYukle() {
         };
 
         window.finalEkle = (tip) => {
-    let g = getGlobalOzeller();
-    const bugunStr = seciliTarih.toISOString().split('T')[0];
-    
-    // Modal içindeki select elemanından seçilen sıklığı al
-    const siklikEl = document.getElementById('pendingAmelSiklik');
-    const siklik = siklikEl ? siklikEl.value : 'gunluk'; // Varsayılan 'gunluk'
+            let g = getGlobalOzeller();
+            const bugunStr = seciliTarih.toISOString().split('T')[0];
+            const sabitId = pendingName.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || 'id_' + Date.now();
+            const yeni = { id: sabitId, ad: pendingName, tip: tip, eklenmeTarihi: bugunStr };
+            g.push(yeni);
+            localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
+            document.getElementById('habInp').value="";
+            gunlukVeriler.ozeller.push({...yeni, durum: (tip === 'sayi' ? "" : 0)});
+            document.getElementById('typeModal').style.display = 'none';
+            render();
+        };
 
-    // YENİ: Sıklık detaylarını (gün seçimi veya ayın günü) al
-    let siklikDetay = null;
-    if (siklik === 'haftalik') {
-        const seciliGunler = Array.from(document.querySelectorAll('.gun-cb:checked')).map(cb => parseInt(cb.value));
-        if (seciliGunler.length === 0) {
-            alert('Lütfen en az bir gün seçiniz!');
-            return;
-        }
-        siklikDetay = seciliGunler; // Örn: [1, 5] (Pzt, Cuma)
-    } else if (siklik === 'aylik') {
-        siklikDetay = parseInt(document.getElementById('pendingAyinGunu')?.value) || 1; // Örn: 15
-    }
-
-    const sabitId = pendingName.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || 'id_' + Date.now();
-    
-    // Objemize 'siklik' ve 'siklikDetay' alanlarını ekliyoruz
-    const yeni = { 
-        id: sabitId, 
-        ad: pendingName, 
-        tip: tip, 
-        siklik: siklik,            // 'tek', 'gunluk', 'haftalik', 'aylik'
-        siklikDetay: siklikDetay,  // Gün dizisi [1, 5] veya Ayın günü (1-31)
-        eklenmeTarihi: bugunStr 
-    };
-
-    // Eğer 'tek' seçildiyse sadece o güne özel kalır, global_ozeller (şablon) listesine girmez
-    if (siklik !== 'tek') {
-        g.push(yeni);
-        localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
-    }
-
-    // Seçili günün verisine ameli ekle
-    gunlukVeriler.ozeller.push({
-        ...yeni, 
-        durum: (tip === 'sayi' ? "" : 0)
-    });
-
-    // Form Elemanlarını Sıfırla ve Modalı Kapat
-    document.getElementById('habInp').value = "";
-    if (siklikEl) {
-        siklikEl.value = 'gunluk'; // Varsayılana çek
-        if (typeof window.siklikDegisti === 'function') window.siklikDegisti(); // Alt kutuları gizle
-    }
-    document.getElementById('typeModal').style.display = 'none';
-
-    // Arayüzü Güncelle ve Kaydet
-    render();
-};
- window.siklikDegisti = () => {
-    const siklik = document.getElementById('pendingAmelSiklik')?.value;
-    const haftalikBox = document.getElementById('haftalikGunlerBox');
-    const aylikBox = document.getElementById('aylikGunBox');
-
-    if (haftalikBox) haftalikBox.style.display = (siklik === 'haftalik') ? 'block' : 'none';
-    if (aylikBox) aylikBox.style.display = (siklik === 'aylik') ? 'block' : 'none';
-};
-// Bir amelin seçili tarihte görünüp görünmeyeceğini hesaplar
-function buTarihteGorsunMu(amel, seciliTarihObj) {
-    const siklik = amel.siklik || 'gunluk';
-    const detay = amel.siklikDetay;
-
-    // 1. Her Gün: Her zaman görünür
-    if (siklik === 'gunluk') return true;
-
-    // 2. Tek Seferlik: Zaten global listeye eklenmiyor, sadece oluşturulduğu gün var.
-    if (siklik === 'tek') return false; 
-
-    // 3. Haftalık: Seçili günün haftanın hangi günü olduğuna bak (0: Pazar, 1: Pazartesi, ..., 5: Cuma, 6: Cumartesi)
-    if (siklik === 'haftalik') {
-        const haftaninGunu = seciliTarihObj.getDay(); // 0-6 arası döner
-        return Array.isArray(detay) && detay.includes(haftaninGunu);
-    }
-
-    // 4. Aylık: Seçili günün ayın kaçıncı günü olduğuna bak (1-31 arası)
-    if (siklik === 'aylik') {
-        const ayinGunu = seciliTarihObj.getDate(); // 1-31 arası döner
-        return parseInt(detay) === ayinGunu;
-    }
-
-    return true;
-}
-// ✅ DÜZELTİLMİŞ KULLANIM:
-let globalOzeller = getGlobalOzeller();
-
-globalOzeller.forEach(gAmel => {
-    
-    // --- ESKİ YEDEKLER İÇİN UYUMLULUK KONTROLÜ ---
-    if (gAmel.siklik === undefined) {
-        gAmel.siklik = "her_gun"; // Programınızda "her gün" için hangi değeri kullanıyorsanız onu yazın (örneğin "1" veya "hergun" olabilir)
-    }
-    // ---------------------------------------------
-
-    // Sadece seçili tarihe UYUYORSA günün listesine dahil et
-    if (buTarihteGorsunMu(gAmel, seciliTarih)) {
-        // Eğer o amelin günün listesinde henüz kaydı yoksa ekle
-        let zatenVarMi = gunlukVeriler.ozeller.some(o => o.id === gAmel.id);
-        if (!zatenVarMi) {
-            gunlukVeriler.ozeller.push({
-                ...gAmel,
-                durum: (gAmel.tip === 'sayi' ? "" : 0)
-            });
-        }
-    }
-});window.degis = (i, s, t) => {
+        window.degis = (i, s, t) => {
             if (isFuture()) {
                 document.getElementById('ozelAlertModal').style.display = 'flex';
                 return;
