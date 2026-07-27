@@ -416,5 +416,14 @@ body {
     cursor: pointer;
     font-weight: bold;
 }
-
+.type-btn {
+    padding: 15px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    text-align: center;
+    transition: 0.3s;
+}
+.type-btn:hover { background: rgba(255,255,255,0.1); }
+#haftalikAlan div:hover { background: #34495e; }
 </style>
