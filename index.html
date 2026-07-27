@@ -121,18 +121,49 @@
     </div>
     
     <div id="typeModal" class="modal">
-        <div class="modal-content">
-            <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Tipi Seçin</h3>
-            <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
-            <div class="type-select-btns">
-                <div class="type-btn" onclick="finalEkle('renk')">🔵 Renk Bazlı (Daire)</div>
-                <div class="type-btn" onclick="finalEkle('sayi')">🔢 Sayı Bazlı (Miktar)</div>
-            </div>
-            <div style="margin-top: 25px;">
-                <button class="btn-close-new" onclick="document.getElementById('typeModal').style.display='none'">VAZGEÇ</button>
-            </div>
+    <div class="modal-content">
+        <h3 style="text-align:center; color:var(--blue); margin-top:10px;">Amel Ayarları</h3>
+        <p id="pendingAmelAd" style="text-align:center; font-size:12px; opacity:0.7;"></p>
+
+        <!-- 1. TİP SEÇİMİ -->
+        <h4 style="font-size: 14px; margin-bottom: 8px;">1. Amel Tipi</h4>
+        <div class="type-select-btns" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+            <label style="cursor:pointer;"><input type="radio" name="amelTipi" value="renk" checked> 🔵 Renk Bazlı</label>
+            <label style="cursor:pointer;"><input type="radio" name="amelTipi" value="sayi"> 🔢 Sayı Bazlı</label>
+        </div>
+
+        <!-- 2. SIKLIK SEÇİMİ -->
+        <h4 style="font-size: 14px; margin-bottom: 8px;">2. Tekrar Sıklığı</h4>
+        <select id="tekrarSikligi" onchange="tekrarAyarGoster()" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;">
+            <option value="hergun">Her Gün</option>
+            <option value="haftanin_gunleri">Haftanın Belirli Günleri</option>
+            <option value="ayin_gunleri">Ayın Belirli Günleri</option>
+        </select>
+
+        <!-- Haftanın Günleri (Varsayılan olarak gizli) -->
+        <div id="haftalikAyar" style="display: none; margin-bottom: 15px; text-align: left; font-size:13px;">
+            <label><input type="checkbox" value="1"> Pzt</label>
+            <label><input type="checkbox" value="2"> Sal</label>
+            <label><input type="checkbox" value="3"> Çar</label>
+            <label><input type="checkbox" value="4"> Per</label>
+            <label><input type="checkbox" value="5"> Cum</label>
+            <label><input type="checkbox" value="6"> Cmt</label>
+            <label><input type="checkbox" value="0"> Paz</label>
+        </div>
+
+        <!-- Ayın Günleri (Varsayılan olarak gizli) -->
+        <div id="aylikAyar" style="display: none; margin-bottom: 15px; text-align: left;">
+            <input type="text" id="ayinGunleriInput" placeholder="Örn: 1, 15, 30" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+            <small style="font-size: 11px; opacity: 0.7;">Günleri virgül ile ayırarak yazın.</small>
+        </div>
+
+        <!-- BUTONLAR -->
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+            <button class="btn-close-new" onclick="document.getElementById('typeModal').style.display='none'" style="background: #ccc; padding: 10px 20px; border:none; border-radius: 5px; cursor:pointer;">VAZGEÇ</button>
+            <button onclick="yeniAmelKaydet()" style="background: var(--blue, #007bff); color: white; padding: 10px 20px; border:none; border-radius: 5px; cursor:pointer;">KAYDET</button>
         </div>
     </div>
+</div>
     
     <div id="settingsModal" class="modal">
         <div class="modal-content">
@@ -842,24 +873,96 @@
 
         // --- 11. Amel Ekleme ve Güncelleme ---
         window.yeniEkle = () => {
-            pendingName = document.getElementById('habInp').value;
-            if(!pendingName) return;
-            document.getElementById('pendingAmelAd').innerText = `"${pendingName}" için tip seçiniz:`;
-            document.getElementById('typeModal').style.display = 'flex';
-        };
+    pendingName = document.getElementById('habInp').value;
+    if(!pendingName) return;
+    
+    document.getElementById('pendingAmelAd').innerText = `"${pendingName}" için ayarları seçiniz:`;
+    
+    // Modal açıldığında önceki seçimleri sıfırla
+    document.getElementById('tekrarSikligi').value = 'hergun';
+    document.getElementById('ayinGunleriInput').value = '';
+    document.querySelectorAll('#haftalikAyar input[type="checkbox"]').forEach(cb => cb.checked = false);
+    
+    // Alt menüleri gizlemek için (önceki mesajdaki fonksiyon)
+    if(typeof tekrarAyarGoster === 'function') {
+        tekrarAyarGoster(); 
+    }
+    
+    document.getElementById('typeModal').style.display = 'flex';
+};
 
-        window.finalEkle = (tip) => {
-            let g = getGlobalOzeller();
-            const bugunStr = seciliTarih.toISOString().split('T')[0];
-            const sabitId = pendingName.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || 'id_' + Date.now();
-            const yeni = { id: sabitId, ad: pendingName, tip: tip, eklenmeTarihi: bugunStr };
-            g.push(yeni);
-            localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
-            document.getElementById('habInp').value="";
-            gunlukVeriler.ozeller.push({...yeni, durum: (tip === 'sayi' ? "" : 0)});
-            document.getElementById('typeModal').style.display = 'none';
-            render();
-        };
+window.finalEkle = () => {
+    // 1. TİP SEÇİMİNİ AL
+    const tipElement = document.querySelector('input[name="amelTipi"]:checked');
+    if (!tipElement) { alert("Lütfen bir amel tipi seçiniz."); return; }
+    const tip = tipElement.value;
+
+    // 2. SIKLIK VE GÜN SEÇİMLERİNİ AL
+    const siklik = document.getElementById('tekrarSikligi').value;
+    let secilenGunler = [];
+
+    if (siklik === 'haftanin_gunleri') {
+        const checkboxes = document.querySelectorAll('#haftalikAyar input[type="checkbox"]:checked');
+        secilenGunler = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        if (secilenGunler.length === 0) {
+            alert("Lütfen haftanın en az bir gününü seçin.");
+            return;
+        }
+    } 
+    else if (siklik === 'ayin_gunleri') {
+        const inputVal = document.getElementById('ayinGunleriInput').value;
+        secilenGunler = inputVal.split(',')
+            .map(num => parseInt(num.trim()))
+            .filter(num => !isNaN(num) && num > 0 && num <= 31);
+        if (secilenGunler.length === 0) {
+            alert("Lütfen geçerli günleri girin (Örn: 1, 15, 30).");
+            return;
+        }
+    }
+
+    // 3. VERİYİ OLUŞTUR VE KAYDET
+    let g = getGlobalOzeller();
+    const bugunStr = seciliTarih.toISOString().split('T')[0];
+    const sabitId = pendingName.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || 'id_' + Date.now();
+    
+    // Yeni objeye siklik ve secilenGunler özelliklerini dahil ediyoruz
+    const yeni = { 
+        id: sabitId, 
+        ad: pendingName, 
+        tip: tip, 
+        eklenmeTarihi: bugunStr,
+        siklik: siklik,
+        secilenGunler: secilenGunler
+    };
+    
+    g.push(yeni);
+    localStorage.setItem('amel_global_ozeller', JSON.stringify(g));
+    
+    // Formu temizle ve kapat
+    document.getElementById('habInp').value = "";
+    document.getElementById('typeModal').style.display = 'none';
+    
+    // 4. BUGÜNÜN LİSTESİNE EKLENECEK Mİ KONTROLÜ
+    // Kullanıcının eklediği amel bugüne denk geliyorsa hemen ekranda göster
+    const bugunHaftaGunu = seciliTarih.getDay(); // 0: Pazar, 1: Pazartesi...
+    const bugunAyGunu = seciliTarih.getDate(); // 1-31
+
+    let buguneUygunMu = false;
+    if (siklik === 'hergun') {
+        buguneUygunMu = true;
+    } else if (siklik === 'haftanin_gunleri' && secilenGunler.includes(bugunHaftaGunu)) {
+        buguneUygunMu = true;
+    } else if (siklik === 'ayin_gunleri' && secilenGunler.includes(bugunAyGunu)) {
+        buguneUygunMu = true;
+    }
+
+    // Eğer bugüne uygunsa anlık olarak diziye atıp render ediyoruz
+    if (buguneUygunMu) {
+        gunlukVeriler.ozeller.push({...yeni, durum: (tip === 'sayi' ? "" : 0)});
+    }
+    
+    render();
+};
 
         window.degis = (i, s, t) => {
             if (isFuture()) {
