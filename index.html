@@ -919,7 +919,24 @@ window.finalEkle = () => {
             return;
         }
     }
+window.tekrarAyarGoster = () => {
+    const secim = document.getElementById('tekrarSikligi').value;
+    const haftalikAyar = document.getElementById('haftalikAyar');
+    const aylikAyar = document.getElementById('aylikAyar');
 
+    if (!haftalikAyar || !aylikAyar) return;
+
+    // Önce iki alanı da gizle
+    haftalikAyar.style.display = 'none';
+    aylikAyar.style.display = 'none';
+
+    // Seçime göre ilgili alanı görünür yap
+    if (secim === 'haftanin_gunleri') {
+        haftalikAyar.style.display = 'block';
+    } else if (secim === 'ayin_gunleri') {
+        aylikAyar.style.display = 'block';
+    }
+};
     // 3. VERİYİ OLUŞTUR VE KAYDET
     let g = getGlobalOzeller();
     const bugunStr = seciliTarih.toISOString().split('T')[0];
